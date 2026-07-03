@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation, Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { HiOutlineSun } from 'react-icons/hi2'
+import { motion, AnimatePresence } from 'framer-motion'
+import { HiOutlineSun, HiBars3, HiXMark } from 'react-icons/hi2'
 import Logo from '../atoms/logo'
 import Avatar from '../atoms/avatar'
 import Button from '../atoms/button'
@@ -17,6 +17,7 @@ const navItems = [
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
   const isAuthenticated = false // TODO: replace with real auth state
 
@@ -25,6 +26,9 @@ export default function Header() {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  // Close mobile menu on route change
+  useEffect(() => { setMobileOpen(false) }, [location.pathname])
 
   return (
     <div className="sticky top-0 z-50 w-full flex justify-center">
@@ -67,7 +71,7 @@ export default function Header() {
         <motion.div
           animate={{ opacity: scrolled ? 0 : 1 }}
           transition={{ duration: 0.2 }}
-          className="absolute inset-0 bg-white dark:bg-[#0d1117] border-b border-[#d0d7de] dark:border-[#21262d] overflow-hidden"
+          className="absolute inset-0 bg-white dark:bg-[#0d1117] overflow-hidden"
           style={{ borderRadius: 'inherit' }}
         />
 
@@ -93,22 +97,26 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Right side */}
+          {/* Right side — desktop */}
           <div className="flex items-center gap-3 ml-auto">
             <div className="hidden md:block w-px h-5 bg-[#d0d7de] dark:bg-[#30363d]" />
 
-            {/* Post a skill dropdown */}
-            <Dropdown
-              trigger={
-                <span className="text-xs font-semibold tracking-wider uppercase text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors">
-                  Skills
-                </span>
-              }
-            >
-              <DropdownItem href="/listings/new">Post a Skill</DropdownItem>
-              <DropdownItem href="/listings">Browse Listings</DropdownItem>
-              <DropdownItem href="/explore">Discover Students</DropdownItem>
-            </Dropdown>
+            {/* Language dropdown — desktop only */}
+            <div className="hidden md:block">
+              <Dropdown
+                trigger={
+                  <span className="text-xs font-semibold tracking-wider uppercase text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors">
+                    EN
+                  </span>
+                }
+              >
+                <DropdownItem>🇬🇧 English</DropdownItem>
+                <DropdownItem>🇵🇹 Português</DropdownItem>
+                <DropdownItem>🇫🇷 Français</DropdownItem>
+                <DropdownItem>🇪🇸 Español</DropdownItem>
+                <DropdownItem>🇩🇪 Deutsch</DropdownItem>
+              </Dropdown>
+            </div>
 
             {/* Theme toggle */}
             <button
@@ -127,19 +135,63 @@ export default function Header() {
               </div>
             </button>
 
-            {isAuthenticated ? (
-              <Dropdown trigger={<Avatar name="A" size="md" showStatus />} showChevron={false}>
-                <DropdownItem href="/profile">My Profile</DropdownItem>
-                <DropdownItem href="/settings">Settings</DropdownItem>
-                <DropdownItem>Sign Out</DropdownItem>
-              </Dropdown>
-            ) : (
-              <Link to="/login">
+            {/* Sign In — desktop only */}
+            {!isAuthenticated && (
+              <Link to="/login" className="hidden md:block">
                 <Button variant="secondary" size="sm">Sign In</Button>
               </Link>
             )}
+            {isAuthenticated && (
+              <div className="hidden md:block">
+                <Dropdown trigger={<Avatar name="A" size="md" showStatus />} showChevron={false}>
+                  <DropdownItem href="/profile">My Profile</DropdownItem>
+                  <DropdownItem href="/settings">Settings</DropdownItem>
+                  <DropdownItem>Sign Out</DropdownItem>
+                </Dropdown>
+              </div>
+            )}
+
+            {/* Hamburger — mobile only */}
+            <button
+              onClick={() => setMobileOpen((v) => !v)}
+              className="md:hidden p-2 rounded-xl text-[#636c76] dark:text-[#848d97] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors cursor-pointer"
+            >
+              {mobileOpen ? <HiXMark className="w-5 h-5" /> : <HiBars3 className="w-5 h-5" />}
+            </button>
           </div>
         </motion.div>
+        {/* Mobile menu */}
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="relative z-10 overflow-hidden md:hidden"
+            >
+              <div className="px-4 pb-4 pt-1 flex flex-col gap-1 border-t border-[#d0d7de]/40 dark:border-[#30363d]/40">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      location.pathname === item.href
+                        ? 'text-[#0969da] dark:text-[#2f81f7] bg-[#ddf4ff] dark:bg-[#121d2f]'
+                        : 'text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d]'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <div className="h-px bg-[#d0d7de] dark:bg-[#30363d] my-1" />
+                <Link to="/login" className="w-full">
+                  <Button variant="secondary" size="sm" className="w-full justify-center">Sign In</Button>
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.header>
     </div>
   )

@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import Header from './components/organisms/header'
 import LoginPage from './pages/auth/loginPage'
 import RegisterPage from './pages/auth/registerPage'
+import HomePage from './pages/home/homePage'
 
 const authRoutes = ['/login', '/register']
 
@@ -26,7 +27,7 @@ function App() {
     <div className="min-h-screen bg-white dark:bg-[#0d1117] text-[#1f2328] dark:text-[#e6edf3]">
       <Header />
       <Routes>
-        <Route path="/" element={<div className="p-8">Home</div>} />
+        <Route path="/" element={<HomePage />} />
       </Routes>
     </div>
   )
