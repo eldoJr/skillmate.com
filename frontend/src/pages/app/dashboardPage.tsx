@@ -8,7 +8,6 @@ import {
   HiOutlineUserPlus,
   HiOutlineRectangleStack,
   HiOutlineClipboardDocumentList,
-  HiOutlineCheckBadge,
 } from 'react-icons/hi2'
 import Avatar from '../../components/atoms/avatar'
 
@@ -42,15 +41,17 @@ export default function DashboardPage() {
       <div className="flex-1 min-w-0 space-y-5">
 
         {/* Welcome banner */}
-        <div className="rounded-2xl bg-gradient-to-br from-[#0969da] to-[#0550ae] dark:from-[#1158c7] dark:to-[#0d419d] p-5 text-white">
-          <p className="text-xs font-semibold opacity-70 mb-1 uppercase tracking-wide">Welcome back</p>
-          <h2 className="text-lg font-bold mb-1">Good morning, Student 👋</h2>
-          <p className="text-sm opacity-80 mb-4">You have 3 unread messages and 2 new reviews on your listings.</p>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Link to="/app/listings/new" className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-semibold transition-colors">
+        <div className="flex items-center justify-between gap-6 py-2">
+          <div>
+            <p className="text-xs font-semibold text-[#636c76] dark:text-[#848d97] mb-1 uppercase tracking-wide">Welcome back</p>
+            <h2 className="text-lg font-bold text-[#1f2328] dark:text-[#e6edf3] mb-1">Good morning, Student 👋</h2>
+            <p className="text-sm text-[#636c76] dark:text-[#848d97]">You have 3 unread messages and 2 new reviews on your listings.</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link to="/app/listings/new" className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0969da] dark:bg-[#2f81f7] hover:bg-[#0860ca] dark:hover:bg-[#388bfd] text-white text-xs font-semibold transition-colors">
               <HiOutlinePlusCircle className="w-4 h-4" /> New Listing
             </Link>
-            <Link to="/app/explore" className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors">
+            <Link to="/app/explore" className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#d0d7de] dark:border-[#30363d] text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] hover:border-[#0969da] dark:hover:border-[#2f81f7] text-xs font-semibold transition-colors">
               Browse Skills <HiOutlineArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -139,7 +140,7 @@ export default function DashboardPage() {
       <div className="hidden lg:flex flex-col gap-4 w-[260px] shrink-0">
 
         {/* Profile card */}
-        <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-4">
+        <div className="rounded-2xl p-4">
           <div className="flex items-center gap-3 mb-3">
             <Avatar name="Student" size="md" showStatus />
             <div className="min-w-0">
@@ -161,7 +162,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Suggested students */}
-        <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-4">
+        <div className="rounded-2xl p-4">
           <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3] mb-3">Students you may know</p>
           <div className="space-y-3">
             {suggestedStudents.map((s) => (
@@ -179,16 +180,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Verified badge */}
-        <div className="rounded-2xl bg-[#dafbe1] dark:bg-[#0f2d1a] border border-[#aceebb] dark:border-[#1a7f37]/30 p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <HiOutlineCheckBadge className="w-5 h-5 text-[#1a7f37] dark:text-[#3fb950]" />
-            <p className="text-[12px] font-semibold text-[#1a7f37] dark:text-[#3fb950]">Verified Student</p>
-          </div>
-          <p className="text-[11px] text-[#1f2328] dark:text-[#e6edf3] leading-relaxed">
-            Your university email is verified. Clients trust verified students more.
-          </p>
-        </div>
       </div>
     </div>
   )
