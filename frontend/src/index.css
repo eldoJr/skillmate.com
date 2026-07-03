@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    overflow-x: hidden;
+  }
+}
+
+@layer utilities {
+  .auth-input {
+    @apply w-full px-5 py-3.5 rounded-xl bg-[#f6f8fa] dark:bg-[#161b22] text-[#1f2328] dark:text-[#e6edf3] text-sm placeholder-[#6e7781] dark:placeholder-[#6e7681] border border-[#d0d7de] dark:border-[#30363d] outline-none focus:border-[#0969da] dark:focus:border-[#2f81f7] focus:bg-white dark:focus:bg-[#0d1117] transition-all;
+  }
+
+  .pause-on-hover:hover .scroll-animated {
+    animation-play-state: paused !important;
+  }
+}
