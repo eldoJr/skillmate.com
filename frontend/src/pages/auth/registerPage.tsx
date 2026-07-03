@@ -30,24 +30,24 @@ export default function RegisterPage() {
     <div className="relative min-h-screen bg-white dark:bg-[#0d1117] flex">
 
       {/* Left panel */}
-      <div className="hidden lg:flex flex-col justify-between w-[45%] bg-[#f6f8fa] dark:bg-[#161b22] border-r border-[#d0d7de] dark:border-[#30363d] p-12">
-        <Link to="/"><Logo width={28} height={28} /></Link>
+      <div className="hidden md:flex flex-col justify-between w-[40%] lg:w-[45%] bg-[#f6f8fa] dark:bg-[#161b22] border-r border-[#d0d7de] dark:border-[#30363d] p-8 lg:p-12">
+        <Link to="/"><Logo width={26} height={26} /></Link>
 
         <div>
-          <h2 className="text-xl font-bold text-[#1f2328] dark:text-[#e6edf3] mb-2">
+          <h2 className="text-lg font-bold text-[#1f2328] dark:text-[#e6edf3] mb-2">
             Turn your skills into opportunities
           </h2>
-          <p className="text-sm text-[#636c76] dark:text-[#848d97] mb-10 leading-relaxed">
+          <p className="text-sm text-[#636c76] dark:text-[#848d97] mb-8 leading-relaxed">
             Join thousands of students already offering and discovering skills within their university community.
           </p>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2.5">
             {[
               { step: '01', title: 'Create your account', desc: 'Verify with your university email' },
               { step: '02', title: 'Build your profile', desc: 'Showcase your skills and experience' },
               { step: '03', title: 'Start exchanging', desc: 'Offer services or hire fellow students' },
             ].map(({ step: s, title, desc }) => (
-              <div key={s} className="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-[#0d1117] border border-[#d0d7de] dark:border-[#30363d]">
+              <div key={s} className="flex items-start gap-3 p-3 rounded-xl bg-white dark:bg-[#0d1117] border border-[#d0d7de] dark:border-[#30363d]">
                 <span className="text-xs font-bold text-[#0969da] dark:text-[#2f81f7] mt-0.5 shrink-0">{s}</span>
                 <div>
                   <p className="text-sm font-semibold text-[#1f2328] dark:text-[#e6edf3]">{title}</p>
@@ -62,22 +62,22 @@ export default function RegisterPage() {
       </div>
 
       {/* Right panel — form */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative">
-        <div className="absolute top-6 right-6">
+      <div className="flex-1 flex flex-col items-center justify-center px-5 py-10 relative overflow-y-auto">
+        <div className="absolute top-4 right-4">
           <ThemeToggle />
         </div>
 
         {/* Mobile logo */}
-        <Link to="/" className="mb-8 lg:hidden">
-          <Logo width={28} height={28} />
+        <Link to="/" className="mb-6 md:hidden">
+          <Logo width={26} height={26} />
         </Link>
 
         {/* Step indicator */}
-        <div className="flex items-center gap-2 mb-8">
+        <div className="flex items-center gap-2 mb-6">
           {stepLabels.map((label, i) => (
             <div key={label} className="flex items-center gap-2">
               <div className="flex items-center gap-1.5">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-all duration-300 ${
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300 ${
                   i < step
                     ? 'bg-[#1a7f37] dark:bg-[#238636] text-white'
                     : i === step
@@ -92,12 +92,12 @@ export default function RegisterPage() {
                   {label}
                 </span>
               </div>
-              {i < 2 && <div className={`w-8 h-px transition-colors ${i < step ? 'bg-[#1a7f37] dark:bg-[#238636]' : 'bg-[#d0d7de] dark:bg-[#30363d]'}`} />}
+              {i < 2 && <div className={`w-6 h-px transition-colors ${i < step ? 'bg-[#1a7f37] dark:bg-[#238636]' : 'bg-[#d0d7de] dark:bg-[#30363d]'}`} />}
             </div>
           ))}
         </div>
 
-        <div className="w-full max-w-[400px]">
+        <div className="w-full max-w-[380px]">
           <AnimatePresence mode="wait">
 
             {/* Step 0 — Account */}
@@ -109,8 +109,8 @@ export default function RegisterPage() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
-                <div className="mb-6">
-                  <h1 className="text-2xl font-bold text-[#1f2328] dark:text-[#e6edf3] mb-1">Create your account</h1>
+                <div className="mb-5">
+                  <h1 className="text-xl font-bold text-[#1f2328] dark:text-[#e6edf3] mb-1">Create your account</h1>
                   <p className="text-sm text-[#636c76] dark:text-[#848d97]">Use your university email to get verified.</p>
                 </div>
 
@@ -138,20 +138,20 @@ export default function RegisterPage() {
                         type={showPassword ? 'text' : 'password'}
                         placeholder="Min. 8 characters"
                         required
-                        className="auth-input pr-12"
+                        className="auth-input pr-10"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] cursor-pointer"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] cursor-pointer"
                       >
-                        {showPassword ? <HiEyeSlash className="w-5 h-5" /> : <HiEye className="w-5 h-5" />}
+                        {showPassword ? <HiEyeSlash className="w-4 h-4" /> : <HiEye className="w-4 h-4" />}
                       </button>
                     </div>
                   </div>
 
-                  <label className="flex items-start gap-3 mt-1 cursor-pointer">
-                    <input type="checkbox" required className="mt-0.5 w-4 h-4 rounded border-[#d0d7de] dark:border-[#30363d] accent-[#0969da]" />
+                  <label className="flex items-start gap-2.5 cursor-pointer">
+                    <input type="checkbox" required className="mt-0.5 w-3.5 h-3.5 rounded border-[#d0d7de] dark:border-[#30363d] accent-[#0969da]" />
                     <span className="text-xs text-[#636c76] dark:text-[#848d97] leading-relaxed">
                       I agree to the{' '}
                       <a href="#" className="text-[#0969da] dark:text-[#2f81f7] hover:underline">Terms of Service</a>
@@ -160,10 +160,10 @@ export default function RegisterPage() {
                     </span>
                   </label>
 
-                  <Button size="lg" className="w-full rounded-xl mt-2">Continue</Button>
+                  <Button size="md" className="w-full rounded-xl mt-1">Continue</Button>
                 </form>
 
-                <p className="text-sm text-[#636c76] dark:text-[#848d97] text-center mt-6">
+                <p className="text-sm text-[#636c76] dark:text-[#848d97] text-center mt-5">
                   Already have an account?{' '}
                   <Link to="/login" className="text-[#0969da] dark:text-[#2f81f7] font-semibold hover:underline">Sign in</Link>
                 </p>
@@ -179,12 +179,12 @@ export default function RegisterPage() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
-                <button onClick={back} className="flex items-center gap-1 text-xs text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] mb-6 cursor-pointer">
+                <button onClick={back} className="flex items-center gap-1 text-xs text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] mb-5 cursor-pointer">
                   <HiChevronLeft className="w-4 h-4" /> Back
                 </button>
 
-                <div className="mb-6">
-                  <h1 className="text-2xl font-bold text-[#1f2328] dark:text-[#e6edf3] mb-1">Build your profile</h1>
+                <div className="mb-5">
+                  <h1 className="text-xl font-bold text-[#1f2328] dark:text-[#e6edf3] mb-1">Build your profile</h1>
                   <p className="text-sm text-[#636c76] dark:text-[#848d97]">Help others know who you are.</p>
                 </div>
 
@@ -215,7 +215,7 @@ export default function RegisterPage() {
                     <input type="url" placeholder="https://github.com/username" className="auth-input" />
                   </div>
 
-                  <Button size="lg" className="w-full rounded-xl mt-2">Continue</Button>
+                  <Button size="md" className="w-full rounded-xl mt-1">Continue</Button>
                   <button type="button" onClick={next} className="text-xs text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] text-center cursor-pointer transition-colors">
                     Skip for now
                   </button>
@@ -232,16 +232,16 @@ export default function RegisterPage() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
-                <button onClick={back} className="flex items-center gap-1 text-xs text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] mb-6 cursor-pointer">
+                <button onClick={back} className="flex items-center gap-1 text-xs text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] mb-5 cursor-pointer">
                   <HiChevronLeft className="w-4 h-4" /> Back
                 </button>
 
-                <div className="mb-6">
-                  <h1 className="text-2xl font-bold text-[#1f2328] dark:text-[#e6edf3] mb-1">What can you offer?</h1>
+                <div className="mb-5">
+                  <h1 className="text-xl font-bold text-[#1f2328] dark:text-[#e6edf3] mb-1">What can you offer?</h1>
                   <p className="text-sm text-[#636c76] dark:text-[#848d97]">Pick your skills. You can always update these later.</p>
                 </div>
 
-                <form className="flex flex-col gap-6" onSubmit={(e) => { e.preventDefault(); navigate('/explore') }}>
+                <form className="flex flex-col gap-5" onSubmit={(e) => { e.preventDefault(); navigate('/explore') }}>
                   <div className="flex flex-wrap gap-2">
                     {skills.map((skill) => {
                       const active = selectedSkills.includes(skill)
@@ -250,7 +250,7 @@ export default function RegisterPage() {
                           key={skill}
                           type="button"
                           onClick={() => toggleSkill(skill)}
-                          className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all cursor-pointer ${
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
                             active
                               ? 'bg-[#0969da] dark:bg-[#2f81f7] text-white border-[#0969da] dark:border-[#2f81f7]'
                               : 'bg-white dark:bg-[#0d1117] text-[#636c76] dark:text-[#848d97] border-[#d0d7de] dark:border-[#30363d] hover:border-[#0969da] dark:hover:border-[#2f81f7] hover:text-[#0969da] dark:hover:text-[#2f81f7]'
@@ -262,7 +262,7 @@ export default function RegisterPage() {
                     })}
                   </div>
 
-                  <Button size="lg" className="w-full rounded-xl">
+                  <Button size="md" className="w-full rounded-xl">
                     {selectedSkills.length > 0 ? `Get started with ${selectedSkills.length} skill${selectedSkills.length > 1 ? 's' : ''}` : 'Get started'}
                   </Button>
                 </form>
