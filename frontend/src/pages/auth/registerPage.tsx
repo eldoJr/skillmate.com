@@ -241,7 +241,7 @@ export default function RegisterPage() {
                   <p className="text-sm text-[#636c76] dark:text-[#848d97]">Pick your skills. You can always update these later.</p>
                 </div>
 
-                <form className="flex flex-col gap-5" onSubmit={(e) => { e.preventDefault(); navigate('/explore') }}>
+                <form className="flex flex-col gap-5" onSubmit={(e) => { e.preventDefault();       navigate('/app') }}>
                   <div className="flex flex-wrap gap-2">
                     {skills.map((skill) => {
                       const active = selectedSkills.includes(skill)

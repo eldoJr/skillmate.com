@@ -15,11 +15,11 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (email && password) {
+    if (email === 'admin' && password === 'admin123') {
       localStorage.setItem('skillmate_auth', 'true')
-      navigate('/explore')
+      navigate('/app')
     } else {
-      setError('Please fill in all fields.')
+      setError('Invalid email or password.')
     }
   }
 
@@ -86,10 +86,10 @@ export default function LoginPage() {
             )}
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-[#1f2328] dark:text-[#e6edf3]">University email</label>
+              <label className="text-xs font-semibold text-[#1f2328] dark:text-[#e6edf3]">Username or email</label>
               <input
-                type="email"
-                placeholder="you@university.edu"
+                type="text"
+                placeholder="admin"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
