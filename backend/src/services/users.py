@@ -43,6 +43,10 @@ async def update_me(db: AsyncSession, user: User, payload: UserUpdate) -> User:
         setattr(user, field, value)
     await db.commit()
     await db.refresh(user)
+    from src.tasks.embeddings import generate_user_embedding
+    generate_user_embedding.delay(user.id)
+    from src.tasks.search_sync import sync_user_to_meili
+    sync_user_to_meili.delay(user.id)
     return user
 
 
@@ -99,6 +103,10 @@ async def update_skills(db: AsyncSession, user: User, skill_ids: list[str]) -> U
     user.skills = list(skills)
     await db.commit()
     await db.refresh(user)
+    from src.tasks.embeddings import generate_user_embedding
+    generate_user_embedding.delay(user.id)
+    from src.tasks.search_sync import sync_user_to_meili
+    sync_user_to_meili.delay(user.id)
     return user
 
 

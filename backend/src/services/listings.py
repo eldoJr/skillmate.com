@@ -110,6 +110,10 @@ async def create_listing(db: AsyncSession, owner_id: str, payload: ListingCreate
     db.add(listing)
     await db.commit()
     await db.refresh(listing)
+    from src.tasks.embeddings import generate_listing_embedding
+    generate_listing_embedding.delay(listing.id)
+    from src.tasks.search_sync import sync_listing_to_meili
+    sync_listing_to_meili.delay(listing.id)
     return listing
 
 
@@ -130,6 +134,10 @@ async def update_listing(db: AsyncSession, listing_id: str, owner_id: str, paylo
 
     await db.commit()
     await db.refresh(listing)
+    from src.tasks.embeddings import generate_listing_embedding
+    generate_listing_embedding.delay(listing.id)
+    from src.tasks.search_sync import sync_listing_to_meili
+    sync_listing_to_meili.delay(listing.id)
     return listing
 
 

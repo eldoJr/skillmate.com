@@ -48,3 +48,9 @@ class PortfolioResponse(BaseModel):
 
 class ImageResponse(BaseModel):
     image_url: str
+
+
+class AnalyzeResponse(BaseModel):
+    entry: PortfolioResponse
+    extracted_text_length: int
+    source_filename: str

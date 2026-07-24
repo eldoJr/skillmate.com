@@ -2,7 +2,9 @@ import uuid
 from datetime import datetime
 from sqlalchemy import String, Boolean, DateTime, Text, Table, Column, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from pgvector.sqlalchemy import Vector
 from src.db.base import Base
+from src.core.config import settings
 
 
 user_skills = Table(
@@ -38,6 +40,7 @@ class User(Base):
     reset_token: Mapped[str | None] = mapped_column(String, index=True)
     reset_token_expires_at: Mapped[datetime | None] = mapped_column(DateTime)
 
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(settings.NIM_EMBEDDING_DIMENSION), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

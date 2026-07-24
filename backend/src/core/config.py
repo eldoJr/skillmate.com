@@ -27,6 +27,17 @@ class Settings(BaseSettings):
     EMAILS_FROM: str = "noreply@skillmate.com"
     EMAILS_FROM_NAME: str = "Skillmate"
 
+    # NVIDIA NIM
+    NVIDIA_API_KEY: str = ""
+    NVIDIA_BASE_URL: str = "https://integrate.api.nvidia.com/v1"
+    NIM_LLM_MODEL: str = "meta/llama-3.1-70b-instruct"
+    NIM_EMBEDDING_MODEL: str = "nvidia/nv-embedqa-e5-v5"
+    NIM_EMBEDDING_DIMENSION: int = 1024
+
+    # Meilisearch
+    MEILISEARCH_URL: str = "http://localhost:7700"
+    MEILISEARCH_API_KEY: str = ""
+
     class Config:
         env_file = ".env"
 

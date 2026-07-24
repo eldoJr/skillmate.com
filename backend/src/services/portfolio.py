@@ -7,7 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.models.portfolio import Portfolio
 from src.models.user import User
-from src.schemas.portfolio import PortfolioCreate, PortfolioUpdate, PortfolioResponse, ImageResponse
+from src.schemas.portfolio import PortfolioCreate, PortfolioUpdate, PortfolioResponse, ImageResponse, AnalyzeResponse
+from src.ai.portfolio_analysis import extract_text, analyze_project, SUPPORTED_IMAGE_TYPES, SUPPORTED_DOC_TYPES
 
 MEDIA_DIR = "media/portfolio"
 MAX_IMAGE_SIZE = 8 * 1024 * 1024  # 8 MB
@@ -27,6 +28,8 @@ async def create_entry(db: AsyncSession, user: User, data: PortfolioCreate) -> P
     db.add(entry)
     await db.commit()
     await db.refresh(entry)
+    from src.tasks.embeddings import generate_portfolio_embedding
+    generate_portfolio_embedding.delay(entry.id)
     return PortfolioResponse.model_validate(entry)
 
 
@@ -63,6 +66,8 @@ async def update_entry(
 
     await db.commit()
     await db.refresh(entry)
+    from src.tasks.embeddings import generate_portfolio_embedding
+    generate_portfolio_embedding.delay(entry.id)
     return PortfolioResponse.model_validate(entry)
 
 
@@ -107,3 +112,43 @@ async def upload_image(
     entry.image_url = f"/{path}"
     await db.commit()
     return ImageResponse(image_url=entry.image_url)
+
+
+ALLOWED_ANALYZE_TYPES = SUPPORTED_IMAGE_TYPES | SUPPORTED_DOC_TYPES
+MAX_ANALYZE_SIZE = 20 * 1024 * 1024  # 20 MB
+
+
+async def analyze_file(
+    db: AsyncSession, user: User, file: UploadFile
+) -> AnalyzeResponse:
+    if file.content_type not in ALLOWED_ANALYZE_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported file type. Upload a JPEG, PNG, WebP, or PDF.",
+        )
+
+    contents = await file.read()
+    if len(contents) > MAX_ANALYZE_SIZE:
+        raise HTTPException(status_code=400, detail="File exceeds 20 MB limit")
+
+    # OCR extraction
+    raw_text = extract_text(contents, file.content_type)
+
+    # NIM analysis
+    sections = await analyze_project(raw_text, file.filename or "project")
+
+    # Create portfolio entry from analysis
+    entry_data = PortfolioCreate(
+        title=sections["title"],
+        summary=sections["summary"] or None,
+        impact_statement=sections["impact_statement"] or None,
+        technologies=sections["technologies"] or None,
+        project_url=sections["project_url"],
+    )
+    portfolio_response = await create_entry(db, user, entry_data)
+
+    return AnalyzeResponse(
+        entry=portfolio_response,
+        extracted_text_length=len(raw_text),
+        source_filename=file.filename or "unknown",
+    )

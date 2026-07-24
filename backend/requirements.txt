@@ -13,3 +13,22 @@ celery==5.4.0
 redis==5.1.1
 aiofiles==24.1.0
 Pillow==10.4.0
+
+# AI / Phase 2
+openai==1.51.0
+langchain-nvidia-ai-endpoints==0.3.1
+langgraph==0.2.28
+langchain-core==0.3.10
+tiktoken==0.8.0
+tenacity==9.0.0
+pgvector==0.3.2
+meilisearch==0.31.4
+
+# Phase 3.7 — Portfolio Analysis
+pytesseract==0.3.13
+pdf2image==1.17.0
+
+# Phase 3.8 — Resume Builder
+python-docx==1.1.2
+weasyprint==62.3
+jinja2==3.1.4

@@ -3,10 +3,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.deps import get_current_user
 from src.db.session import get_db
 from src.models.user import User
-from src.schemas.portfolio import PortfolioCreate, PortfolioUpdate, PortfolioResponse, ImageResponse
+from src.schemas.portfolio import PortfolioCreate, PortfolioUpdate, PortfolioResponse, ImageResponse, AnalyzeResponse
 import src.services.portfolio as svc
 
 router = APIRouter()
+
+
+@router.post("/analyze", response_model=AnalyzeResponse, status_code=201)
+async def analyze_file(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await svc.analyze_file(db, current_user, file)
 
 
 @router.post("/", response_model=PortfolioResponse, status_code=201)

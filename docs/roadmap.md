@@ -81,35 +81,35 @@ This roadmap is organized into four phases. Each phase must be completed before 
 > Goal: Set up the shared infrastructure all AI features depend on. Build once, reuse everywhere.
 
 ### 2.1 NVIDIA NIM Integration
-- [ ] Configure NVIDIA NIM API client (single shared client)
-- [ ] LLM completion wrapper (chat + instruction models)
-- [ ] Embedding model wrapper (for vector generation)
-- [ ] Rate limiting and retry logic
-- [ ] Cost tracking per request (log tokens used)
+- [x] Configure NVIDIA NIM API client (single shared client)
+- [x] LLM completion wrapper (chat + instruction models)
+- [x] Embedding model wrapper (for vector generation)
+- [x] Rate limiting and retry logic
+- [x] Cost tracking per request (log tokens used)
 
 ### 2.2 Vector Database (pgvector on Neon)
-- [ ] Enable pgvector extension on Neon PostgreSQL
-- [ ] Add `embedding` column to `users`, `listings`, `portfolios` tables
-- [ ] Alembic migration for vector columns
-- [ ] Cosine similarity search utility function
+- [x] Enable pgvector extension on Neon PostgreSQL
+- [x] Add `embedding` column to `users`, `listings`, `portfolios` tables
+- [x] Alembic migration for vector columns
+- [x] Cosine similarity search utility function
 
 ### 2.3 Embedding Pipeline
-- [ ] Auto-generate user profile embedding on profile update (Celery task)
-- [ ] Auto-generate listing embedding on listing create/update (Celery task)
-- [ ] Auto-generate portfolio embedding on entry create (Celery task)
-- [ ] Batch re-embedding job for existing records
+- [x] Auto-generate user profile embedding on profile update (Celery task)
+- [x] Auto-generate listing embedding on listing create/update (Celery task)
+- [x] Auto-generate portfolio embedding on entry create (Celery task)
+- [x] Batch re-embedding job for existing records
 
 ### 2.4 LangGraph Base Setup
-- [ ] Install and configure LangGraph
-- [ ] Define shared graph state schema
-- [ ] Base graph runner utility (reused by Mentor + Career Roadmaps)
-- [ ] Streaming response support (SSE)
+- [x] Install and configure LangGraph
+- [x] Define shared graph state schema
+- [x] Base graph runner utility (reused by Mentor + Career Roadmaps)
+- [x] Streaming response support (SSE)
 
 ### 2.5 Meilisearch Setup
 - [ ] Deploy Meilisearch instance
-- [ ] Index users, listings, skills
-- [ ] Sync index on data changes (Celery task)
-- [ ] Search API wrapper
+- [x] Index users, listings, skills
+- [x] Sync index on data changes (Celery task)
+- [x] Search API wrapper
 
 ---
 
@@ -118,75 +118,75 @@ This roadmap is organized into four phases. Each phase must be completed before 
 > Goal: Build each AI feature in dependency order. Each one feeds the next.
 
 ### 3.1 Skill Gap Analysis
-- [ ] Analyze student profile vs target role
-- [ ] Identify missing skills using LLM + knowledge graph (NetworkX)
-- [ ] Return structured gap report (missing skills, priority order, estimated time)
-- [ ] Store gap report per user (refreshed on profile update)
+- [x] Analyze student profile vs target role
+- [x] Identify missing skills using LLM + knowledge graph (NetworkX)
+- [x] Return structured gap report (missing skills, priority order, estimated time)
+- [x] Store gap report per user (refreshed on profile update)
 
 ### 3.2 Career Roadmaps (LangGraph + RAG)
-- [ ] Build RAG pipeline over skill gap reports + market data
-- [ ] LangGraph graph: assess → plan → generate → refine
-- [ ] Generate weekly study plan
-- [ ] Recommend projects and certifications per milestone
-- [ ] Store and version roadmaps per user
+- [x] Build RAG pipeline over skill gap reports + market data
+- [x] LangGraph graph: assess → plan → generate → refine
+- [x] Generate weekly study plan
+- [x] Recommend projects and certifications per milestone
+- [x] Store and version roadmaps per user
 
 ### 3.3 AI Career Mentor (LangGraph + NVIDIA NIM)
-- [ ] Stateful conversation graph (LangGraph)
-- [ ] Context injection: profile, skills, roadmap, reviews, goals
-- [ ] Answer career questions with personalized context
-- [ ] Streaming responses via SSE
-- [ ] Conversation history persistence
-- [ ] Proactive suggestions on login (new opportunities, next steps)
+- [x] Stateful conversation graph (LangGraph)
+- [x] Context injection: profile, skills, roadmap, reviews, goals
+- [x] Answer career questions with personalized context
+- [x] Streaming responses via SSE
+- [x] Conversation history persistence
+- [x] Proactive suggestions on login (new opportunities, next steps)
 
 ### 3.4 Project Matching (pgvector + Neon)
-- [ ] Embed incoming listings on creation
-- [ ] Match student profile embedding to listing embeddings (cosine similarity)
-- [ ] Return ranked matches with compatibility score
-- [ ] Explain match reasons (LLM-generated summary)
-- [ ] Daily match refresh via Celery beat
+- [x] Embed incoming listings on creation
+- [x] Match student profile embedding to listing embeddings (cosine similarity)
+- [x] Return ranked matches with compatibility score
+- [x] Explain match reasons (LLM-generated summary)
+- [x] Daily match refresh via Celery beat
 
 ### 3.5 Recommendation Engine
-- [ ] Combine vector similarity + review scores + activity signals
-- [ ] Recommend listings to students
-- [ ] Recommend students to clients
-- [ ] Personalized homepage feed
+- [x] Combine vector similarity + review scores + activity signals
+- [x] Recommend listings to students
+- [x] Recommend students to clients
+- [x] Personalized homepage feed
 - [ ] A/B test recommendation strategies
 
 ### 3.6 Proposal Generator (NVIDIA NIM + Jinja2)
-- [ ] Student selects a listing to apply to
-- [ ] Inject listing details + student profile into prompt template
-- [ ] Generate personalized proposal (intro, understanding, plan, timeline, pricing)
-- [ ] Allow student to edit before sending
-- [ ] Store generated proposals
+- [x] Student selects a listing to apply to
+- [x] Inject listing details + student profile into prompt template
+- [x] Generate personalized proposal (intro, understanding, plan, timeline, pricing)
+- [x] Allow student to edit before sending
+- [x] Store generated proposals
 
 ### 3.7 Portfolio Analysis (OCR + embeddings + NVIDIA NIM)
-- [ ] Accept uploaded project files / screenshots
-- [ ] OCR extraction (pytesseract) for text from images
-- [ ] LLM analysis: extract technologies, challenges, impact
-- [ ] Auto-generate polished portfolio entry
-- [ ] Embed portfolio entry for matching
+- [x] Accept uploaded project files / screenshots
+- [x] OCR extraction (pytesseract) for text from images
+- [x] LLM analysis: extract technologies, challenges, impact
+- [x] Auto-generate polished portfolio entry
+- [x] Embed portfolio entry for matching
 
 ### 3.8 Resume Builder (NVIDIA NIM + python-docx + WeasyPrint)
-- [ ] Aggregate profile, skills, portfolio, reviews, certifications
-- [ ] LLM-generated professional biography and summaries
-- [ ] Generate DOCX (python-docx)
-- [ ] Generate PDF (WeasyPrint)
-- [ ] Multiple resume templates
-- [ ] Auto-update on new project completion
+- [x] Aggregate profile, skills, portfolio, reviews, certifications
+- [x] LLM-generated professional biography and summaries
+- [x] Generate DOCX (python-docx)
+- [x] Generate PDF (WeasyPrint)
+- [x] Multiple resume templates
+- [x] Auto-update on new project completion
 
 ### 3.9 Smart Search (Meilisearch)
-- [ ] Full-text search across listings, users, skills
-- [ ] Typo tolerance and fuzzy matching
-- [ ] Filter by category, university, price, rating
-- [ ] Search suggestions / autocomplete
-- [ ] Hybrid search (keyword + vector similarity)
+- [x] Full-text search across listings, users, skills
+- [x] Typo tolerance and fuzzy matching
+- [x] Filter by category, university, price, rating
+- [x] Search suggestions / autocomplete
+- [x] Hybrid search (keyword + vector similarity)
 
 ### 3.10 Company Matching (embeddings + ranking)
-- [ ] Company posts talent requirements
-- [ ] Embed requirements and match against student profiles
-- [ ] Rank candidates by compatibility score
-- [ ] Generate candidate summary for employer
-- [ ] Student notified of company interest
+- [x] Company posts talent requirements
+- [x] Embed requirements and match against student profiles
+- [x] Rank candidates by compatibility score
+- [x] Generate candidate summary for employer
+- [x] Student notified of company interest
 
 ---
 

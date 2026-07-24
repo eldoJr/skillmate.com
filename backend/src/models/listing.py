@@ -2,7 +2,9 @@ import uuid
 from datetime import datetime
 from sqlalchemy import String, Text, Float, Boolean, DateTime, ForeignKey, Table, Column, Integer, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from pgvector.sqlalchemy import Vector
 from src.db.base import Base
+from src.core.config import settings
 import enum
 
 
@@ -33,6 +35,7 @@ class Listing(Base):
     price_max:    Mapped[float|None] = mapped_column(Float)
     delivery_days:Mapped[int|None]   = mapped_column(Integer)
     cover_image:  Mapped[str|None]   = mapped_column(String)
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(settings.NIM_EMBEDDING_DIMENSION), nullable=True)
     is_active:    Mapped[bool]       = mapped_column(Boolean, default=True, index=True)
     is_deleted:   Mapped[bool]       = mapped_column(Boolean, default=False)
     created_at:   Mapped[datetime]   = mapped_column(DateTime, default=datetime.utcnow)
