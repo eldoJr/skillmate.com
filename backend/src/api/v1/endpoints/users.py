@@ -1,9 +1,18 @@
-from fastapi import APIRouter, Depends
-from src.core.deps import get_current_user
-from src.models.user import User
-from src.schemas.user import UserResponse, UserUpdate
+from fastapi import APIRouter, Depends, UploadFile, File, status
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.db.session import get_db
+from src.core.deps import get_current_user, get_verified_user
+from src.models.user import User
+from src.schemas.user import (
+    UserResponse,
+    PublicUserResponse,
+    UserUpdate,
+    ProfileCompletionResponse,
+    AvatarResponse,
+    UserSkillsUpdate,
+)
+import src.services.users as users_service
 
 router = APIRouter()
 
@@ -19,15 +28,51 @@ async def update_me(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    for field, value in payload.model_dump(exclude_unset=True).items():
-        setattr(current_user, field, value)
-    await db.commit()
-    await db.refresh(current_user)
-    return current_user
+    return await users_service.update_me(db, current_user, payload)
 
 
-@router.get("/{user_id}", response_model=UserResponse)
-async def get_user(user_id: str, db: AsyncSession = Depends(get_db)):
-    from sqlalchemy import select
-    result = await db.execute(select(User).where(User.id == user_id))
-    return result.scalar_one_or_404()
+@router.get("/me/completion", response_model=ProfileCompletionResponse)
+async def get_completion(current_user: User = Depends(get_current_user)):
+    return await users_service.get_profile_completion(current_user)
+
+
+@router.post("/me/avatar", response_model=AvatarResponse, status_code=status.HTTP_200_OK)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    user = await users_service.upload_avatar(db, current_user, file)
+    return AvatarResponse(avatar_url=user.avatar_url)
+
+
+@router.put("/me/skills", response_model=UserResponse)
+async def set_skills(
+    payload: UserSkillsUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await users_service.update_skills(db, current_user, payload.skill_ids)
+
+
+@router.post("/me/skills/{skill_id}", response_model=UserResponse, status_code=status.HTTP_200_OK)
+async def attach_skill(
+    skill_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await users_service.attach_skill(db, current_user, skill_id)
+
+
+@router.delete("/me/skills/{skill_id}", response_model=UserResponse)
+async def detach_skill(
+    skill_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await users_service.detach_skill(db, current_user, skill_id)
+
+
+@router.get("/{user_id}", response_model=PublicUserResponse)
+async def get_public_profile(user_id: str, db: AsyncSession = Depends(get_db)):
+    return await users_service.get_public_profile(db, user_id)

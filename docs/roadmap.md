@@ -26,26 +26,27 @@ This roadmap is organized into four phases. Each phase must be completed before 
 - [x] Resend verification email
 
 ### 1.2 User Profiles
-- [ ] Get own profile (`/users/me`)
-- [ ] Update profile (headline, bio, university, role)
-- [ ] Avatar upload (Pillow + cloud storage)
-- [ ] Get public profile by ID
-- [ ] Skill tags on profile (many-to-many)
-- [ ] Profile completion score
+- [x] Get own profile (`/users/me`)
+- [x] Update profile (headline, bio, university, role)
+- [x] Avatar upload (Pillow + local storage)
+- [x] Get public profile by ID
+- [x] Skill tags on profile (many-to-many)
+- [x] Profile completion score
 
 ### 1.3 Skills
-- [ ] Seed skill categories and tags
-- [ ] List all skills by category
-- [ ] Attach/detach skills from user profile
+- [x] Seed skill categories and tags
+- [x] List all skills by category
+- [x] Attach/detach skills from user profile
 
 ### 1.4 Listings
-- [ ] Create listing
-- [ ] List all active listings (paginated)
-- [ ] Filter by category, skill, price range
-- [ ] Get listing by ID
-- [ ] Update listing
-- [ ] Delete listing (soft delete)
-- [ ] Toggle listing active/inactive
+- [x] Create listing
+- [x] List all active listings (paginated)
+- [x] Filter by category, skill, price range, university, search, listing type
+- [x] Get listing by ID
+- [x] Update listing
+- [x] Delete listing (soft delete)
+- [x] Toggle listing active/inactive
+- [x] Cover image upload
 
 ### 1.5 Reviews
 - [ ] Submit review after completed work (reliability, professionalism, growth scores)

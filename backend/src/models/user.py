@@ -1,8 +1,16 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Boolean, DateTime, Text
+from sqlalchemy import String, Boolean, DateTime, Text, Table, Column, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.db.base import Base
+
+
+user_skills = Table(
+    "user_skills",
+    Base.metadata,
+    Column("user_id", String, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column("skill_id", String, ForeignKey("skills.id", ondelete="CASCADE"), primary_key=True),
+)
 
 
 class User(Base):
@@ -33,6 +41,7 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    skills: Mapped[list["Skill"]] = relationship(secondary=user_skills, back_populates="users", lazy="selectin")
     listings: Mapped[list["Listing"]] = relationship(back_populates="owner", lazy="selectin")
     reviews_received: Mapped[list["Review"]] = relationship(foreign_keys="Review.reviewee_id", back_populates="reviewee", lazy="selectin")
     messages_sent: Mapped[list["Message"]] = relationship(foreign_keys="Message.sender_id", back_populates="sender", lazy="selectin")
