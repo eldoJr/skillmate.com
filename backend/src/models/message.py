@@ -9,8 +9,8 @@ class Message(Base):
     __tablename__ = "messages"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    sender_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False)
-    receiver_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False)
+    sender_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    receiver_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

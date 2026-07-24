@@ -1,17 +1,20 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Text, Float, DateTime, ForeignKey
+from sqlalchemy import String, Text, Float, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.db.base import Base
 
 
 class Review(Base):
     __tablename__ = "reviews"
+    __table_args__ = (
+        UniqueConstraint("reviewer_id", "listing_id", name="uq_review_per_listing"),
+    )
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    reviewer_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False)
-    reviewee_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False)
-    listing_id: Mapped[str | None] = mapped_column(String, ForeignKey("listings.id"))
+    reviewer_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    reviewee_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    listing_id: Mapped[str | None] = mapped_column(String, ForeignKey("listings.id", ondelete="SET NULL"), index=True)
     reliability_score: Mapped[float] = mapped_column(Float, nullable=False)
     professionalism_score: Mapped[float] = mapped_column(Float, nullable=False)
     growth_score: Mapped[float] = mapped_column(Float, nullable=False)

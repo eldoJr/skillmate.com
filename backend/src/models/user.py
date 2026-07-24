@@ -46,3 +46,4 @@ class User(Base):
     reviews_received: Mapped[list["Review"]] = relationship(foreign_keys="Review.reviewee_id", back_populates="reviewee", lazy="selectin")
     messages_sent: Mapped[list["Message"]] = relationship(foreign_keys="Message.sender_id", back_populates="sender", lazy="selectin")
     notifications: Mapped[list["Notification"]] = relationship(back_populates="user", lazy="selectin")
+    portfolios: Mapped[list["Portfolio"]] = relationship(back_populates="user", lazy="selectin")

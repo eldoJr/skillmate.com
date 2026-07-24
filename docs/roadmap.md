@@ -49,30 +49,30 @@ This roadmap is organized into four phases. Each phase must be completed before 
 - [x] Cover image upload
 
 ### 1.5 Reviews
-- [ ] Submit review after completed work (reliability, professionalism, growth scores)
-- [ ] Get reviews for a user
-- [ ] Calculate and store aggregate reputation scores
-- [ ] Prevent duplicate reviews per engagement
+- [x] Submit review after completed work (reliability, professionalism, growth scores)
+- [x] Get reviews for a user
+- [x] Calculate and store aggregate reputation scores
+- [x] Prevent duplicate reviews per engagement
 
 ### 1.6 Messaging
-- [ ] Send message between users
-- [ ] Get conversation thread
-- [ ] List all conversations for current user
-- [ ] Mark messages as read
-- [ ] Unread message count
-- [ ] WebSocket real-time delivery
+- [x] Send message between users
+- [x] Get conversation thread
+- [x] List all conversations for current user
+- [x] Mark messages as read
+- [x] Unread message count
+- [x] WebSocket real-time delivery
 
 ### 1.7 Notifications
-- [ ] Create notification on key events (new message, new review, listing inquiry)
-- [ ] List notifications for current user
-- [ ] Mark as read / mark all as read
-- [ ] WebSocket push for real-time notifications
+- [x] Create notification on key events (new message, new review, listing inquiry)
+- [x] List notifications for current user
+- [x] Mark as read / mark all as read
+- [x] WebSocket push for real-time notifications
 
 ### 1.8 Portfolio
-- [ ] Create portfolio entry manually
-- [ ] List portfolio entries for a user
-- [ ] Update / delete portfolio entry
-- [ ] Attach technologies and project URL
+- [x] Create portfolio entry manually
+- [x] List portfolio entries for a user
+- [x] Update / delete portfolio entry
+- [x] Attach technologies and project URL
 
 ---
 
