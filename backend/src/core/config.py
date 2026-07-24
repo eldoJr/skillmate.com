@@ -9,6 +9,7 @@ class Settings(BaseSettings):
 
     SECRET_KEY: str
     ALLOWED_ORIGINS: List[str] = ["http://localhost:5173"]
+    FRONTEND_URL: str = "http://localhost:5173"
 
     DATABASE_URL: str
 
@@ -24,6 +25,7 @@ class Settings(BaseSettings):
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
     EMAILS_FROM: str = "noreply@skillmate.com"
+    EMAILS_FROM_NAME: str = "Skillmate"
 
     class Config:
         env_file = ".env"

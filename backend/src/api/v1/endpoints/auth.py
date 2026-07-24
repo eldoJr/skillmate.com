@@ -1,49 +1,53 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from passlib.context import CryptContext
 
 from src.db.session import get_db
-from src.models.user import User
-from src.schemas.auth import RegisterRequest, TokenResponse
-from src.core.security import create_access_token, create_refresh_token
+from src.schemas.auth import (
+    RegisterRequest,
+    TokenResponse,
+    RefreshRequest,
+    VerifyEmailRequest,
+    ResendVerificationRequest,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+    MessageResponse,
+)
+import src.services.auth as auth_service
 
 router = APIRouter()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == payload.email))
-    if result.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Email already registered")
-
-    user = User(
-        email=payload.email,
-        hashed_password=pwd_context.hash(payload.password),
-        first_name=payload.first_name,
-        last_name=payload.last_name,
-    )
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
-
-    return TokenResponse(
-        access_token=create_access_token(user.id),
-        refresh_token=create_refresh_token(user.id),
-    )
+    return await auth_service.register(db, payload)
 
 
 @router.post("/login", response_model=TokenResponse)
 async def login(form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == form.username))
-    user = result.scalar_one_or_none()
+    return await auth_service.login(db, form.username, form.password)
 
-    if not user or not pwd_context.verify(form.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    return TokenResponse(
-        access_token=create_access_token(user.id),
-        refresh_token=create_refresh_token(user.id),
-    )
+@router.post("/refresh", response_model=TokenResponse)
+async def refresh(payload: RefreshRequest, db: AsyncSession = Depends(get_db)):
+    return await auth_service.refresh(db, payload.refresh_token)
+
+
+@router.post("/verify-email", response_model=MessageResponse)
+async def verify_email(payload: VerifyEmailRequest, db: AsyncSession = Depends(get_db)):
+    return await auth_service.verify_email(db, payload.token)
+
+
+@router.post("/resend-verification", response_model=MessageResponse)
+async def resend_verification(payload: ResendVerificationRequest, db: AsyncSession = Depends(get_db)):
+    return await auth_service.resend_verification(db, payload.email)
+
+
+@router.post("/forgot-password", response_model=MessageResponse)
+async def forgot_password(payload: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    return await auth_service.forgot_password(db, payload.email)
+
+
+@router.post("/reset-password", response_model=MessageResponse)
+async def reset_password(payload: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    return await auth_service.reset_password(db, payload.token, payload.new_password)

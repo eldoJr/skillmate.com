@@ -21,6 +21,15 @@ class User(Base):
     portfolio_url: Mapped[str | None] = mapped_column(String)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # Email verification
+    verification_token: Mapped[str | None] = mapped_column(String, index=True)
+    verification_token_expires_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+    # Password reset
+    reset_token: Mapped[str | None] = mapped_column(String, index=True)
+    reset_token_expires_at: Mapped[datetime | None] = mapped_column(DateTime)
+
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
