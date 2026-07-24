@@ -1,26 +1,26 @@
 import { motion } from 'framer-motion'
-import { HiAcademicCap, HiStar, HiChatBubbleLeftRight, HiShieldCheck } from 'react-icons/hi2'
+import { HiSparkles, HiStar, HiChatBubbleLeftRight, HiShieldCheck } from 'react-icons/hi2'
 
 const features = [
   {
-    icon: <HiAcademicCap className="w-6 h-6" />,
-    title: 'Verified Students Only',
-    description: 'Every account is verified through an institutional email, ensuring a trusted and safe environment for all exchanges.',
+    icon: <HiSparkles className="w-6 h-6" />,
+    title: 'AI Career Companion',
+    description: 'Your personal AI mentor guides you with advice, roadmaps, and opportunities tailored to your goals.',
   },
   {
     icon: <HiStar className="w-6 h-6" />,
-    title: 'Skill-Based Marketplace',
-    description: 'Browse and offer services by category — from programming and design to tutoring and music. Your skills, your terms.',
+    title: 'Living Professional Profile',
+    description: 'Every project, review, and certification builds a professional identity that grows automatically.',
   },
   {
     icon: <HiChatBubbleLeftRight className="w-6 h-6" />,
-    title: 'Direct Collaboration',
-    description: 'Message peers in real time, negotiate terms, and collaborate without leaving the platform.',
+    title: 'Real Opportunities',
+    description: 'Freelance projects, internships, and hackathons ranked daily by compatibility with your profile.',
   },
   {
     icon: <HiShieldCheck className="w-6 h-6" />,
-    title: 'Reputation System',
-    description: 'Build credibility through ratings and reviews. The more you deliver, the stronger your profile becomes.',
+    title: 'Trusted Ecosystem',
+    description: 'Verified via university email. Reputation scores track delivery, communication, and growth.',,
   },
 ]
 
@@ -41,7 +41,7 @@ export default function AboutSection() {
         </span>
         <h2 className="text-3xl md:text-4xl lg:text-5xl text-[#1f2328] dark:text-[#e6edf3] mt-3 max-w-3xl leading-tight">
           <span className="font-bold">Skillmate</span>
-          <span className="font-light"> is the platform where university students turn their skills into real opportunities.</span>
+          <span className="font-light"> is the intelligent career ecosystem where students turn skills into opportunities before graduation.</span>
         </h2>
       </motion.div>
 

@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { HiArrowRight, HiMagnifyingGlass } from 'react-icons/hi2'
-import Button from '../atoms/button'
+import { HiMagnifyingGlass, HiArrowRight } from 'react-icons/hi2'
 
 const avatars = [
   { initials: 'AK', color: 'bg-[#ddf4ff] dark:bg-[#121d2f] text-[#0969da] dark:text-[#2f81f7]' },
@@ -50,9 +49,9 @@ export default function HeroSection() {
           variants={fadeUp} custom={1} initial="hidden" animate="show"
           className="text-[38px] sm:text-[56px] lg:text-[72px] font-bold text-[#1f2328] dark:text-[#e6edf3] leading-[1.05] tracking-tight mb-5"
         >
-          The marketplace for
+          Your career starts
           <br />
-          <span className="text-[#0969da] dark:text-[#2f81f7]">student skills</span>
+          <span className="text-[#0969da] dark:text-[#2f81f7]">before graduation</span>
         </motion.h1>
 
         {/* Subheading */}
@@ -60,7 +59,7 @@ export default function HeroSection() {
           variants={fadeUp} custom={2} initial="hidden" animate="show"
           className="text-[15px] sm:text-[17px] text-[#636c76] dark:text-[#848d97] max-w-[480px] mx-auto leading-relaxed mb-10"
         >
-          Offer your skills, find what you need, and build your reputation — all within your university community.
+          Discover opportunities, earn income, and build your professional identity before graduation.
         </motion.p>
 
         {/* Search bar */}
@@ -86,13 +85,27 @@ export default function HeroSection() {
           variants={fadeUp} custom={4} initial="hidden" animate="show"
           className="flex flex-wrap items-center justify-center gap-3 mb-12 sm:mb-14"
         >
-          <Link to="/register">
-            <Button size="md" className="rounded-full px-6 gap-2">
-              Get started <HiArrowRight className="w-3.5 h-3.5" />
-            </Button>
-          </Link>
-          <Link to="/explore" className="text-sm font-medium text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors">
-            Browse skills →
+          <Link
+            to="/explore"
+            className="group relative inline-flex items-center gap-2 text-sm font-medium text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors overflow-hidden"
+          >
+            {/* Shine sweep */}
+            <motion.span
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              style={{
+                background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%)',
+                backgroundSize: '200% 100%',
+              }}
+              animate={{ backgroundPosition: ['200% 0', '-200% 0'] }}
+              transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 1.2, ease: 'easeInOut' }}
+            />
+            Browse skills
+            <motion.span
+              animate={{ x: [0, 4, 0] }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <HiArrowRight className="w-3.5 h-3.5" />
+            </motion.span>
           </Link>
         </motion.div>
 

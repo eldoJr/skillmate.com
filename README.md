@@ -1,6 +1,6 @@
 # skillmate.com
 
-A student-focused skill marketplace that connects university students to offer, discover, and exchange services within a trusted academic ecosystem.
+A student-focused AI-powered career ecosystem that helps university students discover opportunities, earn income, and build a professional identity before graduation.
 
 ---
 
@@ -26,10 +26,13 @@ Students acquire diverse skills throughout their academic journey — programmin
 | Layer | Technology |
 |---|---|
 | Frontend | React + Vite (TypeScript) |
-| Backend | Node.js / NestJS |
-| Database | PostgreSQL + Prisma ORM |
+| Backend | FastAPI (Python) |
+| Database | PostgreSQL |
+| ORM | SQLAlchemy 2.0 (async) |
+| Migrations | Alembic |
 | Authentication | JWT + University email verification |
-| Real-time | Socket.io |
+| Real-time | FastAPI WebSockets |
+| Task Queue | Celery + Redis |
 | Hosting | Railway / Vercel / Render |
 
 ---
@@ -39,20 +42,30 @@ Students acquire diverse skills throughout their academic journey — programmin
 ```
 skillmate.com/
 ├── backend/
-│   ├── prisma/
-│   └── src/
-│       ├── config/
-│       ├── modules/        # auth, users, skills, listings, messages, reviews, notifications
-│       ├── routes/
-│       └── utils/
+│   ├── alembic/                  # migrations
+│   │   └── versions/
+│   ├── src/
+│   │   ├── api/v1/
+│   │   │   ├── endpoints/        # auth, users, listings, skills, messages, reviews, notifications, portfolio
+│   │   │   └── router.py
+│   │   ├── core/                 # config, security, deps
+│   │   ├── db/                   # session, base
+│   │   ├── models/               # SQLAlchemy models
+│   │   ├── schemas/              # Pydantic schemas
+│   │   ├── services/             # business logic
+│   │   ├── tasks/                # Celery tasks
+│   │   └── websockets/           # real-time handlers
+│   ├── main.py
+│   ├── requirements.txt
+│   └── .env.example
 ├── database/
 ├── docs/
 └── frontend/
     ├── public/
     └── src/
         ├── assets/
-        ├── components/     # atoms, molecules, organisms, templates, layout
-        ├── pages/          # home, auth, explore, listings, messages, profile, settings
+        ├── components/           # atoms, molecules, organisms, templates, layout
+        ├── pages/                # home, auth, explore, listings, messages, profile, settings
         ├── contexts/
         ├── hooks/
         ├── services/
@@ -68,11 +81,19 @@ skillmate.com/
 git clone https://github.com/your-username/skillmate.com.git
 cd skillmate.com
 
-# Install backend dependencies
-cd backend && npm install
+# Backend
+cd backend
+python -m venv venv
+venv\Scripts\activate        # Windows
+pip install -r requirements.txt
+cp .env.example .env         # fill in your values
+alembic upgrade head
+uvicorn main:app --reload
 
-# Install frontend dependencies
-cd ../frontend && npm install
+# Frontend
+cd ../frontend
+npm install
+npm run dev
 ```
 
 > Environment variable setup and database migration instructions will be added as development progresses.
@@ -82,14 +103,17 @@ cd ../frontend && npm install
 ## Roadmap
 
 - [x] Project structure setup
+- [x] Backend scaffolded (FastAPI + SQLAlchemy + Alembic)
 - [ ] Authentication (register, login, email verification)
 - [ ] Skill listings (create, browse, filter)
 - [ ] User profiles & portfolios
 - [ ] Messaging system
 - [ ] Ratings & reviews
 - [ ] Notifications
+- [ ] AI career companion
+- [ ] AI opportunity matching
+- [ ] AI portfolio & resume builder
 - [ ] Inter-university collaboration *(future)*
-- [ ] AI-based skill recommendations *(future)*
 
 ---
 

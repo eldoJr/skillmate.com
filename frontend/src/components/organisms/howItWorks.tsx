@@ -5,17 +5,17 @@ const steps = [
   {
     icon: HiUserPlus,
     title: 'Create Your Profile',
-    description: 'Sign up with your university email, get verified, and build a profile that showcases your skills and experience.',
+    description: 'Verify with your university email and meet your AI career companion. Your roadmap starts immediately.',
   },
   {
     icon: HiMagnifyingGlass,
-    title: 'Discover or Offer Skills',
-    description: 'Browse listings from fellow students or post your own services — set your price, availability, and terms.',
+    title: 'Discover Opportunities',
+    description: 'Receive AI-matched projects, internships, and freelance work ranked by your profile.',
   },
   {
     icon: HiRocketLaunch,
-    title: 'Collaborate & Grow',
-    description: 'Connect, deliver, get reviewed, and build a reputation that follows you into your professional career.',
+    title: 'Deliver, Grow, Repeat',
+    description: 'Complete work, earn reviews, and your portfolio and resume update themselves.',
   },
 ]
 
@@ -31,7 +31,7 @@ export default function HowItWorks() {
       >
         <span className="text-sm font-bold text-[#0969da] dark:text-[#2f81f7] tracking-wide">How It Works</span>
         <h2 className="text-3xl md:text-4xl font-bold text-[#1f2328] dark:text-[#e6edf3] mt-3">
-          Three steps to your first exchange
+          From sign up to first opportunity in three steps
         </h2>
       </motion.div>
 

@@ -6,27 +6,27 @@ import { clsx } from 'clsx'
 const faqs = [
   {
     q: 'Is Skillmate free to use?',
-    a: 'Yes — creating a profile, browsing listings, and contacting students is completely free. We may introduce optional premium features in the future.',
+    a: 'Yes. Creating a profile, browsing listings, and accessing your AI career companion is completely free for all students. Optional premium features may be introduced in the future.',
   },
   {
     q: 'Who can join Skillmate?',
-    a: 'Any university student with a valid institutional email address. We verify every account to ensure a trusted and safe community.',
+    a: 'Any university student with a valid institutional email address. Every account is verified to ensure a trusted community where students can work with confidence.',
   },
   {
-    q: 'How does the verification work?',
-    a: 'When you sign up, we send a confirmation link to your university email. Once verified, your profile gets a verified badge that builds trust with other students.',
+    q: 'What does the AI actually do?',
+    a: 'The AI acts as a personal career companion. It builds your roadmap, recommends opportunities ranked by compatibility, generates proposals, updates your portfolio and resume automatically, and advises on pricing and skill gaps.',
   },
   {
-    q: 'Can I both offer and request skills?',
-    a: 'Absolutely. You can post your own skill listings and also browse or request services from other students — all within the same account.',
+    q: 'Can I both offer and find work on Skillmate?',
+    a: 'Absolutely. You can post your own skill listings and receive AI-matched project opportunities at the same time, all within a single account.',
   },
   {
-    q: 'How are payments handled?',
-    a: 'Payment methods are agreed directly between students. Skillmate facilitates the connection — integrated payment support is on our roadmap.',
+    q: 'How does the reputation system work?',
+    a: 'Skillmate measures more than star ratings. Your Reliability Score, Professionalism Score, and Growth Score evolve over time based on delivery consistency, communication, and client satisfaction.',
   },
   {
-    q: 'What happens if there is a dispute?',
-    a: 'Our ratings and reviews system encourages accountability. A formal dispute resolution process is planned as the platform scales.',
+    q: 'What happens after I complete a project?',
+    a: 'The platform automatically requests client feedback, updates your portfolio with a polished entry, refreshes your resume, awards badges, and recalculates your market value. Nothing important is forgotten.',
   },
 ]
 
@@ -74,7 +74,7 @@ export default function Faq() {
         >
           <span className="text-sm font-bold text-[#0969da] dark:text-[#2f81f7] tracking-wide">FAQ</span>
           <h2 className="text-3xl md:text-4xl font-bold text-[#1f2328] dark:text-[#e6edf3] mt-3">
-            Questions? We've got answers.
+            Questions? We have answers.
           </h2>
         </motion.div>
 

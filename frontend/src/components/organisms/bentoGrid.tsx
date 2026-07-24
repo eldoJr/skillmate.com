@@ -25,7 +25,7 @@ const features = [
   },
   {
     title: 'Verified Identity',
-    description: 'Every student is verified through their university email for a trusted community.',
+    description: 'Every student verified through their university email.',
     visual: (
       <div className="flex items-center justify-center gap-4">
         {[HiCodeBracket, HiStar, HiSparkles].map((Icon, i) => (
@@ -38,7 +38,7 @@ const features = [
   },
   {
     title: 'Peer Network',
-    description: 'Connect with students across departments and universities who share your interests.',
+    description: 'Connect with students across departments and universities.',
     visual: (
       <div className="grid grid-cols-3 gap-3">
         {[HiUserGroup, HiGlobeAlt, HiCodeBracket, HiSparkles, HiStar, HiRocketLaunch].map((Icon, i) => (
@@ -51,7 +51,7 @@ const features = [
   },
   {
     title: 'Multi-University',
-    description: 'Skillmate spans across universities — find talent or clients beyond your own campus.',
+    description: 'Find talent or clients beyond your own campus.',
     visual: (
       <div className="flex flex-col gap-2 w-full">
         {['UCT', 'Wits', 'Stellenbosch', 'UP'].map((uni) => (
@@ -65,8 +65,8 @@ const features = [
     ),
   },
   {
-    title: 'Smart Matching',
-    description: 'Get matched with students whose skills complement your needs — automatically.',
+    title: 'AI Skill Matching',
+    description: 'Matched by experience, portfolio quality, availability, and compatibility — not just keywords.',
     visual: (
       <div className="flex items-center gap-2 bg-[#f6f8fa] dark:bg-[#0d1117] rounded-lg px-4 py-3 w-full border border-[#d0d7de] dark:border-[#30363d]">
         <span className="text-xs text-[#636c76] dark:text-[#848d97] font-mono">$ match --skill react</span>
@@ -75,8 +75,8 @@ const features = [
     ),
   },
   {
-    title: 'Growing Fast',
-    description: 'Thousands of students already exchanging skills and building their portfolios on Skillmate.',
+    title: 'Career Momentum',
+    description: 'Portfolio, resume, and reputation update automatically after every completed project.',
     visual: (
       <div className="flex flex-col items-start w-full">
         <span className="text-4xl font-black text-[#1f2328] dark:text-[#e6edf3]">2.4K+</span>
@@ -103,7 +103,7 @@ export default function BentoGrid() {
         >
           <span className="text-sm font-bold text-[#0969da] dark:text-[#2f81f7] tracking-wide">Features</span>
           <h2 className="text-3xl md:text-4xl font-bold text-[#1f2328] dark:text-[#e6edf3] mt-3">
-            Everything you need to thrive
+            Everything you need to build your career
           </h2>
         </motion.div>
 

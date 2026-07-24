@@ -9,10 +9,9 @@ import NavLink from '../molecules/navLink'
 import Dropdown, { DropdownItem } from '../molecules/dropdown'
 
 const navItems = [
-  { label: 'Explore',   href: '/explore' },
-  { label: 'Listings',  href: '/listings' },
-  { label: 'Messages',  href: '/messages' },
-  { label: 'Reviews',   href: '/reviews' },
+  { label: 'Explore',  href: '/explore' },
+  { label: 'How It Works', href: '/#how-it-works' },
+  { label: 'Community', href: '/#community' },
 ]
 
 export default function Header() {
@@ -97,12 +96,11 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Right side — desktop */}
-          <div className="flex items-center gap-3 ml-auto">
-            <div className="hidden md:block w-px h-5 bg-[#d0d7de] dark:bg-[#30363d]" />
+          {/* Right side */}
+          <div className="flex items-center gap-2 ml-auto">
 
             {/* Language dropdown — desktop only */}
-            <div className="hidden md:block">
+            <div className="hidden md:flex items-center gap-2">
               <Dropdown
                 trigger={
                   <span className="text-xs font-semibold tracking-wider uppercase text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors">
@@ -116,36 +114,43 @@ export default function Header() {
                 <DropdownItem>🇪🇸 Español</DropdownItem>
                 <DropdownItem>🇩🇪 Deutsch</DropdownItem>
               </Dropdown>
+
+              {/* Theme toggle */}
+              <button
+                onClick={() => {
+                  const next = !document.documentElement.classList.contains('dark')
+                  document.documentElement.classList.toggle('dark', next)
+                  localStorage.setItem('skillmate_theme', next ? 'dark' : 'light')
+                }}
+                className="p-2 rounded-xl transition-colors text-[#636c76] dark:text-[#848d97] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] hover:text-[#1f2328] dark:hover:text-[#e6edf3] cursor-pointer"
+              >
+                <div className="relative w-[18px] h-[18px]">
+                  <HiOutlineSun className="w-[18px] h-[18px]" />
+                  <div className="absolute inset-0 flex items-center justify-center transition-opacity dark:opacity-100 opacity-0">
+                    <div className="w-[22px] h-[1.5px] bg-current rotate-45 rounded-full" />
+                  </div>
+                </div>
+              </button>
+
+              <div className="w-px h-5 bg-[#d0d7de] dark:bg-[#30363d]" />
             </div>
 
-            {/* Theme toggle */}
-            <button
-              onClick={() => {
-                const next = !document.documentElement.classList.contains('dark')
-                document.documentElement.classList.toggle('dark', next)
-                localStorage.setItem('skillmate_theme', next ? 'dark' : 'light')
-              }}
-              className="relative p-2 rounded-xl transition-colors text-[#636c76] dark:text-[#848d97] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] hover:text-[#1f2328] dark:hover:text-[#e6edf3] cursor-pointer"
-            >
-              <div className="relative w-[18px] h-[18px]">
-                <HiOutlineSun className="w-[18px] h-[18px]" />
-                <div className="absolute inset-0 flex items-center justify-center transition-opacity dark:opacity-100 opacity-0">
-                  <div className="w-[22px] h-[1.5px] bg-current rotate-45 rounded-full" />
-                </div>
-              </div>
-            </button>
-
-            {/* Sign In — desktop only */}
+            {/* Auth CTAs — desktop */}
             {!isAuthenticated && (
-              <Link to="/login" className="hidden md:block">
-                <Button variant="secondary" size="sm">Sign In</Button>
-              </Link>
+              <div className="hidden md:flex items-center gap-2">
+                <Link to="/login">
+                  <Button variant="secondary" size="sm">Sign in</Button>
+                </Link>
+                <Link to="/register">
+                  <Button size="sm">Get started</Button>
+                </Link>
+              </div>
             )}
             {isAuthenticated && (
               <div className="hidden md:block">
                 <Dropdown trigger={<Avatar name="A" size="md" showStatus />} showChevron={false}>
-                  <DropdownItem href="/profile">My Profile</DropdownItem>
-                  <DropdownItem href="/settings">Settings</DropdownItem>
+                  <DropdownItem href="/app/profile">My Profile</DropdownItem>
+                  <DropdownItem href="/app/settings">Settings</DropdownItem>
                   <DropdownItem>Sign Out</DropdownItem>
                 </Dropdown>
               </div>
@@ -184,10 +189,50 @@ export default function Header() {
                     {item.label}
                   </Link>
                 ))}
+
                 <div className="h-px bg-[#d0d7de] dark:bg-[#30363d] my-1" />
-                <Link to="/login" className="w-full">
-                  <Button variant="secondary" size="sm" className="w-full justify-center">Sign In</Button>
-                </Link>
+
+                <div className="flex items-center justify-between px-1 py-1">
+                  <Dropdown
+                    trigger={
+                      <span className="text-xs font-semibold tracking-wider uppercase text-[#636c76] dark:text-[#848d97]">
+                        EN
+                      </span>
+                    }
+                  >
+                    <DropdownItem>🇬🇧 English</DropdownItem>
+                    <DropdownItem>🇵🇹 Português</DropdownItem>
+                    <DropdownItem>🇫🇷 Français</DropdownItem>
+                    <DropdownItem>🇪🇸 Español</DropdownItem>
+                    <DropdownItem>🇩🇪 Deutsch</DropdownItem>
+                  </Dropdown>
+                  <button
+                    onClick={() => {
+                      const next = !document.documentElement.classList.contains('dark')
+                      document.documentElement.classList.toggle('dark', next)
+                      localStorage.setItem('skillmate_theme', next ? 'dark' : 'light')
+                    }}
+                    className="p-2 rounded-xl transition-colors text-[#636c76] dark:text-[#848d97] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] cursor-pointer"
+                  >
+                    <div className="relative w-[18px] h-[18px]">
+                      <HiOutlineSun className="w-[18px] h-[18px]" />
+                      <div className="absolute inset-0 flex items-center justify-center transition-opacity dark:opacity-100 opacity-0">
+                        <div className="w-[22px] h-[1.5px] bg-current rotate-45 rounded-full" />
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                <div className="h-px bg-[#d0d7de] dark:bg-[#30363d] my-1" />
+
+                <div className="flex flex-col gap-2">
+                  <Link to="/login">
+                    <Button variant="secondary" size="sm" className="w-full justify-center">Sign in</Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button size="sm" className="w-full justify-center">Get started</Button>
+                  </Link>
+                </div>
               </div>
             </motion.div>
           )}
