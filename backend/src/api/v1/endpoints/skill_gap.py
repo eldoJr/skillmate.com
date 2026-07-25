@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.core.deps import get_current_user
+from src.core.deps import get_current_user, require_ai
 from src.db.session import get_db
 from src.models.user import User
 from src.schemas.skill_gap import SkillGapRequest, SkillGapReportResponse
@@ -9,7 +9,7 @@ import src.services.skill_gap as svc
 router = APIRouter()
 
 
-@router.post("/analyze", response_model=SkillGapReportResponse)
+@router.post("/analyze", response_model=SkillGapReportResponse, dependencies=[Depends(require_ai)])
 async def analyze(
     req: SkillGapRequest,
     current_user: User = Depends(get_current_user),

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { clsx } from 'clsx'
 import {
@@ -11,12 +11,18 @@ import {
   HiOutlineUser,
   HiOutlineCog6Tooth,
   HiOutlineArrowRightOnRectangle,
-  HiArrowRight,
+  HiOutlineRectangleStack,
+  HiOutlineSparkles,
+  HiOutlineArrowPath,
 } from 'react-icons/hi2'
 import Avatar from '../atoms/avatar'
 import { useAuth } from '../../contexts/AuthContext'
 import { messagesService } from '../../services/messages'
 import { notificationsService } from '../../services/notifications'
+import api from '../../services/api'
+
+interface SearchHit { id: string; type: string; title: string; subtitle?: string; data: Record<string, unknown> }
+interface MultiSearchResponse { query: string; listings: { hits: SearchHit[] }; users: { hits: SearchHit[] }; skills: { hits: SearchHit[] }; total: number }
 
 const routeMeta: Record<string, { label: string; parent?: string }> = {
   '/app':                  { label: 'Dashboard' },
@@ -30,6 +36,15 @@ const routeMeta: Record<string, { label: string; parent?: string }> = {
   '/app/settings':         { label: 'Settings' },
 }
 
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(t)
+  }, [value, delay])
+  return debounced
+}
+
 function getRouteMeta(pathname: string) {
   if (routeMeta[pathname]) return routeMeta[pathname]
   if (/^\/app\/listings\/[^/]+\/edit$/.test(pathname)) return { label: 'Edit Listing', parent: 'Listings' }
@@ -38,6 +53,11 @@ function getRouteMeta(pathname: string) {
   if (pathname === '/app/ai/mentor') return { label: 'AI Mentor', parent: 'AI' }
   if (pathname === '/app/ai/skill-gap') return { label: 'Skill Gap', parent: 'AI' }
   if (pathname === '/app/ai/roadmap') return { label: 'Career Roadmap', parent: 'AI' }
+  if (pathname === '/app/portfolio') return { label: 'Portfolio' }
+  if (pathname === '/app/matching') return { label: 'AI Matches' }
+  if (pathname === '/app/recommendations') return { label: 'For You' }
+  if (pathname === '/app/proposals') return { label: 'Proposals' }
+  if (pathname === '/app/company') return { label: 'Company Matching' }
   return { label: 'Workspace' }
 }
 
@@ -55,12 +75,42 @@ export default function AppHeader() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
+  const [searchResults, setSearchResults] = useState<MultiSearchResponse | null>(null)
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
+  const debouncedSearch = useDebounce(search, 350)
   const [scrolled, setScrolled] = useState(false)
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
   const [avatarOpen, setAvatarOpen] = useState(false)
   const avatarRef = useRef<HTMLDivElement>(null)
 
   useClickOutside(avatarRef, () => setAvatarOpen(false))
+  useClickOutside(searchRef, () => setSearchOpen(false))
+
+  useEffect(() => {
+    if (!debouncedSearch.trim()) { setSearchResults(null); setSearchOpen(false); return }
+    setSearchLoading(true)
+    api.get<MultiSearchResponse>('/search/', { params: { q: debouncedSearch, limit: 4 } })
+      .then((r) => { setSearchResults(r.data); setSearchOpen(true) })
+      .catch(() => {})
+      .finally(() => setSearchLoading(false))
+  }, [debouncedSearch])
+
+  const handleSearchNav = useCallback((hit: SearchHit) => {
+    setSearch('')
+    setSearchOpen(false)
+    if (hit.type === 'listing') navigate(`/app/listings/${hit.id}`)
+    else if (hit.type === 'user') navigate(`/app/profile/${hit.id}`)
+    else navigate(`/app/explore?search=${encodeURIComponent(hit.title)}`)
+  }, [navigate])
+
+  const handleSearchSubmit = () => {
+    if (!search.trim()) return
+    setSearchOpen(false)
+    navigate(`/app/explore?search=${encodeURIComponent(search)}`)
+    setSearch('')
+  }
 
   const meta = getRouteMeta(pathname)
   const canGoBack = window.history.length > 1
@@ -140,20 +190,87 @@ export default function AppHeader() {
       </div>
 
       {/* Center — search */}
-      <div className="absolute left-1/2 -translate-x-1/2 hidden md:block">
-        <div className="relative w-[380px] flex items-center overflow-hidden rounded-xl border border-[#d0d7de] dark:border-[#30363d] bg-white dark:bg-[#161b22] focus-within:border-[#0969da] dark:focus-within:border-[#2f81f7] transition-all">
-          <HiOutlineMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#636c76] dark:text-[#848d97] pointer-events-none" />
+      <div className="absolute left-1/2 -translate-x-1/2 hidden md:block" ref={searchRef}>
+        <div className={clsx('relative w-[380px] flex items-center overflow-hidden rounded-xl border bg-white dark:bg-[#161b22] transition-all', searchOpen ? 'border-[#0969da] dark:border-[#2f81f7]' : 'border-[#d0d7de] dark:border-[#30363d]')}>
+          {searchLoading
+            ? <HiOutlineArrowPath className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#636c76] dark:text-[#848d97] animate-spin pointer-events-none" />
+            : <HiOutlineMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#636c76] dark:text-[#848d97] pointer-events-none" />
+          }
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onFocus={() => searchResults && setSearchOpen(true)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
             placeholder="Search skills, students, listings…"
             className="flex-1 min-w-0 pl-9 pr-3 py-2 text-[13px] bg-transparent text-[#1f2328] dark:text-[#e6edf3] placeholder-[#636c76] dark:placeholder-[#848d97] outline-none"
           />
-          <button className="shrink-0 self-stretch px-4 bg-[#0969da] dark:bg-[#2f81f7] hover:bg-[#0860ca] dark:hover:bg-[#388bfd] transition-colors cursor-pointer rounded-l-xl flex items-center justify-center">
-            <HiArrowRight className="w-3.5 h-3.5 text-white" />
+          <button onClick={handleSearchSubmit} className="shrink-0 self-stretch px-4 bg-[#0969da] dark:bg-[#2f81f7] hover:bg-[#0860ca] dark:hover:bg-[#388bfd] transition-colors cursor-pointer rounded-l-xl flex items-center justify-center">
+            <HiOutlineMagnifyingGlass className="w-3.5 h-3.5 text-white" />
           </button>
         </div>
+
+        {/* Dropdown */}
+        {searchOpen && searchResults && searchResults.total > 0 && (
+          <div className="absolute top-full left-0 right-0 mt-1.5 z-50 bg-white dark:bg-[#161b22] rounded-xl border border-[#d0d7de] dark:border-[#30363d] shadow-xl overflow-hidden">
+            {searchResults.listings.hits.length > 0 && (
+              <div>
+                <p className="px-3 pt-2.5 pb-1 text-[10px] font-semibold text-[#636c76] dark:text-[#848d97] uppercase tracking-widest flex items-center gap-1.5">
+                  <HiOutlineRectangleStack className="w-3 h-3" /> Listings
+                </p>
+                {searchResults.listings.hits.map((hit) => (
+                  <button key={hit.id} onClick={() => handleSearchNav(hit)}
+                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] transition-colors cursor-pointer text-left">
+                    <HiOutlineRectangleStack className="w-4 h-4 text-[#636c76] dark:text-[#848d97] shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[12px] font-medium text-[#1f2328] dark:text-[#e6edf3] truncate">{hit.title}</p>
+                      {hit.subtitle && <p className="text-[10px] text-[#636c76] dark:text-[#848d97] truncate">{hit.subtitle}</p>}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            {searchResults.users.hits.length > 0 && (
+              <div className={searchResults.listings.hits.length > 0 ? 'border-t border-[#f6f8fa] dark:border-[#21262d]' : ''}>
+                <p className="px-3 pt-2.5 pb-1 text-[10px] font-semibold text-[#636c76] dark:text-[#848d97] uppercase tracking-widest flex items-center gap-1.5">
+                  <HiOutlineUser className="w-3 h-3" /> Students
+                </p>
+                {searchResults.users.hits.map((hit) => (
+                  <button key={hit.id} onClick={() => handleSearchNav(hit)}
+                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] transition-colors cursor-pointer text-left">
+                    <Avatar name={hit.title} size="sm" className="shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[12px] font-medium text-[#1f2328] dark:text-[#e6edf3] truncate">{hit.title}</p>
+                      {hit.subtitle && <p className="text-[10px] text-[#636c76] dark:text-[#848d97] truncate">{hit.subtitle}</p>}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            {searchResults.skills.hits.length > 0 && (
+              <div className={searchResults.listings.hits.length > 0 || searchResults.users.hits.length > 0 ? 'border-t border-[#f6f8fa] dark:border-[#21262d]' : ''}>
+                <p className="px-3 pt-2.5 pb-1 text-[10px] font-semibold text-[#636c76] dark:text-[#848d97] uppercase tracking-widest flex items-center gap-1.5">
+                  <HiOutlineSparkles className="w-3 h-3" /> Skills
+                </p>
+                {searchResults.skills.hits.map((hit) => (
+                  <button key={hit.id} onClick={() => handleSearchNav(hit)}
+                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] transition-colors cursor-pointer text-left">
+                    <HiOutlineSparkles className="w-4 h-4 text-[#636c76] dark:text-[#848d97] shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[12px] font-medium text-[#1f2328] dark:text-[#e6edf3] truncate">{hit.title}</p>
+                      {hit.subtitle && <p className="text-[10px] text-[#636c76] dark:text-[#848d97] truncate">{hit.subtitle}</p>}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="border-t border-[#f6f8fa] dark:border-[#21262d] px-3 py-2">
+              <button onClick={handleSearchSubmit} className="text-[11px] text-[#0969da] dark:text-[#2f81f7] hover:underline cursor-pointer">
+                See all results for "{search}"
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Right — actions */}

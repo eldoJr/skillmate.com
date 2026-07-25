@@ -11,6 +11,8 @@ _client: AsyncOpenAI | None = None
 
 def get_nim_client() -> AsyncOpenAI:
     global _client
+    if not settings.NVIDIA_API_KEY:
+        raise RuntimeError("NVIDIA_API_KEY is not configured. AI features are unavailable.")
     if _client is None:
         _client = AsyncOpenAI(
             api_key=settings.NVIDIA_API_KEY,

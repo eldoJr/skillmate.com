@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from src.core.security import decode_token
+from src.core.config import settings
 from src.db.session import get_db
 from src.models.user import User
 
@@ -33,3 +34,12 @@ async def get_verified_user(current_user: User = Depends(get_current_user)) -> U
     if not current_user.is_verified:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Email not verified")
     return current_user
+
+
+def require_ai():
+    """Dependency that blocks AI endpoints when NVIDIA_API_KEY is not set."""
+    if not settings.NVIDIA_API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI features are not configured. Set NVIDIA_API_KEY to enable them.",
+        )

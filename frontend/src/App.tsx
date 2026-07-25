@@ -21,6 +21,11 @@ import SettingsPage from './pages/app/settingsPage'
 import AiMentorPage from './pages/app/aiMentorPage'
 import SkillGapPage from './pages/app/skillGapPage'
 import CareerRoadmapPage from './pages/app/careerRoadmapPage'
+import PortfolioPage from './pages/app/portfolioPage'
+import MatchingPage from './pages/app/matchingPage'
+import RecommendationsPage from './pages/app/recommendationsPage'
+import ProposalsPage from './pages/app/proposalsPage'
+import CompanyPage from './pages/app/companyPage'
 
 const authRoutes = ['/login', '/register']
 
@@ -46,6 +51,11 @@ function ProtectedRoutes() {
         <Route path="ai/mentor" element={<AiMentorPage />} />
         <Route path="ai/skill-gap" element={<SkillGapPage />} />
         <Route path="ai/roadmap" element={<CareerRoadmapPage />} />
+        <Route path="portfolio" element={<PortfolioPage />} />
+        <Route path="matching" element={<MatchingPage />} />
+        <Route path="recommendations" element={<RecommendationsPage />} />
+        <Route path="proposals" element={<ProposalsPage />} />
+        <Route path="company" element={<CompanyPage />} />
       </Route>
     </Routes>
   )

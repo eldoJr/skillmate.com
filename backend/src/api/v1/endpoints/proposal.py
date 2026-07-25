@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.core.deps import get_current_user
+from src.core.deps import get_current_user, require_ai
 from src.db.session import get_db
 from src.models.user import User
 from src.schemas.proposal import ProposalGenerateRequest, ProposalUpdate, ProposalResponse, ProposalBrief
@@ -9,7 +9,7 @@ import src.services.proposal as svc
 router = APIRouter()
 
 
-@router.post("/generate", response_model=ProposalResponse, status_code=201)
+@router.post("/generate", response_model=ProposalResponse, status_code=201, dependencies=[Depends(require_ai)])
 async def generate(
     req: ProposalGenerateRequest,
     current_user: User = Depends(get_current_user),

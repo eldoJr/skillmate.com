@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.core.deps import get_current_user
+from src.core.deps import get_current_user, require_ai
 from src.db.session import get_db
 from src.models.user import User
 from src.schemas.roadmap import RoadmapRequest, RoadmapResponse, RoadmapVersionBrief
@@ -9,7 +9,7 @@ import src.services.roadmap as svc
 router = APIRouter()
 
 
-@router.post("/generate", response_model=RoadmapResponse)
+@router.post("/generate", response_model=RoadmapResponse, dependencies=[Depends(require_ai)])
 async def generate(
     req: RoadmapRequest,
     current_user: User = Depends(get_current_user),

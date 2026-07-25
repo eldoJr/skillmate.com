@@ -3,14 +3,6 @@ from src.core.config import settings
 
 _client: meilisearch.Client | None = None
 
-
-def get_meili_client() -> meilisearch.Client:
-    global _client
-    if _client is None:
-        _client = meilisearch.Client(settings.MEILISEARCH_URL, settings.MEILISEARCH_API_KEY)
-    return _client
-
-
 INDEXES = {
     "users": {
         "primaryKey": "id",
@@ -33,21 +25,42 @@ INDEXES = {
 }
 
 
+def get_meili_client() -> meilisearch.Client | None:
+    global _client
+    if not settings.MEILISEARCH_URL or not settings.MEILISEARCH_API_KEY:
+        return None
+    if _client is None:
+        try:
+            _client = meilisearch.Client(settings.MEILISEARCH_URL, settings.MEILISEARCH_API_KEY)
+        except Exception:
+            return None
+    return _client
+
+
 def setup_indexes() -> None:
-    """Create indexes and configure attributes. Safe to call on startup."""
     client = get_meili_client()
+    if client is None:
+        return
     for index_name, config in INDEXES.items():
-        client.create_index(index_name, {"primaryKey": config["primaryKey"]})
-        index = client.index(index_name)
-        index.update_searchable_attributes(config["searchableAttributes"])
-        index.update_filterable_attributes(config["filterableAttributes"])
-        if config["sortableAttributes"]:
-            index.update_sortable_attributes(config["sortableAttributes"])
+        try:
+            client.create_index(index_name, {"primaryKey": config["primaryKey"]})
+            index = client.index(index_name)
+            index.update_searchable_attributes(config["searchableAttributes"])
+            index.update_filterable_attributes(config["filterableAttributes"])
+            if config["sortableAttributes"]:
+                index.update_sortable_attributes(config["sortableAttributes"])
+        except Exception:
+            pass
 
 
 def search(index_name: str, query: str, filters: str = "", limit: int = 20) -> dict:
     client = get_meili_client()
-    params = {"limit": limit}
-    if filters:
-        params["filter"] = filters
-    return client.index(index_name).search(query, params)
+    if client is None:
+        return {"hits": [], "estimatedTotalHits": 0}
+    try:
+        params: dict = {"limit": limit}
+        if filters:
+            params["filter"] = filters
+        return client.index(index_name).search(query, params)
+    except Exception:
+        return {"hits": [], "estimatedTotalHits": 0}

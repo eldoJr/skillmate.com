@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.core.deps import get_current_user
+from src.core.deps import get_current_user, require_ai
 from src.db.session import get_db
 from src.models.user import User
 from src.schemas.mentor import ChatRequest, ConversationResponse, ConversationBrief, ProactiveSuggestion
@@ -10,7 +10,7 @@ import src.services.mentor as svc
 router = APIRouter()
 
 
-@router.post("/chat")
+@router.post("/chat", dependencies=[Depends(require_ai)])
 async def chat(
     req: ChatRequest,
     current_user: User = Depends(get_current_user),

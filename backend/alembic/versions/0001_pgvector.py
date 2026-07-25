@@ -8,7 +8,7 @@ from alembic import op
 import sqlalchemy as sa
 
 revision = "0001_pgvector"
-down_revision = None
+down_revision = "0000_initial"
 branch_labels = None
 depends_on = None
 

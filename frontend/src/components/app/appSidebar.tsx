@@ -15,6 +15,11 @@ import {
   HiOutlineSparkles,
   HiOutlineMapPin,
   HiOutlineBeaker,
+  HiOutlineBriefcase,
+  HiOutlineDocumentText,
+  HiOutlineStar,
+  HiOutlinePhoto,
+  HiOutlineBuildingOffice2,
 } from 'react-icons/hi2'
 
 interface NavItem {
@@ -32,9 +37,17 @@ const mainNav: NavItem[] = [
 ]
 
 const aiNav: NavItem[] = [
-  { icon: HiOutlineSparkles, label: 'AI Mentor',   route: '/app/ai/mentor' },
-  { icon: HiOutlineBeaker,   label: 'Skill Gap',   route: '/app/ai/skill-gap' },
-  { icon: HiOutlineMapPin,   label: 'Roadmap',     route: '/app/ai/roadmap' },
+  { icon: HiOutlineSparkles,    label: 'AI Mentor',       route: '/app/ai/mentor' },
+  { icon: HiOutlineBeaker,      label: 'Skill Gap',       route: '/app/ai/skill-gap' },
+  { icon: HiOutlineMapPin,      label: 'Roadmap',         route: '/app/ai/roadmap' },
+]
+
+const discoverNav: NavItem[] = [
+  { icon: HiOutlineStar,            label: 'Matches',         route: '/app/matching' },
+  { icon: HiOutlineSparkles,        label: 'For You',         route: '/app/recommendations' },
+  { icon: HiOutlineDocumentText,    label: 'Proposals',       route: '/app/proposals' },
+  { icon: HiOutlinePhoto,           label: 'Portfolio',       route: '/app/portfolio' },
+  { icon: HiOutlineBuildingOffice2, label: 'Company',         route: '/app/company' },
 ]
 
 const bottomNav: NavItem[] = [
@@ -199,6 +212,18 @@ export default function AppSidebar() {
         </div>
 
         {aiNav.map((item) => (
+          <SidebarLink key={item.route} item={item} expanded={expanded} active={isActive(item.route)} />
+        ))}
+
+        <div className="flex justify-center py-3">
+          <div className="flex gap-[3px]">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="w-[3px] h-[3px] rounded-full bg-[#d0d7de] dark:bg-[#30363d]" />
+            ))}
+          </div>
+        </div>
+
+        {discoverNav.map((item) => (
           <SidebarLink key={item.route} item={item} expanded={expanded} active={isActive(item.route)} />
         ))}
 

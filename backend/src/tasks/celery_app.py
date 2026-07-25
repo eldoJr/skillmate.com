@@ -6,6 +6,8 @@ celery = Celery(
     "skillmate",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
+    broker_use_ssl={"ssl_cert_reqs": "none"},
+    redis_backend_use_ssl={"ssl_cert_reqs": "none"},
     include=[
         "src.tasks.email",
         "src.tasks.embeddings",

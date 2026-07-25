@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.core.deps import get_current_user
+from src.core.deps import get_current_user, require_ai
 from src.db.session import get_db
 from src.models.user import User
 from src.schemas.company import RequirementCreate, RequirementResponse, MatchResponse
@@ -26,7 +26,7 @@ async def list_requirements(
     return await svc.get_requirements(db, current_user)
 
 
-@router.get("/requirements/{requirement_id}/matches", response_model=MatchResponse)
+@router.get("/requirements/{requirement_id}/matches", response_model=MatchResponse, dependencies=[Depends(require_ai)])
 async def match_candidates(
     requirement_id: str,
     limit: int = Query(10, ge=1, le=50),

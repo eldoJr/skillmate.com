@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.core.deps import get_current_user
+from src.core.deps import get_current_user, require_ai
 from src.db.session import get_db
 from src.models.user import User
 from src.schemas.matching import PaginatedMatches
@@ -9,7 +9,7 @@ import src.services.matching as svc
 router = APIRouter()
 
 
-@router.get("/", response_model=PaginatedMatches)
+@router.get("/", response_model=PaginatedMatches, dependencies=[Depends(require_ai)])
 async def get_matches(
     limit: int = Query(10, ge=1, le=50),
     explain: bool = Query(True),
@@ -19,7 +19,7 @@ async def get_matches(
     return await svc.get_matches(db, current_user, limit=limit, explain=explain)
 
 
-@router.post("/refresh", status_code=200)
+@router.post("/refresh", status_code=200, dependencies=[Depends(require_ai)])
 async def refresh_matches(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
