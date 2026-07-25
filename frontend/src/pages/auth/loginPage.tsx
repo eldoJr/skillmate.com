@@ -6,21 +6,29 @@ import Logo from '../../components/atoms/logo'
 import Button from '../../components/atoms/button'
 import ThemeToggle from '../../components/atoms/themeToggle'
 import Dropdown, { DropdownItem } from '../../components/molecules/dropdown'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const { login } = useAuth()
   const navigate = useNavigate()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (email === 'admin' && password === 'admin123') {
-      localStorage.setItem('skillmate_auth', 'true')
+    setError('')
+    setLoading(true)
+    try {
+      await login({ email, password })
       navigate('/app')
-    } else {
-      setError('Invalid email or password.')
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+      setError(msg ?? 'Invalid email or password.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -65,10 +73,10 @@ export default function LoginPage() {
           )}
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-[#1f2328] dark:text-[#e6edf3]">Username or email</label>
+            <label className="text-xs font-semibold text-[#1f2328] dark:text-[#e6edf3]">Email</label>
             <input
-              type="text"
-              placeholder="admin"
+              type="email"
+              placeholder="you@university.edu"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -107,8 +115,8 @@ export default function LoginPage() {
             <span className="text-xs text-[#636c76] dark:text-[#848d97]">Remember me for 30 days</span>
           </label>
 
-          <Button size="md" className="w-full rounded-xl mt-1">
-            Sign in
+          <Button size="md" className="w-full rounded-xl mt-1" disabled={loading}>
+            {loading ? 'Signing in…' : 'Sign in'}
           </Button>
         </form>
 

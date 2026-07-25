@@ -12,6 +12,9 @@ import {
   HiOutlineCog6Tooth,
   HiOutlineBars3,
   HiOutlinePlusCircle,
+  HiOutlineSparkles,
+  HiOutlineMapPin,
+  HiOutlineBeaker,
 } from 'react-icons/hi2'
 
 interface NavItem {
@@ -26,6 +29,12 @@ const mainNav: NavItem[] = [
   { icon: HiOutlineRectangleStack,       label: 'Listings',   route: '/app/listings' },
   { icon: HiOutlineClipboardDocumentList,label: 'Requests',   route: '/app/requests' },
   { icon: HiOutlineChatBubbleLeftRight,  label: 'Messages',   route: '/app/messages' },
+]
+
+const aiNav: NavItem[] = [
+  { icon: HiOutlineSparkles, label: 'AI Mentor',   route: '/app/ai/mentor' },
+  { icon: HiOutlineBeaker,   label: 'Skill Gap',   route: '/app/ai/skill-gap' },
+  { icon: HiOutlineMapPin,   label: 'Roadmap',     route: '/app/ai/roadmap' },
 ]
 
 const bottomNav: NavItem[] = [
@@ -178,6 +187,18 @@ export default function AppSidebar() {
       {/* Main nav */}
       <nav className="flex-1 flex flex-col justify-center py-3 px-2 gap-0.5">
         {mainNav.map((item) => (
+          <SidebarLink key={item.route} item={item} expanded={expanded} active={isActive(item.route)} />
+        ))}
+
+        <div className="flex justify-center py-3">
+          <div className="flex gap-[3px]">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="w-[3px] h-[3px] rounded-full bg-[#d0d7de] dark:bg-[#30363d]" />
+            ))}
+          </div>
+        </div>
+
+        {aiNav.map((item) => (
           <SidebarLink key={item.route} item={item} expanded={expanded} active={isActive(item.route)} />
         ))}
 

@@ -6,24 +6,61 @@ import Logo from '../../components/atoms/logo'
 import Button from '../../components/atoms/button'
 import ThemeToggle from '../../components/atoms/themeToggle'
 import Dropdown, { DropdownItem } from '../../components/molecules/dropdown'
+import { useAuth } from '../../contexts/AuthContext'
 
 const universities = ['University of Cape Town', 'University of Pretoria', 'Wits University', 'Stellenbosch University', 'Other']
-const skills = ['Programming', 'UI/UX Design', 'Writing', 'Tutoring', 'Video Editing', 'Digital Marketing', 'Photography', 'Music', 'Translation', 'Data Analysis']
+const skillOptions = ['Programming', 'UI/UX Design', 'Writing', 'Tutoring', 'Video Editing', 'Digital Marketing', 'Photography', 'Music', 'Translation', 'Data Analysis']
 const roles = ['Student', 'Graduate', 'Teaching Assistant', 'Researcher']
 
 export default function RegisterPage() {
   const [step, setStep] = useState(0)
   const [showPassword, setShowPassword] = useState(false)
   const [selectedSkills, setSelectedSkills] = useState<string[]>([])
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const { register } = useAuth()
   const navigate = useNavigate()
 
-  const next = () => setStep((s) => Math.min(s + 1, 2))
-  const back = () => setStep((s) => Math.max(s - 1, 0))
+  // Form state
+  const [form, setForm] = useState({
+    first_name: '', last_name: '', email: '', password: '',
+    role: '', university: '', headline: '', portfolio_url: '',
+  })
+
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }))
+
+  const next = () => { setError(''); setStep((s) => Math.min(s + 1, 2)) }
+  const back = () => { setError(''); setStep((s) => Math.max(s - 1, 0)) }
 
   const toggleSkill = (skill: string) =>
     setSelectedSkills((prev) =>
       prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
     )
+
+  const handleFinish = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      await register({
+        email: form.email,
+        password: form.password,
+        full_name: `${form.first_name} ${form.last_name}`.trim(),
+        university: form.university || undefined,
+        headline: form.headline || undefined,
+        portfolio_url: form.portfolio_url || undefined,
+        role: form.role || undefined,
+        skills: selectedSkills.length ? selectedSkills : undefined,
+      })
+      navigate('/app')
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+      setError(msg ?? 'Registration failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const stepLabels = ['Account', 'Profile', 'Skills']
 
@@ -51,7 +88,6 @@ export default function RegisterPage() {
           <Logo width={32} height={32} />
         </Link>
 
-        {/* Step indicator */}
         <div className="flex items-center gap-2">
           {stepLabels.map((label, i) => (
             <div key={label} className="flex items-center gap-2">
@@ -80,15 +116,8 @@ export default function RegisterPage() {
       <div className="w-full max-w-[380px]">
         <AnimatePresence mode="wait">
 
-          {/* Step 0 — Account */}
           {step === 0 && (
-            <motion.div
-              key="step-0"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25 }}
-            >
+            <motion.div key="step-0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
               <div className="mb-5">
                 <h1 className="text-xl font-bold text-[#1f2328] dark:text-[#e6edf3] mb-1">Create your account</h1>
                 <p className="text-sm text-[#636c76] dark:text-[#848d97]">Use your university email to get verified.</p>
@@ -98,17 +127,17 @@ export default function RegisterPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-semibold text-[#1f2328] dark:text-[#e6edf3]">First name</label>
-                    <input type="text" placeholder="Jane" required className="auth-input" />
+                    <input type="text" placeholder="Jane" required value={form.first_name} onChange={set('first_name')} className="auth-input" />
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-semibold text-[#1f2328] dark:text-[#e6edf3]">Last name</label>
-                    <input type="text" placeholder="Doe" required className="auth-input" />
+                    <input type="text" placeholder="Doe" required value={form.last_name} onChange={set('last_name')} className="auth-input" />
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-semibold text-[#1f2328] dark:text-[#e6edf3]">University email</label>
-                  <input type="email" placeholder="you@university.edu" required className="auth-input" />
+                  <input type="email" placeholder="you@university.edu" required value={form.email} onChange={set('email')} className="auth-input" />
                 </div>
 
                 <div className="flex flex-col gap-1">
@@ -118,13 +147,12 @@ export default function RegisterPage() {
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Min. 8 characters"
                       required
+                      minLength={8}
+                      value={form.password}
+                      onChange={set('password')}
                       className="auth-input pr-10"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] cursor-pointer"
-                    >
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] cursor-pointer">
                       {showPassword ? <HiEyeSlash className="w-4 h-4" /> : <HiEye className="w-4 h-4" />}
                     </button>
                   </div>
@@ -150,15 +178,8 @@ export default function RegisterPage() {
             </motion.div>
           )}
 
-          {/* Step 1 — Profile */}
           {step === 1 && (
-            <motion.div
-              key="step-1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25 }}
-            >
+            <motion.div key="step-1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
               <button onClick={back} className="flex items-center gap-1 text-xs text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] mb-5 cursor-pointer">
                 <HiChevronLeft className="w-4 h-4" /> Back
               </button>
@@ -171,7 +192,7 @@ export default function RegisterPage() {
               <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); next() }}>
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-semibold text-[#1f2328] dark:text-[#e6edf3]">I am a...</label>
-                  <select required className="auth-input appearance-none">
+                  <select required value={form.role} onChange={set('role')} className="auth-input appearance-none">
                     <option value="" disabled>Select your role</option>
                     {roles.map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
@@ -179,7 +200,7 @@ export default function RegisterPage() {
 
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-semibold text-[#1f2328] dark:text-[#e6edf3]">University</label>
-                  <select className="auth-input appearance-none">
+                  <select value={form.university} onChange={set('university')} className="auth-input appearance-none">
                     <option value="" disabled>Select your university</option>
                     {universities.map((u) => <option key={u} value={u}>{u}</option>)}
                   </select>
@@ -187,12 +208,12 @@ export default function RegisterPage() {
 
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-semibold text-[#1f2328] dark:text-[#e6edf3]">Headline <span className="text-[#636c76] dark:text-[#848d97] font-normal">(optional)</span></label>
-                  <input type="text" placeholder="e.g. Frontend Dev & UI Designer" className="auth-input" />
+                  <input type="text" placeholder="e.g. Frontend Dev & UI Designer" value={form.headline} onChange={set('headline')} className="auth-input" />
                 </div>
 
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-semibold text-[#1f2328] dark:text-[#e6edf3]">Portfolio / GitHub URL <span className="text-[#636c76] dark:text-[#848d97] font-normal">(optional)</span></label>
-                  <input type="url" placeholder="https://github.com/username" className="auth-input" />
+                  <input type="url" placeholder="https://github.com/username" value={form.portfolio_url} onChange={set('portfolio_url')} className="auth-input" />
                 </div>
 
                 <Button size="md" className="w-full rounded-xl mt-1">Continue</Button>
@@ -203,15 +224,8 @@ export default function RegisterPage() {
             </motion.div>
           )}
 
-          {/* Step 2 — Skills */}
           {step === 2 && (
-            <motion.div
-              key="step-2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25 }}
-            >
+            <motion.div key="step-2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
               <button onClick={back} className="flex items-center gap-1 text-xs text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] mb-5 cursor-pointer">
                 <HiChevronLeft className="w-4 h-4" /> Back
               </button>
@@ -221,9 +235,15 @@ export default function RegisterPage() {
                 <p className="text-sm text-[#636c76] dark:text-[#848d97]">Pick your skills. You can always update these later.</p>
               </div>
 
-              <form className="flex flex-col gap-5" onSubmit={(e) => { e.preventDefault(); navigate('/app') }}>
+              {error && (
+                <div className="mb-3 px-3 py-2.5 rounded-lg bg-[#fff0ee] dark:bg-[#2d1216] border border-[#ffcecb] dark:border-[#f8514926] text-[#d1242f] dark:text-[#f85149] text-xs">
+                  {error}
+                </div>
+              )}
+
+              <form className="flex flex-col gap-5" onSubmit={handleFinish}>
                 <div className="flex flex-wrap gap-2">
-                  {skills.map((skill) => {
+                  {skillOptions.map((skill) => {
                     const active = selectedSkills.includes(skill)
                     return (
                       <button
@@ -242,8 +262,8 @@ export default function RegisterPage() {
                   })}
                 </div>
 
-                <Button size="md" className="w-full rounded-xl">
-                  {selectedSkills.length > 0 ? `Get started with ${selectedSkills.length} skill${selectedSkills.length > 1 ? 's' : ''}` : 'Get started'}
+                <Button size="md" className="w-full rounded-xl" disabled={loading}>
+                  {loading ? 'Creating account…' : selectedSkills.length > 0 ? `Get started with ${selectedSkills.length} skill${selectedSkills.length > 1 ? 's' : ''}` : 'Get started'}
                 </Button>
               </form>
             </motion.div>

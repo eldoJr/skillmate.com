@@ -14,17 +14,31 @@ import {
   HiArrowRight,
 } from 'react-icons/hi2'
 import Avatar from '../atoms/avatar'
+import { useAuth } from '../../contexts/AuthContext'
+import { messagesService } from '../../services/messages'
+import { notificationsService } from '../../services/notifications'
 
 const routeMeta: Record<string, { label: string; parent?: string }> = {
-  '/app':               { label: 'Dashboard' },
-  '/app/explore':       { label: 'Explore' },
-  '/app/listings':      { label: 'My Listings' },
-  '/app/listings/new':  { label: 'New Listing', parent: 'Listings' },
-  '/app/requests':      { label: 'Requests' },
-  '/app/messages':      { label: 'Messages' },
-  '/app/notifications': { label: 'Notifications' },
-  '/app/profile':       { label: 'Profile' },
-  '/app/settings':      { label: 'Settings' },
+  '/app':                  { label: 'Dashboard' },
+  '/app/explore':          { label: 'Explore' },
+  '/app/listings':         { label: 'My Listings' },
+  '/app/listings/new':     { label: 'New Listing', parent: 'Listings' },
+  '/app/requests':         { label: 'Requests' },
+  '/app/messages':         { label: 'Messages' },
+  '/app/notifications':    { label: 'Notifications' },
+  '/app/profile':          { label: 'Profile' },
+  '/app/settings':         { label: 'Settings' },
+}
+
+function getRouteMeta(pathname: string) {
+  if (routeMeta[pathname]) return routeMeta[pathname]
+  if (/^\/app\/listings\/[^/]+\/edit$/.test(pathname)) return { label: 'Edit Listing', parent: 'Listings' }
+  if (/^\/app\/listings\/[^/]+$/.test(pathname)) return { label: 'Listing', parent: 'Listings' }
+  if (/^\/app\/profile\/[^/]+$/.test(pathname)) return { label: 'Profile', parent: 'Explore' }
+  if (pathname === '/app/ai/mentor') return { label: 'AI Mentor', parent: 'AI' }
+  if (pathname === '/app/ai/skill-gap') return { label: 'Skill Gap', parent: 'AI' }
+  if (pathname === '/app/ai/roadmap') return { label: 'Career Roadmap', parent: 'AI' }
+  return { label: 'Workspace' }
 }
 
 function useClickOutside(ref: React.RefObject<HTMLElement | null>, handler: () => void) {
@@ -48,7 +62,7 @@ export default function AppHeader() {
 
   useClickOutside(avatarRef, () => setAvatarOpen(false))
 
-  const meta = routeMeta[pathname] || { label: 'Workspace' }
+  const meta = getRouteMeta(pathname)
   const canGoBack = window.history.length > 1
 
   useEffect(() => {
@@ -57,8 +71,17 @@ export default function AppHeader() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  const { user, logout } = useAuth()
+  const [unreadMessages, setUnreadMessages] = useState(0)
+  const [unreadNotifs, setUnreadNotifs] = useState(0)
+
+  useEffect(() => {
+    messagesService.getUnreadCount().then(setUnreadMessages)
+    notificationsService.getUnreadCount().then(setUnreadNotifs)
+  }, [])
+
   const handleSignOut = () => {
-    localStorage.removeItem('skillmate_auth')
+    logout()
     navigate('/login')
   }
 
@@ -142,7 +165,7 @@ export default function AppHeader() {
         >
           <HiOutlineChatBubbleLeftRight className="w-[18px] h-[18px]" />
           <span className="absolute top-1.5 right-1.5 min-w-[14px] h-3.5 px-1 text-[9px] font-bold bg-[#0969da] dark:bg-[#2f81f7] text-white rounded-full flex items-center justify-center leading-none">
-            3
+            {unreadMessages > 0 ? unreadMessages : null}
           </span>
         </Link>
 
@@ -152,7 +175,7 @@ export default function AppHeader() {
           className="relative p-2 rounded-xl transition-colors text-[#636c76] dark:text-[#848d97] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] hover:text-[#1f2328] dark:hover:text-[#e6edf3]"
         >
           <HiOutlineBell className="w-[18px] h-[18px]" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#1a7f37] dark:bg-[#3fb950] rounded-full ring-2 ring-white dark:ring-[#0d1117]" />
+          {unreadNotifs > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#1a7f37] dark:bg-[#3fb950] rounded-full ring-2 ring-white dark:ring-[#0d1117]" />}
         </Link>
 
         <div className="w-px h-5 bg-[#d0d7de] dark:bg-[#30363d] mx-1" />
@@ -176,14 +199,14 @@ export default function AppHeader() {
             onClick={() => setAvatarOpen((v) => !v)}
             className="flex items-center gap-2 p-1 rounded-xl hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] transition-colors cursor-pointer"
           >
-            <Avatar name="A" size="sm" showStatus />
+            <Avatar name={user?.full_name ?? 'S'} src={user?.avatar_url ?? undefined} size="sm" showStatus />
           </button>
 
           {avatarOpen && (
             <div className="absolute top-full right-0 mt-2 w-[190px] z-50 bg-white dark:bg-[#161b22] rounded-xl shadow-lg border border-[#d0d7de] dark:border-[#30363d] py-1 overflow-hidden">
               <div className="px-3 py-2.5 border-b border-[#d0d7de] dark:border-[#30363d]">
-                <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">Student</p>
-                <p className="text-[11px] text-[#636c76] dark:text-[#848d97]">student@university.edu</p>
+                <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">{user?.full_name ?? 'Student'}</p>
+                <p className="text-[11px] text-[#636c76] dark:text-[#848d97]">{user?.email ?? ''}</p>
               </div>
               <div className="py-1">
                 <Link to="/app/profile" onClick={() => setAvatarOpen(false)} className="flex items-center gap-2.5 px-3 py-2 text-[12px] text-[#636c76] dark:text-[#848d97] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors">

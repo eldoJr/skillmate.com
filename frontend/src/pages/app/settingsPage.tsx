@@ -1,17 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clsx } from 'clsx'
 import {
-  HiOutlineShieldCheck,
-  HiOutlineBell,
-  HiOutlinePaintBrush,
-  HiOutlineGlobeAlt,
-  HiOutlineLockClosed,
-  HiOutlineArrowRightOnRectangle,
-  HiOutlineChevronRight,
-  HiOutlineExclamationTriangle,
-  HiOutlineUser,
+  HiOutlineShieldCheck, HiOutlineBell, HiOutlinePaintBrush, HiOutlineGlobeAlt,
+  HiOutlineLockClosed, HiOutlineArrowRightOnRectangle, HiOutlineChevronRight,
+  HiOutlineExclamationTriangle, HiOutlineUser,
 } from 'react-icons/hi2'
+import { useAuth } from '../../contexts/AuthContext'
+import { usersService } from '../../services/users'
 
 const navItems = [
   { key: 'account',       label: 'Account',       icon: HiOutlineUser },
@@ -50,7 +46,51 @@ function Row({ label, description, children }: { label: string; description?: st
 export default function SettingsPage() {
   const [active, setActive] = useState('account')
   const navigate = useNavigate()
+  const { user, logout, updateUser } = useAuth()
   const [showDanger, setShowDanger] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveMsg, setSaveMsg] = useState('')
+
+  const [form, setForm] = useState({
+    first_name: '', last_name: '', headline: '', portfolio_url: '', bio: '', university: '',
+  })
+
+  useEffect(() => {
+    if (user) {
+      setForm({
+        first_name: user.first_name ?? '',
+        last_name: user.last_name ?? '',
+        headline: user.headline ?? '',
+        portfolio_url: user.portfolio_url ?? '',
+        bio: user.bio ?? '',
+        university: user.university ?? '',
+      })
+    }
+  }, [user])
+
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }))
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    setSaveMsg('')
+    try {
+      const updated = await usersService.updateMe(form)
+      updateUser(updated)
+      setSaveMsg('Saved!')
+      setTimeout(() => setSaveMsg(''), 2000)
+    } catch {
+      setSaveMsg('Failed to save.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleSignOut = () => {
+    logout()
+    navigate('/login')
+  }
 
   const [notifs, setNotifs] = useState({ email: true, push: true, messages: true, reviews: true, listings: false, marketing: false })
   const [privacy, setPrivacy] = useState({ profilePublic: true, showEmail: false, showUniversity: true, activityVisible: true })
@@ -63,14 +103,8 @@ export default function SettingsPage() {
     localStorage.setItem('skillmate_theme', next ? 'dark' : 'light')
   }
 
-  const handleSignOut = () => {
-    localStorage.removeItem('skillmate_auth')
-    navigate('/login')
-  }
-
   return (
     <div className="flex gap-5">
-      {/* Left nav */}
       <div className="hidden md:flex flex-col w-[200px] shrink-0">
         <div className="sticky top-20 space-y-0.5">
           {navItems.map((s) => {
@@ -104,44 +138,50 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 min-w-0 max-w-2xl space-y-5">
 
         {active === 'account' && (
           <div>
             <h2 className="text-[15px] font-bold text-[#1f2328] dark:text-[#e6edf3] mb-1">Account</h2>
             <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mb-4">Update your personal information.</p>
-            <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-5 space-y-4">
+            <form onSubmit={handleSave} className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-5 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-semibold text-[#636c76] dark:text-[#848d97] mb-1.5">First name</label>
-                  <input type="text" defaultValue="Student" className={inputCls} />
+                  <input type="text" value={form.first_name} onChange={set('first_name')} className={inputCls} />
                 </div>
                 <div>
                   <label className="block text-[11px] font-semibold text-[#636c76] dark:text-[#848d97] mb-1.5">Last name</label>
-                  <input type="text" defaultValue="Name" className={inputCls} />
+                  <input type="text" value={form.last_name} onChange={set('last_name')} className={inputCls} />
                 </div>
               </div>
               <div>
                 <label className="block text-[11px] font-semibold text-[#636c76] dark:text-[#848d97] mb-1.5">University email</label>
-                <input type="email" defaultValue="student@university.edu" disabled className={`${inputCls} opacity-60 cursor-not-allowed`} />
+                <input type="email" value={user?.email ?? ''} disabled className={`${inputCls} opacity-60 cursor-not-allowed`} />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-[#636c76] dark:text-[#848d97] mb-1.5">University</label>
+                <input type="text" value={form.university} onChange={set('university')} placeholder="e.g. University of Cape Town" className={inputCls} />
               </div>
               <div>
                 <label className="block text-[11px] font-semibold text-[#636c76] dark:text-[#848d97] mb-1.5">Headline</label>
-                <input type="text" placeholder="e.g. Frontend Dev & UI Designer" className={inputCls} />
+                <input type="text" value={form.headline} onChange={set('headline')} placeholder="e.g. Frontend Dev & UI Designer" className={inputCls} />
               </div>
               <div>
                 <label className="block text-[11px] font-semibold text-[#636c76] dark:text-[#848d97] mb-1.5">Portfolio / GitHub URL</label>
-                <input type="url" placeholder="https://github.com/username" className={inputCls} />
+                <input type="url" value={form.portfolio_url} onChange={set('portfolio_url')} placeholder="https://github.com/username" className={inputCls} />
               </div>
               <div>
                 <label className="block text-[11px] font-semibold text-[#636c76] dark:text-[#848d97] mb-1.5">Bio</label>
-                <textarea rows={3} placeholder="Tell other students about yourself…" className={`${inputCls} resize-none`} />
+                <textarea rows={3} value={form.bio} onChange={set('bio')} placeholder="Tell other students about yourself…" className={`${inputCls} resize-none`} />
               </div>
-              <button className="px-5 py-2 rounded-xl text-[12px] font-semibold bg-[#0969da] dark:bg-[#2f81f7] text-white hover:bg-[#0860ca] transition-colors cursor-pointer">
-                Save Changes
-              </button>
-            </div>
+              <div className="flex items-center gap-3">
+                <button type="submit" disabled={saving} className="px-5 py-2 rounded-xl text-[12px] font-semibold bg-[#0969da] dark:bg-[#2f81f7] text-white hover:bg-[#0860ca] transition-colors cursor-pointer disabled:opacity-60">
+                  {saving ? 'Saving…' : 'Save Changes'}
+                </button>
+                {saveMsg && <span className="text-[12px] text-[#1a7f37] dark:text-[#3fb950]">{saveMsg}</span>}
+              </div>
+            </form>
           </div>
         )}
 

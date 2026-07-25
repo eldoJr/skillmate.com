@@ -20,7 +20,7 @@ const features = [
   {
     icon: <HiShieldCheck className="w-6 h-6" />,
     title: 'Trusted Ecosystem',
-    description: 'Verified via university email. Reputation scores track delivery, communication, and growth.',,
+    description: 'Verified via university email. Reputation scores track delivery, communication, and growth.',
   },
 ]
 
