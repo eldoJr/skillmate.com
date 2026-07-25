@@ -7,6 +7,7 @@ import Button from '../../components/atoms/button'
 import ThemeToggle from '../../components/atoms/themeToggle'
 import Dropdown, { DropdownItem } from '../../components/molecules/dropdown'
 import { useAuth } from '../../contexts/AuthContext'
+import { extractErrorMessage } from '../../services/auth'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -25,8 +26,7 @@ export default function LoginPage() {
       await login({ email, password })
       navigate('/app')
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      setError(msg ?? 'Invalid email or password.')
+      setError(extractErrorMessage(err, 'Invalid email or password.'))
     } finally {
       setLoading(false)
     }

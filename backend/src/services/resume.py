@@ -8,8 +8,6 @@ from sqlalchemy import select
 from jinja2 import Template
 from docx import Document
 from docx.shared import Pt, RGBColor
-from weasyprint import HTML
-
 from src.models.user import User
 from src.models.portfolio import Portfolio
 from src.schemas.review import AggregateScores
@@ -54,6 +52,11 @@ async def _build_resume_context(db: AsyncSession, user: User) -> dict:
 
 
 async def generate_pdf(db: AsyncSession, user: User) -> StreamingResponse:
+    try:
+        from weasyprint import HTML
+    except OSError as e:
+        raise HTTPException(status_code=501, detail=f"PDF generation unavailable on this platform: {e}")
+
     context = await _build_resume_context(db, user)
     generated = await generate_resume_content(context)
     context.update(generated)

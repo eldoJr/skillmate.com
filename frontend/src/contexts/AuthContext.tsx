@@ -34,9 +34,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const persist = (t: string, u: AuthUser) => {
+  const persist = (t: string, u: AuthUser, rt?: string) => {
     const enriched = { ...u, full_name: `${u.first_name} ${u.last_name}`.trim() }
     localStorage.setItem('skillmate_token', t)
+    if (rt) localStorage.setItem('skillmate_refresh_token', rt)
     localStorage.setItem('skillmate_user', JSON.stringify(enriched))
     setToken(t)
     setUser(enriched)
@@ -44,12 +45,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (payload: LoginPayload) => {
     const res = await authService.login(payload)
-    persist(res.access_token, res.user)
+    persist(res.access_token, res.user, res.refresh_token)
   }, [])
 
   const register = useCallback(async (payload: RegisterPayload) => {
     const res = await authService.register(payload)
-    persist(res.access_token, res.user)
+    persist(res.access_token, res.user, res.refresh_token)
   }, [])
 
   const logout = useCallback(() => {

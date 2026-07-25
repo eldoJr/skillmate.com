@@ -123,12 +123,10 @@ export default function CareerRoadmapPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+    <div className="max-w-4xl mx-auto space-y-5">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-[16px] font-bold text-[#1f2328] dark:text-[#e6edf3] flex items-center gap-2">
-            <HiOutlineMapPin className="w-5 h-5 text-[#0969da] dark:text-[#2f81f7]" /> Career Roadmap
-          </h2>
+          <h2 className="text-[16px] font-bold text-[#1f2328] dark:text-[#e6edf3]">Career Roadmap</h2>
           <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mt-0.5">Get a personalized week-by-week plan to reach your target role.</p>
         </div>
         {roadmap && (
@@ -149,18 +147,21 @@ export default function CareerRoadmapPage() {
         )}
       </div>
 
-      <form onSubmit={generate} className="flex gap-3">
-        <input
-          type="text"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          placeholder="e.g. Full Stack Developer, Product Manager, Data Engineer…"
-          className="flex-1 px-4 py-2.5 rounded-xl text-[13px] bg-[#f6f8fa] dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] text-[#1f2328] dark:text-[#e6edf3] placeholder-[#636c76] dark:placeholder-[#848d97] outline-none focus:border-[#0969da] dark:focus:border-[#2f81f7] focus:bg-white dark:focus:bg-[#0d1117] transition-all"
-        />
+      <form onSubmit={generate} className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <HiOutlineMapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#636c76] dark:text-[#848d97] pointer-events-none" />
+          <input
+            type="text"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            placeholder="e.g. Full Stack Developer, Product Manager, Data Engineer…"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-[13px] bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] text-[#1f2328] dark:text-[#e6edf3] placeholder-[#636c76] dark:placeholder-[#848d97] outline-none focus:border-[#0969da] dark:focus:border-[#2f81f7] transition-all"
+          />
+        </div>
         <button
           type="submit"
           disabled={loading || !role.trim()}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-[#0969da] dark:bg-[#2f81f7] text-white hover:bg-[#0860ca] transition-colors cursor-pointer disabled:opacity-60"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-semibold bg-[#0969da] dark:bg-[#2f81f7] text-white hover:bg-[#0860ca] dark:hover:bg-[#388bfd] transition-colors cursor-pointer disabled:opacity-60 shrink-0"
         >
           {loading ? <HiOutlineArrowPath className="w-4 h-4 animate-spin" /> : <HiOutlineSparkles className="w-4 h-4" />}
           {loading ? 'Generating…' : 'Generate'}
@@ -168,7 +169,7 @@ export default function CareerRoadmapPage() {
       </form>
 
       {error && (
-        <div className="px-3 py-2.5 rounded-lg bg-[#fff0ee] dark:bg-[#2d1216] border border-[#ffcecb] dark:border-[#f8514926] text-[#d1242f] dark:text-[#f85149] text-[12px]">
+        <div className="px-3 py-2.5 rounded-xl bg-[#fff0ee] dark:bg-[#2d1216] border border-[#ffcecb] dark:border-[#f8514926] text-[#d1242f] dark:text-[#f85149] text-[12px]">
           {error}
         </div>
       )}
@@ -230,8 +231,8 @@ export default function CareerRoadmapPage() {
       </AnimatePresence>
 
       {!roadmap && !loading && (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <HiOutlineMapPin className="w-10 h-10 text-[#d0d7de] dark:text-[#30363d] mb-3" />
+        <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-12 text-center">
+          <HiOutlineMapPin className="w-8 h-8 text-[#d0d7de] dark:text-[#30363d] mx-auto mb-3" />
           <p className="text-[13px] text-[#636c76] dark:text-[#848d97]">Enter a target role above to generate your personalized career roadmap.</p>
         </div>
       )}

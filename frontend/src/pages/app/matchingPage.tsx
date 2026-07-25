@@ -106,12 +106,10 @@ export default function MatchingPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+    <div className="max-w-4xl mx-auto space-y-5">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-[16px] font-bold text-[#1f2328] dark:text-[#e6edf3] flex items-center gap-2">
-            <HiOutlineStar className="w-5 h-5 text-[#9a6700] dark:text-[#d29922]" /> AI Matches
-          </h2>
+          <h2 className="text-[16px] font-bold text-[#1f2328] dark:text-[#e6edf3]">AI Matches</h2>
           <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mt-0.5">Listings matched to your skills and profile using vector similarity.</p>
         </div>
         <button
@@ -133,8 +131,8 @@ export default function MatchingPage() {
           <HiOutlineArrowPath className="w-6 h-6 text-[#636c76] dark:text-[#848d97] animate-spin" />
         </div>
       ) : matches.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <HiOutlineSparkles className="w-10 h-10 text-[#d0d7de] dark:text-[#30363d] mb-3" />
+        <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-12 text-center">
+          <HiOutlineSparkles className="w-8 h-8 text-[#d0d7de] dark:text-[#30363d] mx-auto mb-3" />
           <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">No matches yet</p>
           <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mt-1">Add skills to your profile and click Refresh to find matches.</p>
         </div>

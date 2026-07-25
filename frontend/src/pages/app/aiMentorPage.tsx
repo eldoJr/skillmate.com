@@ -1,33 +1,41 @@
 import { useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
-  HiOutlinePaperAirplane, HiOutlineSparkles, HiOutlinePlus,
-  HiOutlineTrash, HiOutlineLightBulb, HiOutlineChatBubbleLeftRight,
+  HiOutlinePaperAirplane, HiOutlinePlus,
+  HiOutlineTrash, HiOutlineLightBulb,
 } from 'react-icons/hi2'
 import { aiService, type ConversationBrief, type MentorMessage, type ProactiveSuggestion } from '../../services/ai'
 
 const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1'
 
+function formatTime(iso: string) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const now = new Date()
+  const diffMins = Math.floor((now.getTime() - d.getTime()) / 60000)
+  if (diffMins < 1) return 'now'
+  if (diffMins < 60) return `${diffMins}m`
+  if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h`
+  return `${Math.floor(diffMins / 1440)}d`
+}
+
 function MessageBubble({ msg }: { msg: MentorMessage }) {
   const isUser = msg.role === 'user'
   return (
-    <div className={clsx('flex gap-3', isUser && 'flex-row-reverse')}>
+    <div className={clsx('flex', isUser ? 'justify-end' : 'justify-start')}>
       <div className={clsx(
-        'w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[11px] font-bold mt-0.5',
+        'max-w-[70%] px-4 py-2.5 rounded-2xl text-[13px] leading-relaxed',
         isUser
-          ? 'bg-[#0969da] dark:bg-[#2f81f7] text-white'
-          : 'bg-[#f6f8fa] dark:bg-[#21262d] text-[#636c76] dark:text-[#848d97]',
+          ? 'bg-[#0969da] dark:bg-[#2f81f7] text-white rounded-br-md'
+          : 'bg-[#f6f8fa] dark:bg-[#21262d] text-[#1f2328] dark:text-[#e6edf3] rounded-bl-md',
       )}>
-        {isUser ? 'You' : <HiOutlineSparkles className="w-3.5 h-3.5" />}
-      </div>
-      <div className={clsx(
-        'max-w-[75%] px-4 py-2.5 rounded-2xl text-[13px] leading-relaxed whitespace-pre-wrap',
-        isUser
-          ? 'bg-[#0969da] dark:bg-[#2f81f7] text-white rounded-tr-sm'
-          : 'bg-[#f6f8fa] dark:bg-[#21262d] text-[#1f2328] dark:text-[#e6edf3] rounded-tl-sm',
-      )}>
-        {msg.content}
+        <p className="whitespace-pre-wrap">{msg.content}</p>
+        {msg.created_at && (
+          <p className={clsx('text-[9px] mt-1', isUser ? 'text-white/60' : 'text-[#636c76] dark:text-[#848d97]')}>
+            {formatTime(msg.created_at)}
+          </p>
+        )}
       </div>
     </div>
   )
@@ -42,7 +50,6 @@ export default function AiMentorPage() {
   const [streaming, setStreaming] = useState(false)
   const [streamingContent, setStreamingContent] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     aiService.getConversations().then(setConversations)
@@ -99,7 +106,6 @@ export default function AiMentorPage() {
           const { done, value } = await reader.read()
           if (done) break
           const chunk = decoder.decode(value, { stream: true })
-          // SSE lines: "data: ..." or "data: [DONE]" or "data: {"conversation_id": ...}"
           for (const line of chunk.split('\n')) {
             if (!line.startsWith('data: ')) continue
             const payload = line.slice(6).trim()
@@ -115,7 +121,6 @@ export default function AiMentorPage() {
                 setStreamingContent(accumulated)
               }
             } catch {
-              // plain text token
               accumulated += payload
               setStreamingContent(accumulated)
             }
@@ -137,37 +142,50 @@ export default function AiMentorPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-56px)] gap-0 -mx-6 -mt-6 overflow-hidden">
+    <div className="flex gap-0 h-[calc(100vh-112px)] rounded-2xl overflow-hidden bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d]">
+
       {/* Sidebar */}
-      <div className="w-[220px] shrink-0 border-r border-[#d0d7de] dark:border-[#30363d] flex flex-col bg-[#f6f8fa] dark:bg-[#0d1117]">
-        <div className="p-3 border-b border-[#d0d7de] dark:border-[#30363d]">
+      <div className="w-[260px] shrink-0 border-r border-[#d0d7de] dark:border-[#30363d] flex flex-col">
+        <div className="p-4 border-b border-[#d0d7de]/60 dark:border-[#30363d]">
+          <h2 className="text-[14px] font-semibold text-[#1f2328] dark:text-[#e6edf3] mb-3">AI Mentor</h2>
           <button
             onClick={newChat}
-            className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-[12px] font-semibold bg-[#0969da] dark:bg-[#2f81f7] text-white hover:bg-[#0860ca] transition-colors cursor-pointer"
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-[12px] font-medium bg-[#f6f8fa] dark:bg-[#21262d] border border-[#d0d7de] dark:border-[#30363d] text-[#1f2328] dark:text-[#e6edf3] hover:bg-[#eaeef2] dark:hover:bg-[#30363d] transition-colors cursor-pointer"
           >
-            <HiOutlinePlus className="w-4 h-4" /> New Chat
+            <HiOutlinePlus className="w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97]" />
+            New conversation
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
+        <div className="flex-1 overflow-y-auto">
           {conversations.length === 0 && (
-            <p className="text-[11px] text-[#636c76] dark:text-[#848d97] px-2 py-3">No conversations yet.</p>
+            <p className="text-[12px] text-[#636c76] dark:text-[#848d97] text-center py-8">No conversations yet</p>
           )}
           {conversations.map((c) => (
             <button
               key={c.id}
               onClick={() => loadConversation(c.id)}
               className={clsx(
-                'group w-full text-left px-3 py-2 rounded-xl text-[12px] transition-colors cursor-pointer flex items-center justify-between gap-2',
+                'group w-full flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer text-left',
                 activeId === c.id
-                  ? 'bg-white dark:bg-[#161b22] text-[#1f2328] dark:text-[#e6edf3] shadow-sm'
-                  : 'text-[#636c76] dark:text-[#848d97] hover:bg-white dark:hover:bg-[#161b22] hover:text-[#1f2328] dark:hover:text-[#e6edf3]',
+                  ? 'bg-[#ddf4ff] dark:bg-[#121d2f]'
+                  : 'hover:bg-[#f6f8fa] dark:hover:bg-[#21262d]',
               )}
             >
-              <span className="truncate flex-1">{c.title}</span>
+              <div className="w-8 h-8 rounded-full shrink-0 bg-gradient-to-br from-[#0969da] to-[#8250df] flex items-center justify-center">
+                <img src="/icons/ai-icon.png" alt="AI" className="w-4 h-4 object-contain" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={clsx(
+                  'text-[12px] truncate font-medium',
+                  activeId === c.id ? 'text-[#1f2328] dark:text-[#e6edf3]' : 'text-[#636c76] dark:text-[#848d97]',
+                )}>
+                  {c.title}
+                </p>
+              </div>
               <button
                 onClick={(e) => deleteConversation(c.id, e)}
-                className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:text-[#d1242f] dark:hover:text-[#f85149] transition-all cursor-pointer"
+                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:text-[#d1242f] dark:hover:text-[#f85149] text-[#636c76] dark:text-[#848d97] transition-all cursor-pointer"
               >
                 <HiOutlineTrash className="w-3.5 h-3.5" />
               </button>
@@ -179,27 +197,28 @@ export default function AiMentorPage() {
       {/* Chat area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
           {messages.length === 0 && !streaming && (
-            <div className="flex flex-col items-center justify-center h-full gap-6 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#0969da] to-[#8250df] flex items-center justify-center">
-                <HiOutlineSparkles className="w-7 h-7 text-white" />
+            <div className="flex flex-col items-center justify-center h-full gap-5 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0969da] to-[#8250df] flex items-center justify-center">
+                <img src="/icons/ai-icon.png" alt="AI" className="w-6 h-6 object-contain" />
               </div>
               <div>
-                <p className="text-[15px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">AI Career Mentor</p>
-                <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mt-1 max-w-xs">Ask me anything about your career, skills, opportunities, or how to grow as a student.</p>
+                <p className="text-[14px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">Start a conversation</p>
+                <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mt-1 max-w-xs">
+                  Ask me anything about your career, skills, or opportunities.
+                </p>
               </div>
-
               {suggestions.length > 0 && (
-                <div className="w-full max-w-md space-y-2">
-                  <p className="text-[11px] font-semibold text-[#636c76] dark:text-[#848d97] uppercase tracking-widest flex items-center gap-1.5 justify-center">
+                <div className="w-full max-w-sm space-y-2">
+                  <p className="text-[10px] font-semibold text-[#636c76] dark:text-[#848d97] uppercase tracking-widest flex items-center gap-1.5 justify-center">
                     <HiOutlineLightBulb className="w-3.5 h-3.5" /> Suggestions
                   </p>
                   {suggestions.map((s, i) => (
                     <button
                       key={i}
                       onClick={() => sendMessage(s.message)}
-                      className="w-full text-left px-4 py-3 rounded-xl border border-[#d0d7de] dark:border-[#30363d] bg-white dark:bg-[#161b22] text-[12px] text-[#636c76] dark:text-[#848d97] hover:border-[#0969da] dark:hover:border-[#2f81f7] hover:text-[#0969da] dark:hover:text-[#2f81f7] transition-colors cursor-pointer"
+                      className="w-full text-left px-4 py-2.5 rounded-xl border border-[#d0d7de] dark:border-[#30363d] bg-[#f6f8fa] dark:bg-[#21262d] text-[12px] text-[#636c76] dark:text-[#848d97] hover:border-[#0969da] dark:hover:border-[#2f81f7] hover:text-[#0969da] dark:hover:text-[#2f81f7] transition-colors cursor-pointer"
                     >
                       {s.message}
                     </button>
@@ -215,11 +234,8 @@ export default function AiMentorPage() {
             <MessageBubble msg={{ id: 'streaming', role: 'assistant', content: streamingContent, created_at: '' }} />
           )}
           {streaming && !streamingContent && (
-            <div className="flex gap-3">
-              <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center bg-[#f6f8fa] dark:bg-[#21262d]">
-                <HiOutlineSparkles className="w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97]" />
-              </div>
-              <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-[#f6f8fa] dark:bg-[#21262d] flex items-center gap-1.5">
+            <div className="flex justify-start">
+              <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-[#f6f8fa] dark:bg-[#21262d] flex items-center gap-1.5">
                 {[0, 1, 2].map((i) => (
                   <motion.div key={i} className="w-1.5 h-1.5 rounded-full bg-[#636c76] dark:bg-[#848d97]"
                     animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }} />
@@ -231,31 +247,33 @@ export default function AiMentorPage() {
         </div>
 
         {/* Input */}
-        <div className="border-t border-[#d0d7de] dark:border-[#30363d] px-6 py-4">
-          <div className="flex items-end gap-3 max-w-3xl mx-auto">
-            <div className="flex-1 relative">
-              <textarea
-                ref={textareaRef}
-                rows={1}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKey}
-                placeholder="Ask your career mentor…"
-                className="w-full px-4 py-3 pr-12 rounded-2xl text-[13px] bg-[#f6f8fa] dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] text-[#1f2328] dark:text-[#e6edf3] placeholder-[#636c76] dark:placeholder-[#848d97] outline-none focus:border-[#0969da] dark:focus:border-[#2f81f7] focus:bg-white dark:focus:bg-[#0d1117] resize-none transition-all max-h-40 overflow-y-auto"
-                style={{ height: 'auto' }}
-                onInput={(e) => {
-                  const t = e.currentTarget
-                  t.style.height = 'auto'
-                  t.style.height = `${Math.min(t.scrollHeight, 160)}px`
-                }}
-              />
-            </div>
+        <div className="px-4 py-3 border-t border-[#d0d7de]/60 dark:border-[#30363d]">
+          <div className="flex items-center gap-2">
+            <textarea
+              rows={1}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKey}
+              placeholder="Ask your career mentor…"
+              className="flex-1 px-4 py-2.5 rounded-xl text-[13px] bg-[#f6f8fa] dark:bg-[#21262d] border border-[#d0d7de] dark:border-[#30363d] text-[#1f2328] dark:text-[#e6edf3] placeholder-[#636c76] dark:placeholder-[#848d97] outline-none focus:border-[#0969da] dark:focus:border-[#2f81f7] transition-colors resize-none max-h-32 overflow-y-auto"
+              style={{ height: 'auto' }}
+              onInput={(e) => {
+                const t = e.currentTarget
+                t.style.height = 'auto'
+                t.style.height = `${Math.min(t.scrollHeight, 128)}px`
+              }}
+            />
             <button
               onClick={() => sendMessage()}
               disabled={!input.trim() || streaming}
-              className="p-3 rounded-2xl bg-[#0969da] dark:bg-[#2f81f7] text-white hover:bg-[#0860ca] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+              className={clsx(
+                'p-2.5 rounded-xl transition-colors cursor-pointer shrink-0',
+                input.trim() && !streaming
+                  ? 'bg-[#0969da] dark:bg-[#2f81f7] text-white hover:bg-[#0860ca] dark:hover:bg-[#388bfd]'
+                  : 'bg-[#f6f8fa] dark:bg-[#21262d] text-[#636c76] dark:text-[#848d97] cursor-not-allowed',
+              )}
             >
-              <HiOutlinePaperAirplane className="w-4 h-4" />
+              <HiOutlinePaperAirplane className="w-[18px] h-[18px]" />
             </button>
           </div>
           <p className="text-center text-[10px] text-[#636c76] dark:text-[#848d97] mt-2">AI can make mistakes. Verify important information.</p>

@@ -119,17 +119,15 @@ export default function CompanyPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+    <div className="max-w-4xl mx-auto space-y-5">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-[16px] font-bold text-[#1f2328] dark:text-[#e6edf3] flex items-center gap-2">
-            <HiOutlineBuildingOffice2 className="w-5 h-5 text-[#0969da] dark:text-[#2f81f7]" /> Company Matching
-          </h2>
+          <h2 className="text-[16px] font-bold text-[#1f2328] dark:text-[#e6edf3]">Company Matching</h2>
           <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mt-0.5">Post role requirements and find matching student candidates.</p>
         </div>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold bg-[#0969da] dark:bg-[#2f81f7] text-white hover:bg-[#0860ca] transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-semibold bg-[#0969da] dark:bg-[#2f81f7] text-white hover:bg-[#0860ca] dark:hover:bg-[#388bfd] transition-colors cursor-pointer"
         >
           <HiOutlinePlusCircle className="w-4 h-4" /> Post Requirement
         </button>
@@ -202,8 +200,8 @@ export default function CompanyPage() {
           <HiOutlineArrowPath className="w-6 h-6 text-[#636c76] dark:text-[#848d97] animate-spin" />
         </div>
       ) : requirements.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <HiOutlineBuildingOffice2 className="w-10 h-10 text-[#d0d7de] dark:text-[#30363d] mb-3" />
+        <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-12 text-center">
+          <HiOutlineBuildingOffice2 className="w-8 h-8 text-[#d0d7de] dark:text-[#30363d] mx-auto mb-3" />
           <p className="text-[12px] text-[#636c76] dark:text-[#848d97]">No requirements posted yet. Post one to find matching student candidates.</p>
         </div>
       ) : (

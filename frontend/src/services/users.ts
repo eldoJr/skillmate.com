@@ -9,6 +9,10 @@ export interface UserUpdate {
 }
 
 export const usersService = {
+  async getMe(): Promise<AuthUser> {
+    const { data } = await api.get<AuthUser>('/users/me')
+    return data
+  },
   async updateMe(payload: UserUpdate): Promise<AuthUser> {
     const { data } = await api.patch<AuthUser>('/users/me', payload)
     return data
@@ -19,6 +23,26 @@ export const usersService = {
   },
   async getPublicProfile(userId: string) {
     const { data } = await api.get(`/users/${userId}`)
+    return data
+  },
+  async uploadAvatar(file: File): Promise<string> {
+    const form = new FormData()
+    form.append('file', file)
+    const { data } = await api.post<{ avatar_url: string }>('/users/me/avatar', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return data.avatar_url
+  },
+  async setSkills(skillIds: string[]): Promise<AuthUser> {
+    const { data } = await api.put<AuthUser>('/users/me/skills', { skill_ids: skillIds })
+    return data
+  },
+  async attachSkill(skillId: string): Promise<AuthUser> {
+    const { data } = await api.post<AuthUser>(`/users/me/skills/${skillId}`)
+    return data
+  },
+  async detachSkill(skillId: string): Promise<AuthUser> {
+    const { data } = await api.delete<AuthUser>(`/users/me/skills/${skillId}`)
     return data
   },
 }

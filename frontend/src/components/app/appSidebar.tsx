@@ -36,27 +36,22 @@ const mainNav: NavItem[] = [
   { icon: HiOutlineChatBubbleLeftRight,  label: 'Messages',   route: '/app/messages' },
 ]
 
-const aiNav: NavItem[] = [
-  { icon: HiOutlineSparkles,    label: 'AI Mentor',       route: '/app/ai/mentor' },
-  { icon: HiOutlineBeaker,      label: 'Skill Gap',       route: '/app/ai/skill-gap' },
-  { icon: HiOutlineMapPin,      label: 'Roadmap',         route: '/app/ai/roadmap' },
-]
+const aiMentor: NavItem = { icon: HiOutlineSparkles, label: 'AI Mentor', route: '/app/ai/mentor' }
 
-const discoverNav: NavItem[] = [
-  { icon: HiOutlineStar,            label: 'Matches',         route: '/app/matching' },
-  { icon: HiOutlineSparkles,        label: 'For You',         route: '/app/recommendations' },
-  { icon: HiOutlineDocumentText,    label: 'Proposals',       route: '/app/proposals' },
-  { icon: HiOutlinePhoto,           label: 'Portfolio',       route: '/app/portfolio' },
-  { icon: HiOutlineBuildingOffice2, label: 'Company',         route: '/app/company' },
-]
-
-const bottomNav: NavItem[] = [
-  { icon: HiOutlinePlusCircle, label: 'New Listing', route: '/app/listings/new' },
+const overflowNav: NavItem[] = [
+  { icon: HiOutlineBeaker,          label: 'Skill Gap',   route: '/app/ai/skill-gap' },
+  { icon: HiOutlineMapPin,          label: 'Roadmap',     route: '/app/ai/roadmap' },
+  { icon: HiOutlineStar,            label: 'Matches',     route: '/app/matching' },
+  { icon: HiOutlineSparkles,        label: 'For You',     route: '/app/recommendations' },
+  { icon: HiOutlineDocumentText,    label: 'Proposals',   route: '/app/proposals' },
+  { icon: HiOutlinePhoto,           label: 'Portfolio',   route: '/app/portfolio' },
+  { icon: HiOutlineBuildingOffice2, label: 'Company',     route: '/app/company' },
+  { icon: HiOutlinePlusCircle,      label: 'New Listing', route: '/app/listings/new' },
 ]
 
 const COLLAPSE_DELAY = 220
 
-function SidebarLink({ item, expanded, active }: { item: NavItem; expanded: boolean; active: boolean }) {
+function SidebarLink({ item, expanded, active, aiIcon }: { item: NavItem; expanded: boolean; active: boolean; aiIcon?: boolean }) {
   const Icon = item.icon
   const [tip, setTip] = useState(false)
 
@@ -79,7 +74,9 @@ function SidebarLink({ item, expanded, active }: { item: NavItem; expanded: bool
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-[#0969da] dark:bg-[#2f81f7]" />
         )}
         <div className="shrink-0 flex items-center justify-center w-5 h-5">
-          <Icon className="w-5 h-5" />
+          {aiIcon
+            ? <img src="/icons/ai-icon.png" alt="AI" className="w-5 h-5 object-contain" />
+            : <Icon className="w-5 h-5" />}
         </div>
         <AnimatePresence>
           {expanded && (
@@ -123,9 +120,11 @@ const menuItems = [
 export default function AppSidebar() {
   const [expanded, setExpanded] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [overflowOpen, setOverflowOpen] = useState(false)
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
   const collapseTimer = useRef<ReturnType<typeof setTimeout>>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  const overflowRef = useRef<HTMLDivElement>(null)
   const { pathname } = useLocation()
   const navigate = useNavigate()
 
@@ -144,12 +143,13 @@ export default function AppSidebar() {
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+      if (overflowRef.current && !overflowRef.current.contains(e.target as Node)) setOverflowOpen(false)
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  useEffect(() => { if (!expanded) setMenuOpen(false) }, [expanded])
+  useEffect(() => { if (!expanded) { setMenuOpen(false); setOverflowOpen(false) } }, [expanded])
 
   const isActive = (route: string) =>
     route === '/app' ? pathname === '/app' : pathname.startsWith(route)
@@ -203,50 +203,77 @@ export default function AppSidebar() {
           <SidebarLink key={item.route} item={item} expanded={expanded} active={isActive(item.route)} />
         ))}
 
-        <div className="flex justify-center py-3">
-          <div className="flex gap-[3px]">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="w-[3px] h-[3px] rounded-full bg-[#d0d7de] dark:bg-[#30363d]" />
-            ))}
-          </div>
+        <SidebarLink key={aiMentor.route} item={aiMentor} expanded={expanded} active={isActive(aiMentor.route)} aiIcon />
+
+        {/* Overflow trigger */}
+        <div className="relative" ref={overflowRef}>
+          <button
+            onClick={() => setOverflowOpen((v) => !v)}
+            className={clsx(
+              'relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 w-full cursor-pointer',
+              overflowOpen || overflowNav.some((i) => isActive(i.route))
+                ? 'text-[#0969da] dark:text-[#2f81f7] bg-[#ddf4ff] dark:bg-[#121d2f]'
+                : 'text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d]',
+            )}
+          >
+            <div className="shrink-0 flex items-center justify-center w-5 h-5">
+              <HiOutlineBars3 className="w-5 h-5" />
+            </div>
+            <AnimatePresence>
+              {expanded && (
+                <motion.span
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="text-[13px] font-medium whitespace-nowrap overflow-hidden flex-1 text-left"
+                >
+                  More
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </button>
+
+          <AnimatePresence>
+            {overflowOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, x: -6 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.95, x: -6 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+                className="absolute left-full top-0 ml-2 w-[160px] z-50 bg-white dark:bg-[#161b22] shadow-lg border border-[#d0d7de] dark:border-[#30363d] py-1"
+              >
+                {overflowNav.map((item) => {
+                  const active = isActive(item.route)
+                  return (
+                    <Link
+                      key={item.route}
+                      to={item.route}
+                      onClick={() => setOverflowOpen(false)}
+                      className={clsx(
+                        'block px-4 py-1.5 text-[12px] font-medium transition-colors',
+                        active
+                          ? 'text-[#0969da] dark:text-[#2f81f7] bg-[#ddf4ff] dark:bg-[#121d2f]'
+                          : 'text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d]',
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                  )
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-
-        {aiNav.map((item) => (
-          <SidebarLink key={item.route} item={item} expanded={expanded} active={isActive(item.route)} />
-        ))}
-
-        <div className="flex justify-center py-3">
-          <div className="flex gap-[3px]">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="w-[3px] h-[3px] rounded-full bg-[#d0d7de] dark:bg-[#30363d]" />
-            ))}
-          </div>
-        </div>
-
-        {discoverNav.map((item) => (
-          <SidebarLink key={item.route} item={item} expanded={expanded} active={isActive(item.route)} />
-        ))}
-
-        <div className="flex justify-center py-3">
-          <div className="flex gap-[3px]">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="w-[3px] h-[3px] rounded-full bg-[#d0d7de] dark:bg-[#30363d]" />
-            ))}
-          </div>
-        </div>
-
-        {bottomNav.map((item) => (
-          <SidebarLink key={item.route} item={item} expanded={expanded} active={isActive(item.route)} />
-        ))}
       </nav>
 
-      {/* More menu */}
+      {/* Bottom menu */}
       <div className="py-3 px-2 relative" ref={menuRef}>
         <button
-          onClick={() => expanded && setMenuOpen((v) => !v)}
+          onClick={() => setMenuOpen((v) => !v)}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors duration-200 w-full cursor-pointer text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d]"
         >
-          <HiOutlineBars3 className="w-5 h-5 shrink-0" />
+          <HiOutlineCog6Tooth className="w-5 h-5 shrink-0" />
           <AnimatePresence>
             {expanded && (
               <motion.span
@@ -256,7 +283,7 @@ export default function AppSidebar() {
                 transition={{ duration: 0.15 }}
                 className="text-[13px] font-medium whitespace-nowrap overflow-hidden"
               >
-                More
+                Settings
               </motion.span>
             )}
           </AnimatePresence>
@@ -269,14 +296,14 @@ export default function AppSidebar() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 6 }}
               transition={{ duration: 0.15, ease: 'easeOut' }}
-              className="absolute bottom-full left-1 mb-2 w-[200px] z-50 bg-white dark:bg-[#161b22] rounded-xl shadow-lg border border-[#d0d7de] dark:border-[#30363d] py-1.5"
+              className="absolute bottom-full left-1 mb-2 w-[180px] z-50 bg-white dark:bg-[#161b22] shadow-lg border border-[#d0d7de] dark:border-[#30363d] py-1"
             >
               {menuItems.map((item) => (
                 <button
                   key={item.label}
                   onClick={() => handleMenuClick(item)}
                   className={clsx(
-                    'w-full text-left px-4 py-2 text-[13px] transition-colors cursor-pointer',
+                    'w-full text-left px-4 py-1.5 text-[12px] transition-colors cursor-pointer',
                     'danger' in item && item.danger
                       ? 'text-[#d1242f] dark:text-[#f85149] hover:bg-[#fff0ee] dark:hover:bg-[#2d1216]'
                       : 'text-[#636c76] dark:text-[#848d97] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] hover:text-[#1f2328] dark:hover:text-[#e6edf3]',

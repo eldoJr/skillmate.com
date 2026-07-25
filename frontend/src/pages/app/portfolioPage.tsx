@@ -237,8 +237,8 @@ export default function PortfolioPage() {
       {loading ? (
         <p className="text-[13px] text-[#636c76] dark:text-[#848d97]">Loading…</p>
       ) : entries.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <HiOutlineArrowUpTray className="w-10 h-10 text-[#d0d7de] dark:text-[#30363d] mb-3" />
+        <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-12 text-center">
+          <HiOutlineArrowUpTray className="w-8 h-8 text-[#d0d7de] dark:text-[#30363d] mx-auto mb-3" />
           <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">No projects yet</p>
           <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mt-1">Add a project manually or use AI Import to extract from a PDF/doc.</p>
         </div>

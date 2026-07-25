@@ -1,16 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clsx } from 'clsx'
 import {
   HiOutlineShieldCheck, HiOutlineBell, HiOutlinePaintBrush, HiOutlineGlobeAlt,
   HiOutlineLockClosed, HiOutlineArrowRightOnRectangle, HiOutlineChevronRight,
-  HiOutlineExclamationTriangle, HiOutlineUser,
+  HiOutlineExclamationTriangle, HiOutlineUser, HiOutlineSparkles,
+  HiOutlineXMark, HiOutlineCamera,
 } from 'react-icons/hi2'
 import { useAuth } from '../../contexts/AuthContext'
 import { usersService } from '../../services/users'
+import { skillsService, type Skill } from '../../services/skills'
+import Avatar from '../../components/atoms/avatar'
 
 const navItems = [
   { key: 'account',       label: 'Account',       icon: HiOutlineUser },
+  { key: 'skills',        label: 'Skills',         icon: HiOutlineSparkles },
   { key: 'privacy',       label: 'Privacy',        icon: HiOutlineShieldCheck },
   { key: 'notifications', label: 'Notifications',  icon: HiOutlineBell },
   { key: 'appearance',    label: 'Appearance',     icon: HiOutlinePaintBrush },
@@ -50,6 +54,51 @@ export default function SettingsPage() {
   const [showDanger, setShowDanger] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
+
+  // Avatar
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAvatarUploading(true)
+    try {
+      const url = await usersService.uploadAvatar(file)
+      const fresh = await usersService.getMe()
+      updateUser({ ...fresh, avatar_url: url })
+    } catch { /* ignore */ } finally {
+      setAvatarUploading(false)
+    }
+  }
+
+  // Skills
+  const [allSkills, setAllSkills] = useState<Skill[]>([])
+  const [skillSearch, setSkillSearch] = useState('')
+  const [skillSaving, setSkillSaving] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (active === 'skills' && allSkills.length === 0)
+      skillsService.getAll().then(setAllSkills)
+  }, [active, allSkills.length])
+
+  const userSkillIds = new Set(user?.skills?.map((s) => s.id) ?? [])
+
+  const filteredSkills = skillSearch.trim()
+    ? allSkills.filter((s) => s.name.toLowerCase().includes(skillSearch.toLowerCase()))
+    : allSkills
+
+  const handleToggleSkill = async (skill: Skill) => {
+    setSkillSaving(skill.id)
+    try {
+      const updated = userSkillIds.has(skill.id)
+        ? await usersService.detachSkill(skill.id)
+        : await usersService.attachSkill(skill.id)
+      updateUser(updated)
+    } catch { /* ignore */ } finally {
+      setSkillSaving(null)
+    }
+  }
 
   const [form, setForm] = useState({
     first_name: '', last_name: '', headline: '', portfolio_url: '', bio: '', university: '',
@@ -144,6 +193,34 @@ export default function SettingsPage() {
           <div>
             <h2 className="text-[15px] font-bold text-[#1f2328] dark:text-[#e6edf3] mb-1">Account</h2>
             <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mb-4">Update your personal information.</p>
+
+            {/* Avatar upload */}
+            <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-5 mb-4 flex items-center gap-4">
+              <div className="relative shrink-0">
+                <Avatar
+                  name={`${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim() || 'S'}
+                  src={user?.avatar_url ?? undefined}
+                  size="lg"
+                  className="!w-16 !h-16 !text-xl"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={avatarUploading}
+                  className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#0969da] dark:bg-[#2f81f7] flex items-center justify-center text-white shadow cursor-pointer disabled:opacity-60"
+                >
+                  <HiOutlineCamera className="w-3.5 h-3.5" />
+                </button>
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+              </div>
+              <div>
+                <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">Profile photo</p>
+                <p className="text-[11px] text-[#636c76] dark:text-[#848d97] mt-0.5">
+                  {avatarUploading ? 'Uploading…' : 'JPG, PNG or GIF · max 5 MB'}
+                </p>
+              </div>
+            </div>
+
             <form onSubmit={handleSave} className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-5 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -182,6 +259,70 @@ export default function SettingsPage() {
                 {saveMsg && <span className="text-[12px] text-[#1a7f37] dark:text-[#3fb950]">{saveMsg}</span>}
               </div>
             </form>
+          </div>
+        )}
+
+        {active === 'skills' && (
+          <div>
+            <h2 className="text-[15px] font-bold text-[#1f2328] dark:text-[#e6edf3] mb-1">Skills</h2>
+            <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mb-4">Add skills to your profile so clients can find you.</p>
+
+            {/* Current skills */}
+            {(user?.skills?.length ?? 0) > 0 && (
+              <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-4 mb-4">
+                <p className="text-[11px] font-semibold text-[#636c76] dark:text-[#848d97] uppercase tracking-widest mb-3">Your skills</p>
+                <div className="flex flex-wrap gap-2">
+                  {user?.skills?.map((s) => (
+                    <span key={s.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium bg-[#ddf4ff] dark:bg-[#121d2f] text-[#0969da] dark:text-[#2f81f7] border border-[#b6e3ff] dark:border-[#1f4a7a]">
+                      {s.name}
+                      <button
+                        onClick={() => handleToggleSkill(s)}
+                        disabled={skillSaving === s.id}
+                        className="hover:text-[#d1242f] dark:hover:text-[#f85149] transition-colors cursor-pointer disabled:opacity-50"
+                      >
+                        <HiOutlineXMark className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Browse & add */}
+            <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-4">
+              <p className="text-[11px] font-semibold text-[#636c76] dark:text-[#848d97] uppercase tracking-widest mb-3">Browse skills</p>
+              <input
+                type="text"
+                placeholder="Search skills…"
+                value={skillSearch}
+                onChange={(e) => setSkillSearch(e.target.value)}
+                className={`${inputCls} mb-3`}
+              />
+              {allSkills.length === 0 ? (
+                <p className="text-[12px] text-[#636c76] dark:text-[#848d97]">Loading…</p>
+              ) : (
+                <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto">
+                  {filteredSkills.map((s) => {
+                    const added = userSkillIds.has(s.id)
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => handleToggleSkill(s)}
+                        disabled={skillSaving === s.id}
+                        className={clsx(
+                          'px-3 py-1.5 rounded-full text-[12px] font-medium border transition-colors cursor-pointer disabled:opacity-50',
+                          added
+                            ? 'bg-[#ddf4ff] dark:bg-[#121d2f] text-[#0969da] dark:text-[#2f81f7] border-[#b6e3ff] dark:border-[#1f4a7a]'
+                            : 'bg-[#f6f8fa] dark:bg-[#21262d] text-[#636c76] dark:text-[#848d97] border-[#d0d7de] dark:border-[#30363d] hover:border-[#0969da] dark:hover:border-[#2f81f7] hover:text-[#0969da] dark:hover:text-[#2f81f7]',
+                        )}
+                      >
+                        {s.name}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

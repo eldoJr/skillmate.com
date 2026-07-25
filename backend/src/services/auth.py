@@ -1,10 +1,11 @@
+import logging
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi import HTTPException, status
 
 from src.models.user import User
-from src.schemas.auth import RegisterRequest, TokenResponse, MessageResponse
+from src.schemas.auth import RegisterRequest, TokenResponse, MessageResponse, UserResponse
 from src.core.security import (
     hash_password,
     verify_password,
@@ -15,7 +16,20 @@ from src.core.security import (
     verification_token_expiry,
     reset_token_expiry,
 )
-from src.tasks.email import send_verification_email, send_password_reset_email
+logger = logging.getLogger(__name__)
+
+
+def _dispatch(task_name: str, *args) -> None:
+    """Lazy fire-and-forget — imports Celery task only when called."""
+    try:
+        from src.tasks.email import send_verification_email, send_password_reset_email  # noqa: PLC0415
+        tasks = {
+            "send_verification_email": send_verification_email,
+            "send_password_reset_email": send_password_reset_email,
+        }
+        tasks[task_name].delay(*args)
+    except Exception as exc:
+        logger.warning("Could not enqueue task %s: %s", task_name, exc)
 
 
 async def _get_user_by_email(db: AsyncSession, email: str) -> User | None:
@@ -46,11 +60,12 @@ async def register(db: AsyncSession, payload: RegisterRequest) -> TokenResponse:
     await db.commit()
     await db.refresh(user)
 
-    send_verification_email.delay(user.email, user.first_name, token)
+    _dispatch("send_verification_email", user.email, user.first_name, token)
 
     return TokenResponse(
         access_token=create_access_token(user.id),
         refresh_token=create_refresh_token(user.id),
+        user=UserResponse.model_validate(user),
     )
 
 
@@ -66,6 +81,7 @@ async def login(db: AsyncSession, email: str, password: str) -> TokenResponse:
     return TokenResponse(
         access_token=create_access_token(user.id),
         refresh_token=create_refresh_token(user.id),
+        user=UserResponse.model_validate(user),
     )
 
 
@@ -81,6 +97,7 @@ async def refresh(db: AsyncSession, refresh_token: str) -> TokenResponse:
     return TokenResponse(
         access_token=create_access_token(user.id),
         refresh_token=create_refresh_token(user.id),
+        user=UserResponse.model_validate(user),
     )
 
 
@@ -117,7 +134,7 @@ async def resend_verification(db: AsyncSession, email: str) -> MessageResponse:
     user.verification_token_expires_at = verification_token_expiry()
     await db.commit()
 
-    send_verification_email.delay(user.email, user.first_name, token)
+    _dispatch("send_verification_email", user.email, user.first_name, token)
 
     return MessageResponse(message="If that email exists and is unverified, a new link has been sent")
 
@@ -131,7 +148,7 @@ async def forgot_password(db: AsyncSession, email: str) -> MessageResponse:
         user.reset_token = token
         user.reset_token_expires_at = reset_token_expiry()
         await db.commit()
-        send_password_reset_email.delay(user.email, user.first_name, token)
+        _dispatch("send_password_reset_email", user.email, user.first_name, token)
 
     return MessageResponse(message="If that email is registered, a reset link has been sent")
 

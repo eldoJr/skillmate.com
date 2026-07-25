@@ -7,6 +7,7 @@ import Button from '../../components/atoms/button'
 import ThemeToggle from '../../components/atoms/themeToggle'
 import Dropdown, { DropdownItem } from '../../components/molecules/dropdown'
 import { useAuth } from '../../contexts/AuthContext'
+import { extractErrorMessage } from '../../services/auth'
 
 const universities = ['University of Cape Town', 'University of Pretoria', 'Wits University', 'Stellenbosch University', 'Other']
 const skillOptions = ['Programming', 'UI/UX Design', 'Writing', 'Tutoring', 'Video Editing', 'Digital Marketing', 'Photography', 'Music', 'Translation', 'Data Analysis']
@@ -46,7 +47,8 @@ export default function RegisterPage() {
       await register({
         email: form.email,
         password: form.password,
-        full_name: `${form.first_name} ${form.last_name}`.trim(),
+        first_name: form.first_name,
+        last_name: form.last_name,
         university: form.university || undefined,
         headline: form.headline || undefined,
         portfolio_url: form.portfolio_url || undefined,
@@ -55,8 +57,7 @@ export default function RegisterPage() {
       })
       navigate('/app')
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      setError(msg ?? 'Registration failed. Please try again.')
+      setError(extractErrorMessage(err, 'Registration failed. Please try again.'))
     } finally {
       setLoading(false)
     }

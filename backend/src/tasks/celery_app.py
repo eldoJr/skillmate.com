@@ -2,12 +2,13 @@ from celery import Celery
 from celery.schedules import crontab
 from src.core.config import settings
 
-celery = Celery(
+_ssl = {"ssl_cert_reqs": "none"} if settings.REDIS_URL.startswith("rediss://") else {}
+
+celery_app = Celery(
     "skillmate",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
-    broker_use_ssl={"ssl_cert_reqs": "none"},
-    redis_backend_use_ssl={"ssl_cert_reqs": "none"},
+    **({"broker_use_ssl": _ssl, "redis_backend_use_ssl": _ssl} if _ssl else {}),
     include=[
         "src.tasks.email",
         "src.tasks.embeddings",
@@ -16,7 +17,7 @@ celery = Celery(
     ],
 )
 
-celery.conf.update(
+celery_app.conf.update(
     task_serializer="json",
     result_serializer="json",
     accept_content=["json"],

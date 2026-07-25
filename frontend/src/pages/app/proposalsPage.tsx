@@ -155,12 +155,12 @@ export default function ProposalsPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5">
-      <div>
-        <h2 className="text-[16px] font-bold text-[#1f2328] dark:text-[#e6edf3] flex items-center gap-2">
-          <HiOutlineDocumentText className="w-5 h-5 text-[#0969da] dark:text-[#2f81f7]" /> Proposals
-        </h2>
-        <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mt-0.5">AI-generated proposals for listings you want to apply to.</p>
+    <div className="max-w-4xl mx-auto space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-[16px] font-bold text-[#1f2328] dark:text-[#e6edf3]">Proposals</h2>
+          <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mt-0.5">AI-generated proposals for listings you want to apply to.</p>
+        </div>
       </div>
 
       {/* Generate form */}
@@ -192,8 +192,8 @@ export default function ProposalsPage() {
           <HiOutlineArrowPath className="w-6 h-6 text-[#636c76] dark:text-[#848d97] animate-spin" />
         </div>
       ) : briefs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <HiOutlineDocumentText className="w-10 h-10 text-[#d0d7de] dark:text-[#30363d] mb-3" />
+        <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-12 text-center">
+          <HiOutlineDocumentText className="w-8 h-8 text-[#d0d7de] dark:text-[#30363d] mx-auto mb-3" />
           <p className="text-[12px] text-[#636c76] dark:text-[#848d97]">No proposals yet. Paste a listing ID above to generate your first one.</p>
         </div>
       ) : (

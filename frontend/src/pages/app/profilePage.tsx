@@ -47,7 +47,7 @@ const tabDefs: { id: Tab; label: string }[] = [
 ]
 
 export default function ProfilePage() {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const [activeTab, setActiveTab] = useState<Tab>('listings')
   const [listings, setListings] = useState<Listing[]>([])
   const [completion, setCompletion] = useState<ProfileCompletion | null>(null)
@@ -55,6 +55,8 @@ export default function ProfilePage() {
   useEffect(() => {
     listingsService.getMine().then(setListings)
     usersService.getCompletion().then(setCompletion)
+    usersService.getMe().then(updateUser)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fullName = user ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() : ''
@@ -310,7 +312,7 @@ export default function ProfilePage() {
           <p className="text-[11px] font-semibold text-[#636c76] dark:text-[#848d97] uppercase tracking-widest px-2 mb-1.5">Actions</p>
           {[
             { label: 'New Listing', icon: HiOutlineBriefcase, href: '/app/listings/new' },
-            { label: 'View Public Profile', icon: HiOutlineGlobeAlt },
+            { label: 'View Public Profile', icon: HiOutlineGlobeAlt, href: user ? `/app/profile/${user.id}` : undefined },
           ].map((a) => {
             const Icon = a.icon
             const inner = (

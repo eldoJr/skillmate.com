@@ -25,7 +25,8 @@ export interface LoginPayload {
 export interface RegisterPayload {
   email: string
   password: string
-  full_name: string
+  first_name: string
+  last_name: string
   university?: string
   headline?: string
   portfolio_url?: string
@@ -33,8 +34,24 @@ export interface RegisterPayload {
   skills?: string[]
 }
 
+/** Normalise a FastAPI error response to a plain string. */
+export function extractErrorMessage(err: unknown, fallback: string): string {
+  const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail
+  if (!detail) return fallback
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) {
+    // Pydantic validation errors: [{loc, msg, type, ...}, ...]
+    return detail.map((e: { msg?: string; loc?: string[] }) => {
+      const field = e.loc ? e.loc.filter((l) => l !== 'body').join('.') : ''
+      return field ? `${field}: ${e.msg}` : (e.msg ?? fallback)
+    }).join(' · ')
+  }
+  return fallback
+}
+
 export interface AuthResponse {
   access_token: string
+  refresh_token: string
   token_type: string
   user: AuthUser
 }
