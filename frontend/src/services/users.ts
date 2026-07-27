@@ -6,6 +6,20 @@ export interface ProfileCompletion { score: number; missing: string[] }
 export interface UserUpdate {
   first_name?: string; last_name?: string; university?: string
   role?: string; headline?: string; bio?: string; portfolio_url?: string
+  github_username?: string; location?: string
+}
+
+export interface ActivityDay { date: string; count: number }
+
+export interface ProfileStats {
+  profile_views: number
+  total_reviews: number
+  total_listings: number
+  total_portfolio: number
+  active_days: number
+  max_streak: number
+  reputation_score: number
+  activity_heatmap: ActivityDay[]
 }
 
 export const usersService = {
@@ -19,6 +33,14 @@ export const usersService = {
   },
   async getCompletion(): Promise<ProfileCompletion> {
     const { data } = await api.get<ProfileCompletion>('/users/me/completion')
+    return data
+  },
+  async getMyStats(): Promise<ProfileStats> {
+    const { data } = await api.get<ProfileStats>('/users/me/stats')
+    return data
+  },
+  async getUserStats(userId: string): Promise<ProfileStats> {
+    const { data } = await api.get<ProfileStats>(`/users/${userId}/stats`)
     return data
   },
   async getPublicProfile(userId: string) {

@@ -11,6 +11,9 @@ export interface AuthUser {
   headline: string | null
   bio: string | null
   portfolio_url: string | null
+  github_username: string | null
+  location: string | null
+  profile_views: number
   role: string | null
   is_verified: boolean
   skills: { id: string; name: string; category: string }[]

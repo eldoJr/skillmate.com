@@ -11,8 +11,10 @@ from src.schemas.user import (
     ProfileCompletionResponse,
     AvatarResponse,
     UserSkillsUpdate,
+    ProfileStatsResponse,
 )
 import src.services.users as users_service
+import src.services.activity as activity_service
 
 router = APIRouter()
 
@@ -73,6 +75,21 @@ async def detach_skill(
     return await users_service.detach_skill(db, current_user, skill_id)
 
 
+@router.get("/me/stats", response_model=ProfileStatsResponse)
+async def get_my_stats(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await activity_service.get_profile_stats(db, current_user.id)
+
+
+@router.get("/{user_id}/stats", response_model=ProfileStatsResponse)
+async def get_user_stats(user_id: str, db: AsyncSession = Depends(get_db)):
+    return await activity_service.get_profile_stats(db, user_id)
+
+
 @router.get("/{user_id}", response_model=PublicUserResponse)
 async def get_public_profile(user_id: str, db: AsyncSession = Depends(get_db)):
+    # Increment profile views
+    await activity_service.increment_profile_views(db, user_id)
     return await users_service.get_public_profile(db, user_id)
