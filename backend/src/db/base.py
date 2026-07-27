@@ -6,4 +6,4 @@ class Base(DeclarativeBase):
 
 
 # Import all models here so Alembic detects them
-from src.models import user, listing, skill, message, review, notification, portfolio, skill_gap, roadmap, mentor, proposal, company  # noqa
+from src.models import user, listing, skill, message, review, notification, portfolio, skill_gap, roadmap, mentor, proposal, company, activity  # noqa

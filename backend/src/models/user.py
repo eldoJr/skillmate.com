@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Boolean, DateTime, Text, Table, Column, ForeignKey
+from sqlalchemy import String, Integer, Boolean, DateTime, Text, Table, Column, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from pgvector.sqlalchemy import Vector
 from src.db.base import Base
@@ -29,6 +29,9 @@ class User(Base):
     bio: Mapped[str | None] = mapped_column(Text)
     avatar_url: Mapped[str | None] = mapped_column(String)
     portfolio_url: Mapped[str | None] = mapped_column(String)
+    github_username: Mapped[str | None] = mapped_column(String(100))
+    location: Mapped[str | None] = mapped_column(String(200))
+    profile_views: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
@@ -50,3 +53,4 @@ class User(Base):
     messages_sent: Mapped[list["Message"]] = relationship(foreign_keys="Message.sender_id", back_populates="sender", lazy="selectin")
     notifications: Mapped[list["Notification"]] = relationship(back_populates="user", lazy="selectin")
     portfolios: Mapped[list["Portfolio"]] = relationship(back_populates="user", lazy="selectin")
+    activities: Mapped[list["UserActivity"]] = relationship(back_populates="user", lazy="selectin")

@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr, HttpUrl
-from datetime import datetime
+from pydantic import BaseModel, EmailStr
+from datetime import date, datetime
 
 
 class SkillBrief(BaseModel):
@@ -21,6 +21,9 @@ class UserResponse(BaseModel):
     bio: str | None
     avatar_url: str | None
     portfolio_url: str | None
+    github_username: str | None
+    location: str | None
+    profile_views: int
     is_verified: bool
     skills: list[SkillBrief]
     created_at: datetime
@@ -38,6 +41,9 @@ class PublicUserResponse(BaseModel):
     bio: str | None
     avatar_url: str | None
     portfolio_url: str | None
+    github_username: str | None
+    location: str | None
+    profile_views: int
     is_verified: bool
     skills: list[SkillBrief]
     created_at: datetime
@@ -53,6 +59,8 @@ class UserUpdate(BaseModel):
     headline: str | None = None
     bio: str | None = None
     portfolio_url: str | None = None
+    github_username: str | None = None
+    location: str | None = None
 
 
 class ProfileCompletionResponse(BaseModel):
@@ -66,3 +74,22 @@ class AvatarResponse(BaseModel):
 
 class UserSkillsUpdate(BaseModel):
     skill_ids: list[str]
+
+
+class ActivityDay(BaseModel):
+    date: date
+    count: int
+
+    model_config = {"from_attributes": True}
+
+
+class ProfileStatsResponse(BaseModel):
+    profile_views: int
+    total_reviews: int
+    total_listings: int
+    total_portfolio: int
+    active_days: int
+    max_streak: int
+    reputation_score: float
+    activity_heatmap: list[ActivityDay]
+

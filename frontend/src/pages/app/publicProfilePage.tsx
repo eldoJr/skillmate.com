@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { clsx } from 'clsx'
 import {
-  HiOutlineMapPin, HiOutlineLink, HiOutlineCalendar, HiOutlineCheckBadge,
+  HiOutlineLink, HiOutlineCalendar, HiOutlineCheckBadge,
   HiOutlineChatBubbleLeftRight, HiOutlineArrowLeft, HiOutlineShieldCheck,
-  HiOutlineStar, HiStar, HiOutlineArrowUpRight,
+  HiOutlineArrowUpRight, HiOutlineMapPin,
 } from 'react-icons/hi2'
+import { HiStar, HiOutlineStar } from 'react-icons/hi2'
 import { motion } from 'framer-motion'
 import Avatar from '../../components/atoms/avatar'
 import { usersService } from '../../services/users'
@@ -14,12 +15,28 @@ import { reviewsService, type AggregateScores, type Review } from '../../service
 import { messagesService } from '../../services/messages'
 import { useAuth } from '../../contexts/AuthContext'
 import type { AuthUser } from '../../services/auth'
+import api from '../../services/api'
+
+interface PortfolioEntry {
+  id: string
+  user_id: string
+  title: string
+  summary: string | null
+  impact_statement: string | null
+  technologies: string[] | null
+  project_url: string | null
+  image_url: string | null
+  created_at: string
+  updated_at: string
+}
 
 function formatPrice(l: Listing) {
   if (l.price) return `R${l.price}/hr`
   if (l.price_min && l.price_max) return `R${l.price_min}–${l.price_max}`
   return 'Negotiable'
 }
+
+type Tab = 'listings' | 'reviews' | 'skills' | 'portfolio'
 
 export default function PublicProfilePage() {
   const { userId } = useParams<{ userId: string }>()
@@ -29,22 +46,26 @@ export default function PublicProfilePage() {
   const [listings, setListings] = useState<Listing[]>([])
   const [aggregate, setAggregate] = useState<AggregateScores | null>(null)
   const [reviews, setReviews] = useState<Review[]>([])
+  const [portfolio, setPortfolio] = useState<PortfolioEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [messaging, setMessaging] = useState(false)
-  const [activeTab, setActiveTab] = useState<'listings' | 'reviews' | 'skills'>('listings')
+  const [activeTab, setActiveTab] = useState<Tab>('listings')
 
   useEffect(() => {
     if (!userId) return
+    setLoading(true)
     Promise.all([
       usersService.getPublicProfile(userId),
-      listingsService.getAll({ page_size: 20 }),
-      reviewsService.getAggregate(userId),
-      reviewsService.getForUser(userId),
-    ]).then(([p, allListings, agg, rev]) => {
+      listingsService.getAll({ page_size: 50 }),
+      reviewsService.getAggregate(userId).catch(() => null),
+      reviewsService.getForUser(userId).catch(() => ({ items: [] })),
+      api.get<PortfolioEntry[]>(`/portfolio/user/${userId}`).then((r) => r.data).catch(() => []),
+    ]).then(([p, allListings, agg, rev, port]) => {
       setProfile(p)
-      setListings(allListings.items.filter((l: Listing) => l.owner_id === userId))
+      setListings(allListings.items.filter((l: Listing) => l.owner_id === userId && l.is_active))
       setAggregate(agg)
       setReviews(rev.items)
+      setPortfolio(port)
     }).finally(() => setLoading(false))
   }, [userId])
 
@@ -61,13 +82,20 @@ export default function PublicProfilePage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <p className="text-[13px] text-[#636c76] dark:text-[#848d97]">Loading…</p>
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-8 h-8 border-2 border-[#0969da] dark:border-[#2f81f7] border-t-transparent rounded-full animate-spin" />
+        <p className="text-[13px] text-[#636c76] dark:text-[#848d97]">Loading profile...</p>
+      </div>
     </div>
   )
 
   if (!profile) return (
-    <div className="flex items-center justify-center h-64">
-      <p className="text-[13px] text-[#636c76] dark:text-[#848d97]">Profile not found.</p>
+    <div className="flex flex-col items-center justify-center h-64 gap-3">
+      <p className="text-[14px] font-medium text-[#1f2328] dark:text-[#e6edf3]">Profile not found</p>
+      <p className="text-[12px] text-[#636c76] dark:text-[#848d97]">This user may not exist or their profile is inactive.</p>
+      <button onClick={() => navigate(-1)} className="mt-2 px-4 py-2 rounded-xl text-[12px] font-semibold border border-[#d0d7de] dark:border-[#30363d] text-[#636c76] dark:text-[#848d97] hover:border-[#0969da] dark:hover:border-[#2f81f7] hover:text-[#0969da] dark:hover:text-[#2f81f7] transition-colors cursor-pointer">
+        Go back
+      </button>
     </div>
   )
 
@@ -75,14 +103,16 @@ export default function PublicProfilePage() {
   const joinedYear = profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : ''
   const isMe = me?.id === userId
 
-  const tabs = [
-    { id: 'listings' as const, label: 'Listings', count: listings.length },
-    { id: 'reviews' as const, label: 'Reviews', count: reviews.length },
-    { id: 'skills' as const, label: 'Skills', count: profile.skills?.length ?? 0 },
+  const tabs: { id: Tab; label: string; count: number }[] = [
+    { id: 'listings', label: 'Listings', count: listings.length },
+    { id: 'reviews', label: 'Reviews', count: reviews.length },
+    { id: 'skills', label: 'Skills', count: profile.skills?.length ?? 0 },
+    { id: 'portfolio', label: 'Portfolio', count: portfolio.length },
   ]
 
   return (
     <div className="max-w-4xl mx-auto space-y-5">
+      {/* Back button */}
       <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-[12px] text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors cursor-pointer">
         <HiOutlineArrowLeft className="w-4 h-4" /> Back
       </button>
@@ -97,6 +127,11 @@ export default function PublicProfilePage() {
               <div className="absolute inset-0 opacity-20"
                 style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }}
               />
+              {isMe && (
+                <Link to="/app/profile" className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/20 backdrop-blur-sm text-white text-[11px] font-medium hover:bg-white/30 transition-colors">
+                  Back to my profile
+                </Link>
+              )}
             </div>
             <div className="px-5 pb-5">
               <div className="flex items-end justify-between -mt-10 mb-4">
@@ -116,11 +151,12 @@ export default function PublicProfilePage() {
                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold bg-[#0969da] dark:bg-[#2f81f7] text-white hover:bg-[#0860ca] dark:hover:bg-[#388bfd] transition-colors cursor-pointer disabled:opacity-60 mb-1"
                   >
                     <HiOutlineChatBubbleLeftRight className="w-4 h-4" />
-                    {messaging ? 'Opening…' : 'Message'}
+                    {messaging ? 'Opening...' : 'Message'}
                   </button>
                 )}
               </div>
 
+              {/* Name & info */}
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="text-[20px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{fullName}</h1>
@@ -147,10 +183,15 @@ export default function PublicProfilePage() {
                 </div>
               </div>
 
+              {/* Stats row */}
               <div className="flex items-center gap-5 mt-4 pt-4 border-t border-[#f6f8fa] dark:border-[#21262d]">
                 <div className="text-center">
-                  <p className="text-[15px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{listings.filter((l) => l.is_active).length}</p>
+                  <p className="text-[15px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{listings.length}</p>
                   <p className="text-[10px] text-[#636c76] dark:text-[#848d97]">active listings</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[15px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{profile.skills?.length ?? 0}</p>
+                  <p className="text-[10px] text-[#636c76] dark:text-[#848d97]">skills</p>
                 </div>
                 {aggregate && aggregate.total_reviews > 0 && (
                   <>
@@ -164,10 +205,17 @@ export default function PublicProfilePage() {
                     </div>
                   </>
                 )}
+                {portfolio.length > 0 && (
+                  <div className="text-center">
+                    <p className="text-[15px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{portfolio.length}</p>
+                    <p className="text-[10px] text-[#636c76] dark:text-[#848d97]">projects</p>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
 
+          {/* Bio */}
           {profile.bio && (
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.05 }}
               className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-5">
@@ -198,41 +246,48 @@ export default function PublicProfilePage() {
             </div>
 
             <div className="p-5">
+              {/* Listings */}
               {activeTab === 'listings' && (
                 listings.length === 0 ? (
-                  <p className="text-[12px] text-[#636c76] dark:text-[#848d97]">No active listings.</p>
+                  <p className="text-[12px] text-[#636c76] dark:text-[#848d97] text-center py-6">No active listings.</p>
                 ) : (
                   <div className="space-y-3">
-                    {listings.map((l) => (
-                      <Link key={l.id} to={`/app/listings/${l.id}`}
-                        className="flex items-start justify-between gap-3 p-4 rounded-xl border border-[#d0d7de] dark:border-[#30363d] hover:border-[#0969da]/40 dark:hover:border-[#2f81f7]/40 transition-colors">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3] hover:text-[#0969da] dark:hover:text-[#2f81f7] transition-colors">{l.title}</p>
-                          <p className="text-[11px] text-[#636c76] dark:text-[#848d97] mt-0.5 line-clamp-1">{l.description}</p>
-                          <div className="flex items-center gap-1.5 mt-1.5">
-                            <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[#ddf4ff] dark:bg-[#121d2f] text-[#0969da] dark:text-[#2f81f7]">{l.category}</span>
+                    {listings.map((l, i) => (
+                      <motion.div key={l.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: i * 0.05 }}>
+                        <Link to={`/app/listings/${l.id}`}
+                          className="flex items-start justify-between gap-3 p-4 rounded-xl border border-[#d0d7de] dark:border-[#30363d] hover:border-[#0969da]/40 dark:hover:border-[#2f81f7]/40 transition-colors">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3] hover:text-[#0969da] dark:hover:text-[#2f81f7] transition-colors">{l.title}</p>
+                            <p className="text-[11px] text-[#636c76] dark:text-[#848d97] mt-0.5 line-clamp-2">{l.description}</p>
+                            <div className="flex items-center gap-1.5 mt-2">
+                              <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[#ddf4ff] dark:bg-[#121d2f] text-[#0969da] dark:text-[#2f81f7]">{l.category}</span>
+                              {l.skills.slice(0, 3).map((s) => (
+                                <span key={s.id} className="text-[10px] px-2 py-0.5 rounded-full bg-[#f6f8fa] dark:bg-[#21262d] text-[#636c76] dark:text-[#848d97]">{s.name}</span>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-[13px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{formatPrice(l)}</p>
-                          <HiOutlineArrowUpRight className="w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97] ml-auto mt-1" />
-                        </div>
-                      </Link>
+                          <div className="text-right shrink-0">
+                            <p className="text-[13px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{formatPrice(l)}</p>
+                            <HiOutlineArrowUpRight className="w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97] ml-auto mt-1" />
+                          </div>
+                        </Link>
+                      </motion.div>
                     ))}
                   </div>
                 )
               )}
 
+              {/* Reviews */}
               {activeTab === 'reviews' && (
                 reviews.length === 0 ? (
-                  <p className="text-[12px] text-[#636c76] dark:text-[#848d97]">No reviews yet.</p>
+                  <p className="text-[12px] text-[#636c76] dark:text-[#848d97] text-center py-6">No reviews yet.</p>
                 ) : (
                   <div className="space-y-5">
                     {reviews.map((r) => {
                       const avg = (r.reliability_score + r.professionalism_score + r.growth_score) / 3
                       const name = `${r.reviewer.first_name} ${r.reviewer.last_name}`
                       return (
-                        <div key={r.id} className="flex gap-3">
+                        <motion.div key={r.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3">
                           <Avatar name={name} src={r.reviewer.avatar_url ?? undefined} size="sm" className="shrink-0 mt-0.5" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
@@ -246,19 +301,21 @@ export default function PublicProfilePage() {
                                 ? <HiStar key={s} className="w-3 h-3 text-[#9a6700] dark:text-[#d29922]" />
                                 : <HiOutlineStar key={s} className="w-3 h-3 text-[#d0d7de] dark:text-[#30363d]" />
                               )}
+                              <span className="text-[10px] text-[#636c76] dark:text-[#848d97] ml-1">{avg.toFixed(1)}</span>
                             </div>
                             {r.comment && <p className="text-[12px] text-[#636c76] dark:text-[#848d97] leading-relaxed">{r.comment}</p>}
                           </div>
-                        </div>
+                        </motion.div>
                       )
                     })}
                   </div>
                 )
               )}
 
+              {/* Skills */}
               {activeTab === 'skills' && (
                 (profile.skills?.length ?? 0) === 0 ? (
-                  <p className="text-[12px] text-[#636c76] dark:text-[#848d97]">No skills listed.</p>
+                  <p className="text-[12px] text-[#636c76] dark:text-[#848d97] text-center py-6">No skills listed.</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {profile.skills?.map((s) => (
@@ -269,14 +326,60 @@ export default function PublicProfilePage() {
                   </div>
                 )
               )}
+
+              {/* Portfolio */}
+              {activeTab === 'portfolio' && (
+                portfolio.length === 0 ? (
+                  <p className="text-[12px] text-[#636c76] dark:text-[#848d97] text-center py-6">No portfolio projects yet.</p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {portfolio.map((p, i) => (
+                      <motion.div
+                        key={p.id}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.25, delay: i * 0.06 }}
+                        className="rounded-xl border border-[#d0d7de] dark:border-[#30363d] hover:border-[#0969da]/40 dark:hover:border-[#2f81f7]/40 transition-colors overflow-hidden"
+                      >
+                        {p.image_url && (
+                          <div className="h-28 bg-[#f6f8fa] dark:bg-[#21262d]">
+                            <img src={p.image_url} alt={p.title} className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <div className="p-3.5">
+                          <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3] line-clamp-1">{p.title}</p>
+                          {p.summary && <p className="text-[11px] text-[#636c76] dark:text-[#848d97] mt-1 line-clamp-2">{p.summary}</p>}
+                          {p.technologies && p.technologies.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {p.technologies.slice(0, 4).map((t) => (
+                                <span key={t} className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#f6f8fa] dark:bg-[#21262d] text-[#636c76] dark:text-[#848d97]">{t}</span>
+                              ))}
+                              {p.technologies.length > 4 && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#f6f8fa] dark:bg-[#21262d] text-[#636c76] dark:text-[#848d97]">+{p.technologies.length - 4}</span>
+                              )}
+                            </div>
+                          )}
+                          {p.project_url && (
+                            <a href={p.project_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-2 text-[10px] text-[#0969da] dark:text-[#2f81f7] hover:underline">
+                              <HiOutlineLink className="w-3 h-3" /> View project
+                            </a>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )
+              )}
             </div>
           </motion.div>
         </div>
 
         {/* Sidebar */}
         <div className="hidden lg:flex flex-col gap-4 w-[220px] shrink-0">
+          {/* Reputation */}
           {aggregate && aggregate.total_reviews > 0 && (
-            <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-4 space-y-2">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.15 }}
+              className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-4 space-y-2">
               <p className="text-[12px] font-semibold text-[#1f2328] dark:text-[#e6edf3] mb-3">Reputation</p>
               {[
                 { label: 'Reliability', value: aggregate.avg_reliability },
@@ -291,18 +394,30 @@ export default function PublicProfilePage() {
                   </div>
                 </div>
               ))}
-            </div>
+              <div className="pt-2 mt-2 border-t border-[#f6f8fa] dark:border-[#21262d]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-medium text-[#1f2328] dark:text-[#e6edf3]">Overall</span>
+                  <div className="flex items-center gap-1">
+                    <HiStar className="w-3.5 h-3.5 text-[#9a6700] dark:text-[#d29922]" />
+                    <span className="text-[12px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{aggregate.overall_avg.toFixed(1)}</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           )}
 
+          {/* Message button (sidebar) */}
           {!isMe && (
-            <button
-              onClick={handleMessage}
-              disabled={messaging}
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-[13px] font-semibold bg-[#0969da] dark:bg-[#2f81f7] text-white hover:bg-[#0860ca] dark:hover:bg-[#388bfd] transition-colors cursor-pointer disabled:opacity-60"
-            >
-              <HiOutlineChatBubbleLeftRight className="w-4 h-4" />
-              {messaging ? 'Opening…' : 'Send Message'}
-            </button>
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }}>
+              <button
+                onClick={handleMessage}
+                disabled={messaging}
+                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-[13px] font-semibold bg-[#0969da] dark:bg-[#2f81f7] text-white hover:bg-[#0860ca] dark:hover:bg-[#388bfd] transition-colors cursor-pointer disabled:opacity-60"
+              >
+                <HiOutlineChatBubbleLeftRight className="w-4 h-4" />
+                {messaging ? 'Opening...' : 'Send Message'}
+              </button>
+            </motion.div>
           )}
         </div>
       </div>
