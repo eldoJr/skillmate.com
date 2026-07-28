@@ -19,6 +19,14 @@ import { useAuth } from '../../contexts/AuthContext'
 import type { AuthUser } from '../../services/auth'
 import api from '../../services/api'
 
+const BACKEND_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1').replace('/api/v1', '')
+
+function mediaUrl(path: string | null | undefined): string | undefined {
+  if (!path) return undefined
+  if (path.startsWith('http')) return path
+  return `${BACKEND_URL}${path}`
+}
+
 interface PortfolioEntry {
   id: string; user_id: string; title: string; summary: string | null
   impact_statement: string | null; technologies: string[] | null
@@ -239,8 +247,17 @@ export default function PublicProfilePage() {
         <div className="w-[280px] shrink-0 space-y-4 hidden md:block">
           <div className="flex flex-col items-center text-center">
             <div className="relative">
-              <Avatar name={fullName} src={profile.avatar_url ?? undefined} size="lg"
-                className="!w-[140px] !h-[140px] !text-4xl !rounded-xl ring-4 ring-[#d0d7de] dark:ring-[#30363d]" />
+              {profile.avatar_url ? (
+                <img
+                  src={mediaUrl(profile.avatar_url)}
+                  alt={fullName}
+                  className="w-[140px] h-[140px] rounded-xl object-cover border-2 border-[#d0d7de] dark:border-[#30363d] ring-4 ring-[#d0d7de] dark:ring-[#30363d]"
+                />
+              ) : (
+                <div className="w-[140px] h-[140px] rounded-xl flex items-center justify-center text-4xl font-semibold bg-[#ddf4ff] dark:bg-[#121d2f] text-[#0969da] dark:text-[#2f81f7] border-2 border-[#d0d7de] dark:border-[#30363d] ring-4 ring-[#d0d7de] dark:ring-[#30363d]">
+                  {fullName ? fullName.charAt(0).toUpperCase() : '?'}
+                </div>
+              )}
               {profile.is_verified && (
                 <div className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-[#1a7f37] flex items-center justify-center ring-3 ring-white dark:ring-[#0d1117]">
                   <HiOutlineShieldCheck className="w-4 h-4 text-white" />

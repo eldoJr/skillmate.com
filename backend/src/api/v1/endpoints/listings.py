@@ -60,7 +60,7 @@ async def get_listing(listing_id: str, db: AsyncSession = Depends(get_db)):
 @router.post("/", response_model=ListingResponse, status_code=status.HTTP_201_CREATED)
 async def create_listing(
     payload: ListingCreate,
-    current_user: User = Depends(get_verified_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     return await listings_service.create_listing(db, current_user.id, payload)

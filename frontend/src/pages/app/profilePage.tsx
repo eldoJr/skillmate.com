@@ -18,6 +18,14 @@ import { usersService, type ProfileStats, type ActivityDay } from '../../service
 import { reviewsService, type Review } from '../../services/reviews'
 import api from '../../services/api'
 
+const BACKEND_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1').replace('/api/v1', '')
+
+function mediaUrl(path: string | null | undefined): string | undefined {
+  if (!path) return undefined
+  if (path.startsWith('http')) return path
+  return `${BACKEND_URL}${path}`
+}
+
 interface PortfolioEntry {
   id: string; user_id: string; title: string; summary: string | null
   impact_statement: string | null; technologies: string[] | null
@@ -230,14 +238,19 @@ export default function ProfilePage() {
         {/* Avatar & Name */}
         <div className="flex flex-col items-center text-center">
           <div className="relative">
-            <Avatar
-              name={fullName || 'S'}
-              src={user?.avatar_url ?? undefined}
-              size="lg"
-              className="!w-[140px] !h-[140px] !text-4xl !rounded-xl ring-4 ring-[#d0d7de] dark:ring-[#30363d]"
-            />
+            {user?.avatar_url ? (
+              <img
+                src={mediaUrl(user.avatar_url)}
+                alt={fullName || 'Avatar'}
+                className="w-[140px] h-[140px] rounded-xl object-cover border-2 border-[#d0d7de] dark:border-[#30363d] ring-4 ring-[#d0d7de] dark:ring-[#30363d]"
+              />
+            ) : (
+              <div className="w-[140px] h-[140px] rounded-xl flex items-center justify-center text-4xl font-semibold bg-[#ddf4ff] dark:bg-[#121d2f] text-[#0969da] dark:text-[#2f81f7] border-2 border-[#d0d7de] dark:border-[#30363d] ring-4 ring-[#d0d7de] dark:ring-[#30363d]">
+                {fullName ? fullName.charAt(0).toUpperCase() : 'S'}
+              </div>
+            )}
             {user?.is_verified && (
-              <div className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-[#1a7f37] dark:bg-[#1a7f37] flex items-center justify-center ring-3 ring-white dark:ring-[#0d1117]">
+              <div className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-[#1a7f37] flex items-center justify-center ring-3 ring-white dark:ring-[#0d1117]">
                 <HiOutlineShieldCheck className="w-4 h-4 text-white" />
               </div>
             )}
@@ -394,7 +407,7 @@ export default function ProfilePage() {
             {/* Locked badge teaser */}
             <div className="mt-3 pt-3 border-t border-[#d0d7de] dark:border-[#21262d]">
               <span className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-[#f6f8fa] dark:bg-[#21262d] border border-[#d0d7de] dark:border-[#30363d] text-[#636c76] dark:text-[#848d97] opacity-60">
-                🔒 Top Rated Student
+                Locked: Top Rated Student
               </span>
             </div>
           </div>
@@ -409,7 +422,7 @@ export default function ProfilePage() {
 
         {/* Tabs */}
         <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d]">
-          <div className="flex items-center gap-1 px-5 pt-4 pb-0 border-b border-[#d0d7de] dark:border-[#21262d] overflow-x-auto">
+          <div className="flex items-center gap-1 px-5 pt-4 pb-0 border-b border-[#d0d7de] dark:border-[#21262d]">
             {([
               { id: 'listings' as Tab, label: 'Listings', count: listings.length },
               { id: 'skills' as Tab, label: 'Skills', count: user?.skills?.length ?? 0 },
