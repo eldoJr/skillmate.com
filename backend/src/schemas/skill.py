@@ -12,3 +12,8 @@ class SkillResponse(BaseModel):
 class SkillsByCategory(BaseModel):
     category: str
     skills: list[SkillResponse]
+
+
+class SkillCreate(BaseModel):
+    name: str
+    category: str = "Custom"

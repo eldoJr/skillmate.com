@@ -1,101 +1,97 @@
 import { useState } from 'react'
+import { clsx } from 'clsx'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   HiOutlineSparkles, HiOutlineArrowPath, HiOutlineMapPin,
-  HiOutlineCalendar, HiOutlineDocumentArrowDown, HiOutlineChevronDown,
+  HiOutlineDocumentArrowDown, HiOutlineChevronDown,
   HiOutlineCheckCircle, HiOutlineBookOpen,
 } from 'react-icons/hi2'
 import { aiService, type RoadmapReport, type Milestone, type WeekPlan } from '../../services/ai'
 
-function MilestoneCard({ m, index }: { m: Milestone; index: number }) {
-  const [open, setOpen] = useState(false)
+function SectionHeader({ label }: { label: string }) {
   return (
-    <div className="flex gap-4">
-      <div className="flex flex-col items-center">
-        <div className="w-8 h-8 rounded-full bg-[#0969da] dark:bg-[#2f81f7] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
-          {index + 1}
-        </div>
-        <div className="w-px flex-1 bg-[#d0d7de] dark:bg-[#30363d] mt-1" />
-      </div>
-      <div className="flex-1 pb-5">
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="w-full text-left rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-4 hover:border-[#0969da] dark:hover:border-[#2f81f7] transition-colors cursor-pointer"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">{m.title}</p>
-              <p className="text-[11px] text-[#636c76] dark:text-[#848d97] mt-0.5 flex items-center gap-1">
-                <HiOutlineCalendar className="w-3.5 h-3.5" /> Week {m.week_start}–{m.week_end}
-              </p>
-            </div>
-            <HiOutlineChevronDown className={`w-4 h-4 text-[#636c76] dark:text-[#848d97] shrink-0 mt-0.5 transition-transform ${open ? 'rotate-180' : ''}`} />
-          </div>
-
-          <AnimatePresence>
-            {open && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                <p className="text-[12px] text-[#636c76] dark:text-[#848d97] leading-relaxed mt-3">{m.description}</p>
-
-                {m.skills.length > 0 && (
-                  <div className="mt-3">
-                    <p className="text-[10px] font-semibold text-[#636c76] dark:text-[#848d97] uppercase tracking-widest mb-1.5">Skills</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {m.skills.map((s) => (
-                        <span key={s} className="px-2 py-0.5 text-[11px] rounded-lg bg-[#ddf4ff] dark:bg-[#121d2f] text-[#0969da] dark:text-[#2f81f7] border border-[#b6e3ff] dark:border-[#2f81f726]">{s}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {m.projects.length > 0 && (
-                  <div className="mt-3">
-                    <p className="text-[10px] font-semibold text-[#636c76] dark:text-[#848d97] uppercase tracking-widest mb-1.5">Projects</p>
-                    <ul className="space-y-1">
-                      {m.projects.map((p) => (
-                        <li key={p} className="flex items-start gap-2 text-[12px] text-[#636c76] dark:text-[#848d97]">
-                          <HiOutlineCheckCircle className="w-3.5 h-3.5 text-[#1a7f37] dark:text-[#3fb950] shrink-0 mt-0.5" />{p}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {m.certifications.length > 0 && (
-                  <div className="mt-3">
-                    <p className="text-[10px] font-semibold text-[#636c76] dark:text-[#848d97] uppercase tracking-widest mb-1.5">Certifications</p>
-                    <ul className="space-y-1">
-                      {m.certifications.map((c) => (
-                        <li key={c} className="flex items-start gap-2 text-[12px] text-[#636c76] dark:text-[#848d97]">
-                          <HiOutlineBookOpen className="w-3.5 h-3.5 text-[#9a6700] dark:text-[#d29922] shrink-0 mt-0.5" />{c}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </button>
-      </div>
+    <div className="px-4 py-2 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center gap-1.5">
+      <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
+      <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">{label}</span>
     </div>
   )
 }
 
-function WeekCard({ w }: { w: WeekPlan }) {
+function MilestoneRow({ m, index }: { m: Milestone; index: number }) {
+  const [open, setOpen] = useState(false)
   return (
-    <div className="rounded-xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-[10px] font-bold text-[#0969da] dark:text-[#2f81f7] bg-[#ddf4ff] dark:bg-[#121d2f] px-2 py-0.5 rounded-full">Week {w.week}</span>
-        <p className="text-[12px] font-semibold text-[#1f2328] dark:text-[#e6edf3] truncate">{w.focus}</p>
+    <div className="border-b border-[#e2e4e8] dark:border-[#1e2228] last:border-0">
+      <button onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#f6f8fa] dark:hover:bg-[#0d1117] transition-colors cursor-pointer text-left"
+      >
+        <span className="font-mono text-[9px] text-[#e8490f] dark:text-[#ff6b35] shrink-0 w-5">{String(index + 1).padStart(2, '0')}</span>
+        <div className="flex-1 min-w-0">
+          <p className="font-mono text-[10px] font-medium text-[#1f2328] dark:text-[#e6edf3]">{m.title}</p>
+          <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">week {m.week_start}–{m.week_end}</p>
+        </div>
+        <HiOutlineChevronDown className={clsx('w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97] shrink-0 transition-transform', open && 'rotate-180')} />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} transition={{ duration: 0.15 }} className="overflow-hidden">
+            <div className="px-4 pb-4 pt-2 border-t border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] space-y-3">
+              <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] leading-relaxed">{m.description}</p>
+              {m.skills.length > 0 && (
+                <div>
+                  <p className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase mb-1.5">skills</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {m.skills.map((s) => (
+                      <span key={s} className="px-2 py-0.5 font-mono text-[9px] border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97]">{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {m.projects.length > 0 && (
+                <div>
+                  <p className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase mb-1.5">projects</p>
+                  <div className="space-y-1">
+                    {m.projects.map((p) => (
+                      <p key={p} className="flex items-start gap-1.5 font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">
+                        <HiOutlineCheckCircle className="w-3 h-3 text-[#22c55e] shrink-0 mt-0.5" />{p}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {m.certifications.length > 0 && (
+                <div>
+                  <p className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase mb-1.5">certifications</p>
+                  <div className="space-y-1">
+                    {m.certifications.map((c) => (
+                      <p key={c} className="flex items-start gap-1.5 font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">
+                        <HiOutlineBookOpen className="w-3 h-3 text-[#d29922] shrink-0 mt-0.5" />{c}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function WeekRow({ w }: { w: WeekPlan }) {
+  return (
+    <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+      <div className="px-3 py-2 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center gap-2">
+        <span className="font-mono text-[9px] text-[#e8490f] dark:text-[#ff6b35]">w{String(w.week).padStart(2, '0')}</span>
+        <span className="font-mono text-[9px] font-medium text-[#1f2328] dark:text-[#e6edf3] truncate">{w.focus}</span>
       </div>
-      <ul className="space-y-1">
+      <div className="p-3 space-y-1">
         {w.tasks.map((t) => (
-          <li key={t} className="flex items-start gap-2 text-[11px] text-[#636c76] dark:text-[#848d97]">
-            <span className="w-1 h-1 rounded-full bg-[#636c76] dark:bg-[#848d97] shrink-0 mt-1.5" />{t}
-          </li>
+          <p key={t} className="flex items-start gap-1.5 font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">
+            <span className="text-[#e8490f] dark:text-[#ff6b35] shrink-0">›</span>{t}
+          </p>
         ))}
-      </ul>
+      </div>
     </div>
   )
 }
@@ -110,132 +106,131 @@ export default function CareerRoadmapPage() {
   const generate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!role.trim()) return
-    setLoading(true)
-    setError('')
+    setLoading(true); setError('')
     try {
       const r = await aiService.generateRoadmap(role.trim())
       setRoadmap(r)
-    } catch {
-      setError('Failed to generate roadmap. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+    } catch { setError('failed to generate roadmap — please try again') }
+    finally { setLoading(false) }
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h2 className="text-[16px] font-bold text-[#1f2328] dark:text-[#e6edf3]">Career Roadmap</h2>
-          <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mt-0.5">Get a personalized week-by-week plan to reach your target role.</p>
-        </div>
-        {roadmap && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => aiService.downloadResumePdf()}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold border border-[#d0d7de] dark:border-[#30363d] text-[#636c76] dark:text-[#848d97] hover:border-[#0969da] dark:hover:border-[#2f81f7] hover:text-[#0969da] dark:hover:text-[#2f81f7] transition-colors cursor-pointer"
-            >
-              <HiOutlineDocumentArrowDown className="w-4 h-4" /> Resume PDF
-            </button>
-            <button
-              onClick={() => aiService.downloadResumeDocx()}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold border border-[#d0d7de] dark:border-[#30363d] text-[#636c76] dark:text-[#848d97] hover:border-[#0969da] dark:hover:border-[#2f81f7] hover:text-[#0969da] dark:hover:text-[#2f81f7] transition-colors cursor-pointer"
-            >
-              <HiOutlineDocumentArrowDown className="w-4 h-4" /> Resume DOCX
-            </button>
+    <div className="space-y-4">
+
+      {/* Page header */}
+      <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+        <div className="px-4 py-2.5 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
+            <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">career roadmap</span>
           </div>
-        )}
+          {roadmap && (
+            <div className="flex items-center gap-2">
+              <button onClick={() => aiService.downloadResumePdf()}
+                className="flex items-center gap-1 px-2.5 py-1 font-mono text-[9px] tracking-wide border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] dark:hover:border-[#ff6b35] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors cursor-pointer"
+              >
+                <HiOutlineDocumentArrowDown className="w-3 h-3" />pdf
+              </button>
+              <button onClick={() => aiService.downloadResumeDocx()}
+                className="flex items-center gap-1 px-2.5 py-1 font-mono text-[9px] tracking-wide border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] dark:hover:border-[#ff6b35] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors cursor-pointer"
+              >
+                <HiOutlineDocumentArrowDown className="w-3 h-3" />docx
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="px-4 py-3">
+          <p className="font-mono text-[11px] font-medium text-[#1f2328] dark:text-[#e6edf3]">generate your roadmap</p>
+          <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">get a personalized week-by-week plan to reach your target role</p>
+        </div>
       </div>
 
-      <form onSubmit={generate} className="flex flex-col sm:flex-row gap-3">
+      {/* Input */}
+      <form onSubmit={generate} className="flex gap-2">
         <div className="relative flex-1">
-          <HiOutlineMapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#636c76] dark:text-[#848d97] pointer-events-none" />
-          <input
-            type="text"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            placeholder="e.g. Full Stack Developer, Product Manager, Data Engineer…"
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-[13px] bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] text-[#1f2328] dark:text-[#e6edf3] placeholder-[#636c76] dark:placeholder-[#848d97] outline-none focus:border-[#0969da] dark:focus:border-[#2f81f7] transition-all"
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-[10px] text-[#636c76] dark:text-[#848d97] pointer-events-none">$</span>
+          <input type="text" value={role} onChange={(e) => setRole(e.target.value)}
+            placeholder="e.g. full stack developer, product manager, data engineer…"
+            className="w-full pl-8 pr-4 py-2 font-mono text-[11px] tracking-wide bg-white dark:bg-[#0d1117] border border-[#e2e4e8] dark:border-[#1e2228] text-[#1f2328] dark:text-[#e6edf3] placeholder-[#adb5bd] dark:placeholder-[#4a5568] outline-none focus:border-[#e8490f] dark:focus:border-[#ff6b35] transition-colors"
           />
         </div>
-        <button
-          type="submit"
-          disabled={loading || !role.trim()}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-semibold bg-[#0969da] dark:bg-[#2f81f7] text-white hover:bg-[#0860ca] dark:hover:bg-[#388bfd] transition-colors cursor-pointer disabled:opacity-60 shrink-0"
+        <button type="submit" disabled={loading || !role.trim()}
+          className="flex items-center gap-1.5 px-4 py-2 font-mono text-[10px] tracking-wide bg-[#e8490f] dark:bg-[#ff6b35] text-white hover:bg-[#d03d0a] dark:hover:bg-[#e85c20] transition-colors cursor-pointer disabled:opacity-50 shrink-0"
         >
-          {loading ? <HiOutlineArrowPath className="w-4 h-4 animate-spin" /> : <HiOutlineSparkles className="w-4 h-4" />}
-          {loading ? 'Generating…' : 'Generate'}
+          {loading ? <HiOutlineArrowPath className="w-3.5 h-3.5 animate-spin" /> : <HiOutlineSparkles className="w-3.5 h-3.5" />}
+          {loading ? 'generating…' : 'generate'}
         </button>
       </form>
 
       {error && (
-        <div className="px-3 py-2.5 rounded-xl bg-[#fff0ee] dark:bg-[#2d1216] border border-[#ffcecb] dark:border-[#f8514926] text-[#d1242f] dark:text-[#f85149] text-[12px]">
-          {error}
+        <div className="px-3 py-2 border border-[#f8514926] bg-[#fff0ee] dark:bg-[#2d1216] font-mono text-[10px] text-[#d1242f] dark:text-[#f85149]">
+          ! {error}
+        </div>
+      )}
+
+      {!roadmap && !loading && (
+        <div className="border border-[#e2e4e8] dark:border-[#1e2228] p-12 text-center">
+          <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">~ enter a target role above to generate your personalized career roadmap</p>
         </div>
       )}
 
       <AnimatePresence mode="wait">
         {roadmap && (
-          <motion.div key={roadmap.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} className="space-y-4">
+          <motion.div key={roadmap.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="space-y-4">
 
-            {/* Summary card */}
-            <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-5">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
+            {/* Summary */}
+            <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+              <SectionHeader label="summary" />
+              <div className="p-4 flex items-start justify-between gap-4 flex-wrap">
                 <div>
-                  <p className="text-[11px] font-semibold text-[#636c76] dark:text-[#848d97] uppercase tracking-widest mb-1">Target Role</p>
-                  <p className="text-[18px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{roadmap.target_role}</p>
+                  <p className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase mb-1">target role</p>
+                  <p className="font-mono text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">{roadmap.target_role}</p>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#f6f8fa] dark:bg-[#21262d]">
-                  <HiOutlineCalendar className="w-4 h-4 text-[#636c76] dark:text-[#848d97]" />
+                <div className="flex items-center gap-2 px-3 py-2 border border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117]">
+                  <HiOutlineMapPin className="w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97]" />
                   <div>
-                    <p className="text-[18px] font-bold text-[#1f2328] dark:text-[#e6edf3] leading-none">{roadmap.total_weeks}</p>
-                    <p className="text-[10px] text-[#636c76] dark:text-[#848d97]">total weeks</p>
+                    <p className="font-mono text-[13px] font-bold text-[#1f2328] dark:text-[#e6edf3] leading-none">{roadmap.total_weeks}</p>
+                    <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">total weeks</p>
                   </div>
                 </div>
               </div>
-              <p className="text-[13px] text-[#636c76] dark:text-[#848d97] leading-relaxed mt-3">{roadmap.summary}</p>
+              {roadmap.summary && (
+                <div className="px-4 pb-4">
+                  <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] leading-relaxed">{roadmap.summary}</p>
+                </div>
+              )}
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 p-1 rounded-xl bg-[#f6f8fa] dark:bg-[#21262d] w-fit">
+            <div className="flex items-center border-b border-[#e2e4e8] dark:border-[#1e2228] overflow-hidden pb-px">
               {(['milestones', 'weekly'] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  className={`px-4 py-1.5 rounded-lg text-[12px] font-medium transition-colors cursor-pointer capitalize ${
+                <button key={t} onClick={() => setTab(t)}
+                  className={clsx(
+                    'px-3 py-2 font-mono text-[9px] tracking-wide whitespace-nowrap shrink-0 transition-colors cursor-pointer border-b-2',
                     tab === t
-                      ? 'bg-white dark:bg-[#161b22] text-[#1f2328] dark:text-[#e6edf3] shadow-sm'
-                      : 'text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3]'
-                  }`}
+                      ? 'border-[#e8490f] dark:border-[#ff6b35] text-[#e8490f] dark:text-[#ff6b35]'
+                      : 'border-transparent text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3]',
+                  )}
                 >
-                  {t === 'milestones' ? `Milestones (${roadmap.milestones.length})` : `Weekly Plan (${roadmap.weekly_plan.length}w)`}
+                  {t === 'milestones' ? `milestones (${roadmap.milestones.length})` : `weekly plan (${roadmap.weekly_plan.length}w)`}
                 </button>
               ))}
             </div>
 
             {tab === 'milestones' && (
-              <div>
-                {roadmap.milestones.map((m, i) => (
-                  <MilestoneCard key={i} m={m} index={i} />
-                ))}
+              <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+                {roadmap.milestones.map((m, i) => <MilestoneRow key={i} m={m} index={i} />)}
               </div>
             )}
 
             {tab === 'weekly' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {roadmap.weekly_plan.map((w) => <WeekCard key={w.week} w={w} />)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {roadmap.weekly_plan.map((w) => <WeekRow key={w.week} w={w} />)}
               </div>
             )}
           </motion.div>
         )}
       </AnimatePresence>
-
-      {!roadmap && !loading && (
-        <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-12 text-center">
-          <HiOutlineMapPin className="w-8 h-8 text-[#d0d7de] dark:text-[#30363d] mx-auto mb-3" />
-          <p className="text-[13px] text-[#636c76] dark:text-[#848d97]">Enter a target role above to generate your personalized career roadmap.</p>
-        </div>
-      )}
     </div>
   )
 }

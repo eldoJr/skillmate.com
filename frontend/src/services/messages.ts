@@ -5,8 +5,15 @@ export interface UserBrief {
 }
 
 export interface Message {
-  id: string; sender: UserBrief; receiver_id: string
-  content: string; is_read: boolean; created_at: string
+  id: string
+  senderId: string
+  receiverId: string
+  content: string
+  isRead: boolean
+  createdAt: string
+  // legacy compat
+  created_at?: string
+  is_read?: boolean
 }
 
 export interface ConversationSummary {

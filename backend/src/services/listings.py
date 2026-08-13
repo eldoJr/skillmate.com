@@ -22,11 +22,11 @@ def _base_query():
 async def _get_skills(db: AsyncSession, skill_ids: list[str]) -> list[Skill]:
     if not skill_ids:
         return []
-    result = await db.execute(select(Skill).where(Skill.id.in_(skill_ids)))
-    skills = result.scalars().all()
-    if len(skills) != len(skill_ids):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="One or more skill IDs are invalid")
-    return list(skills)
+    # Accept both UUIDs and skill names (frontend sends names)
+    result = await db.execute(
+        select(Skill).where(or_(Skill.id.in_(skill_ids), Skill.name.in_(skill_ids)))
+    )
+    return list(result.scalars().all())
 
 
 async def get_listings(db: AsyncSession, filters: ListingFilters) -> PaginatedListings:

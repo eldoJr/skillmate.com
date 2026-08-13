@@ -1,5 +1,6 @@
 import secrets
 import bcrypt
+import asyncio
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from src.core.config import settings
@@ -14,6 +15,16 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode(), hashed.encode())
+
+
+async def hash_password_async(password: str) -> str:
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, hash_password, password)
+
+
+async def verify_password_async(plain: str, hashed: str) -> bool:
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, verify_password, plain, hashed)
 
 
 def create_access_token(subject: str) -> str:

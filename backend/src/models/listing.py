@@ -9,8 +9,10 @@ import enum
 
 
 class ListingType(str, enum.Enum):
-    service = "service"   # student offers a service
-    request = "request"   # student requests a service
+    service  = "service"
+    request  = "request"
+    tutoring = "tutoring"
+    project  = "project"
 
 
 listing_skills = Table(

@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
 from src.models.skill import Skill, SKILL_SEED
-from src.schemas.skill import SkillsByCategory, SkillResponse
+from src.schemas.skill import SkillsByCategory, SkillResponse, SkillCreate
 
 
 async def get_all_grouped(db: AsyncSession) -> list[SkillsByCategory]:
@@ -22,6 +22,22 @@ async def get_by_category(db: AsyncSession, category: str) -> list[SkillResponse
         select(Skill).where(func.lower(Skill.category) == category.lower()).order_by(Skill.name)
     )
     return result.scalars().all()
+
+
+async def create_skill(db: AsyncSession, payload: SkillCreate) -> Skill:
+    """Create a custom skill. If it already exists, return existing."""
+    result = await db.execute(
+        select(Skill).where(func.lower(Skill.name) == payload.name.strip().lower())
+    )
+    existing = result.scalar_one_or_none()
+    if existing:
+        return existing
+
+    skill = Skill(name=payload.name.strip(), category=payload.category.strip())
+    db.add(skill)
+    await db.commit()
+    await db.refresh(skill)
+    return skill
 
 
 async def seed(db: AsyncSession) -> dict:

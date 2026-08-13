@@ -3,6 +3,8 @@ import { useEffect } from 'react'
 import { useAuth } from './contexts/AuthContext'
 import Header from './components/organisms/header'
 import DashboardLayout from './components/layout/dashboardLayout'
+import Loading from './components/atoms/loading'
+import NotFoundPage from './pages/notFoundPage'
 import LoginPage from './pages/auth/loginPage'
 import RegisterPage from './pages/auth/registerPage'
 import HomePage from './pages/home/homePage'
@@ -18,6 +20,7 @@ import NotificationsPage from './pages/app/notificationsPage'
 import ProfilePage from './pages/app/profilePage'
 import PublicProfilePage from './pages/app/publicProfilePage'
 import SettingsPage from './pages/app/settingsPage'
+import EditProfilePage from './pages/app/editProfilePage'
 import AiMentorPage from './pages/app/aiMentorPage'
 import SkillGapPage from './pages/app/skillGapPage'
 import CareerRoadmapPage from './pages/app/careerRoadmapPage'
@@ -31,7 +34,7 @@ const authRoutes = ['/login', '/register']
 
 function ProtectedRoutes() {
   const { token, isLoading } = useAuth()
-  if (isLoading) return null
+  if (isLoading) return <Loading variant="page" />
   if (!token) return <Navigate to="/login" replace />
   return (
     <Routes>
@@ -46,6 +49,7 @@ function ProtectedRoutes() {
         <Route path="messages" element={<MessagesPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="profile" element={<ProfilePage />} />
+        <Route path="profile/edit" element={<EditProfilePage />} />
         <Route path="profile/:userId" element={<PublicProfilePage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="ai/mentor" element={<AiMentorPage />} />
@@ -56,6 +60,7 @@ function ProtectedRoutes() {
         <Route path="recommendations" element={<RecommendationsPage />} />
         <Route path="proposals" element={<ProposalsPage />} />
         <Route path="company" element={<CompanyPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   )

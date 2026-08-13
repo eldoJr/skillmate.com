@@ -25,12 +25,20 @@ function getInitial(name?: string) {
   return name.charAt(0).toUpperCase()
 }
 
+const BACKEND = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1').replace('/api/v1', '')
+function resolveUrl(src?: string) {
+  if (!src) return undefined
+  if (src.startsWith('http')) return src
+  return `${BACKEND}${src}`
+}
+
 export default function Avatar({ name, src, size = 'md', showStatus = false, className = '' }: AvatarProps) {
+  const resolvedSrc = resolveUrl(src)
   return (
     <div className={clsx('relative inline-flex shrink-0', className)}>
-      {src ? (
+      {resolvedSrc ? (
         <img
-          src={src}
+          src={resolvedSrc}
           alt={name || 'Avatar'}
           className={clsx('rounded-full object-cover border-2 border-[#d0d7de] dark:border-[#30363d]', sizeMap[size])}
         />

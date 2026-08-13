@@ -1,15 +1,28 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  HiOutlinePlusCircle, HiOutlineArrowRight, HiOutlineStar,
-  HiOutlineChatBubbleOvalLeft, HiOutlineEye, HiOutlineRectangleStack,
-  HiOutlineUserPlus,
+  HiOutlinePlusCircle,
+  HiOutlineArrowRight,
+  HiOutlineChatBubbleOvalLeft,
+  HiOutlineRectangleStack,
+  HiOutlineEye,
+  HiOutlineBolt,
+  HiOutlineClipboardDocumentList,
+  HiOutlineArrowPath,
 } from 'react-icons/hi2'
 import Avatar from '../../components/atoms/avatar'
+import DashboardRightbar from '../../components/app/dashboardRightbar'
 import { useAuth } from '../../contexts/AuthContext'
 import { listingsService, type Listing } from '../../services/listings'
-import { usersService, type ProfileCompletion } from '../../services/users'
+import { usersService, type ProfileCompletion, type ProfileStats } from '../../services/users'
 import { messagesService } from '../../services/messages'
+import { notificationsService, type Notification } from '../../services/notifications'
+
+const BACKEND_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1').replace('/api/v1', '')
+function mediaUrl(p: string | null | undefined) {
+  if (!p) return undefined
+  return p.startsWith('http') ? p : `${BACKEND_URL}${p}`
+}
 
 function formatPrice(l: Listing) {
   if (l.price) return `R${l.price}/hr`
@@ -17,146 +30,244 @@ function formatPrice(l: Listing) {
   return 'Negotiable'
 }
 
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime()
+  const m = Math.floor(diff / 60000)
+  if (m < 1) return 'just now'
+  if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  return `${Math.floor(h / 24)}d ago`
+}
+
+function notifIcon(type: string) {
+  if (type.includes('message')) return HiOutlineChatBubbleOvalLeft
+  if (type.includes('listing')) return HiOutlineRectangleStack
+  if (type.includes('proposal')) return HiOutlineClipboardDocumentList
+  return HiOutlineBolt
+}
+
 export default function DashboardPage() {
   const { user } = useAuth()
   const [recentListings, setRecentListings] = useState<Listing[]>([])
   const [myListings, setMyListings] = useState<Listing[]>([])
   const [completion, setCompletion] = useState<ProfileCompletion | null>(null)
+  const [stats, setStats] = useState<ProfileStats | null>(null)
   const [unreadMessages, setUnreadMessages] = useState(0)
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    listingsService.getAll({ page_size: 3 }).then((r) => setRecentListings(r.items))
-    listingsService.getMine().then(setMyListings)
-    usersService.getCompletion().then(setCompletion)
-    messagesService.getUnreadCount().then(setUnreadMessages)
+    Promise.all([
+      listingsService.getAll({ page_size: 5 }).then((r) => setRecentListings(r.items)),
+      listingsService.getMine().then(setMyListings),
+      usersService.getCompletion().then(setCompletion),
+      usersService.getMyStats().then(setStats),
+      messagesService.getUnreadCount().then(setUnreadMessages),
+      notificationsService.getAll(1).then((r) => setNotifications(r.items.slice(0, 5))),
+    ]).finally(() => setLoading(false))
   }, [])
 
   const firstName = user?.full_name?.split(' ')[0] ?? 'there'
   const activeListings = myListings.filter((l) => l.is_active).length
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'good morning' : hour < 18 ? 'good afternoon' : 'good evening'
 
-  const stats = [
-    { label: 'Profile strength', value: `${completion?.score ?? 0}%`, icon: HiOutlineEye, color: 'text-[#0969da] dark:text-[#2f81f7]', bg: 'bg-[#ddf4ff] dark:bg-[#121d2f]' },
-    { label: 'Active listings', value: String(activeListings), icon: HiOutlineRectangleStack, color: 'text-[#1a7f37] dark:text-[#3fb950]', bg: 'bg-[#dafbe1] dark:bg-[#0f2d1a]' },
-    { label: 'Unread messages', value: String(unreadMessages), icon: HiOutlineChatBubbleOvalLeft, color: 'text-[#9a6700] dark:text-[#d29922]', bg: 'bg-[#fff8c5] dark:bg-[#2d2000]' },
+  const statCards = [
+    {
+      label: 'profile views',
+      value: stats?.profile_views ?? 0,
+      icon: HiOutlineEye,
+      suffix: '',
+    },
+    {
+      label: 'active listings',
+      value: activeListings,
+      icon: HiOutlineRectangleStack,
+      suffix: '',
+    },
+    {
+      label: 'unread messages',
+      value: unreadMessages,
+      icon: HiOutlineChatBubbleOvalLeft,
+      suffix: '',
+    },
+    {
+      label: 'rep score',
+      value: stats?.reputation_score ?? 0,
+      icon: HiOutlineBolt,
+      suffix: 'pts',
+    },
   ]
 
   return (
-    <div className="flex gap-5">
+    <div className="flex gap-6 items-start">
+
+      {/* ── Main column ── */}
       <div className="flex-1 min-w-0 space-y-5">
 
-        <div className="flex items-center justify-between gap-6 py-2">
-          <div>
-            <p className="text-xs font-semibold text-[#636c76] dark:text-[#848d97] mb-1 uppercase tracking-wide">Welcome back</p>
-            <h2 className="text-lg font-bold text-[#1f2328] dark:text-[#e6edf3] mb-1">Good morning, {firstName} 👋</h2>
-            <p className="text-sm text-[#636c76] dark:text-[#848d97]">
-              {unreadMessages > 0 ? `You have ${unreadMessages} unread message${unreadMessages > 1 ? 's' : ''}.` : 'Your workspace is up to date.'}
-            </p>
+        {/* Hero */}
+        <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+          <div className="px-4 py-3 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
+            <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">workspace</span>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Link to="/app/listings/new" className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0969da] dark:bg-[#2f81f7] hover:bg-[#0860ca] dark:hover:bg-[#388bfd] text-white text-xs font-semibold transition-colors">
-              <HiOutlinePlusCircle className="w-4 h-4" /> New Listing
-            </Link>
-            <Link to="/app/explore" className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#d0d7de] dark:border-[#30363d] text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] hover:border-[#0969da] dark:hover:border-[#2f81f7] text-xs font-semibold transition-colors">
-              Browse Skills <HiOutlineArrowRight className="w-3.5 h-3.5" />
-            </Link>
+          <div className="px-4 py-4 flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase mb-1">
+                {greeting}
+              </p>
+              <h1 className="font-mono text-[18px] font-semibold text-[#1f2328] dark:text-[#e6edf3] leading-tight">
+                <span className="text-[#e8490f] dark:text-[#ff6b35]">&gt; </span>{firstName}
+              </h1>
+              <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97] mt-1">
+                {unreadMessages > 0
+                  ? `${unreadMessages} unread message${unreadMessages > 1 ? 's' : ''} waiting`
+                  : 'workspace is up to date'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link
+                to="/app/listings/new"
+                className="flex items-center gap-1.5 px-3 py-1.5 font-mono text-[10px] tracking-wide bg-[#e8490f] dark:bg-[#ff6b35] hover:bg-[#d03d0a] dark:hover:bg-[#e85c20] text-white transition-colors duration-150"
+              >
+                <HiOutlinePlusCircle className="w-3.5 h-3.5" />
+                new listing
+              </Link>
+              <Link
+                to="/app/explore"
+                className="flex items-center gap-1.5 px-3 py-1.5 font-mono text-[10px] tracking-wide border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] dark:hover:border-[#ff6b35] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors duration-150"
+              >
+                explore
+                <HiOutlineArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {stats.map((s) => {
+        {/* Stat cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border border-[#e2e4e8] dark:border-[#1e2228] divide-x divide-[#e2e4e8] dark:divide-[#1e2228]">
+          {statCards.map((s, i) => {
             const Icon = s.icon
             return (
-              <div key={s.label} className={`rounded-2xl p-4 flex items-center gap-3 ${s.bg}`}>
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center bg-white/60 dark:bg-black/20 ${s.color}`}>
-                  <Icon className="w-5 h-5" />
+              <div key={s.label} className={`px-4 py-3 flex flex-col gap-1 ${i >= 2 ? 'border-t border-[#e2e4e8] dark:border-[#1e2228] sm:border-t-0' : ''}`}>
+                <div className="flex items-center justify-between">
+                  <Icon className="w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97]" />
+                  {loading && <HiOutlineArrowPath className="w-3 h-3 text-[#636c76] dark:text-[#848d97] animate-spin" />}
                 </div>
-                <div>
-                  <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
-                  <p className="text-[11px] text-[#636c76] dark:text-[#848d97]">{s.label}</p>
-                </div>
+                <p className="font-mono text-[20px] font-semibold text-[#1f2328] dark:text-[#e6edf3] leading-none">
+                  {s.value}<span className="text-[11px] text-[#636c76] dark:text-[#848d97] ml-0.5">{s.suffix}</span>
+                </p>
+                <p className="font-mono text-[9px] tracking-wide text-[#636c76] dark:text-[#848d97] uppercase">{s.label}</p>
               </div>
             )
           })}
         </div>
 
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[14px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">Recent Listings</h3>
-            <Link to="/app/explore" className="text-[12px] font-semibold text-[#0969da] dark:text-[#2f81f7] hover:underline flex items-center gap-0.5">
-              View all <HiOutlineArrowRight className="w-3 h-3" />
+        {/* Recent listings */}
+        <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+          <div className="px-4 py-2.5 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
+              <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">recent listings</span>
+            </div>
+            <Link to="/app/explore" className="font-mono text-[9px] tracking-wide text-[#e8490f] dark:text-[#ff6b35] hover:underline flex items-center gap-1">
+              <span>&gt;</span> view all
             </Link>
           </div>
-          {recentListings.length === 0 ? (
-            <p className="text-[12px] text-[#636c76] dark:text-[#848d97]">No listings yet.</p>
+
+          {loading ? (
+            <div className="px-4 py-6 flex items-center justify-center">
+              <HiOutlineArrowPath className="w-4 h-4 text-[#636c76] dark:text-[#848d97] animate-spin" />
+            </div>
+          ) : recentListings.length === 0 ? (
+            <div className="px-4 py-6 text-center">
+              <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">no listings yet</p>
+              <Link to="/app/explore" className="font-mono text-[10px] text-[#e8490f] dark:text-[#ff6b35] hover:underline mt-1 inline-block">&gt; explore skills</Link>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="divide-y divide-[#e2e4e8] dark:divide-[#1e2228]">
               {recentListings.map((listing) => (
-                <div key={listing.id} className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-4 flex items-center gap-4 hover:border-[#0969da]/40 dark:hover:border-[#2f81f7]/40 transition-colors cursor-pointer">
-                  <Avatar name={`${listing.owner.first_name} ${listing.owner.last_name}`} src={listing.owner.avatar_url ?? undefined} size="md" />
+                <Link
+                  key={listing.id}
+                  to={`/app/listings/${listing.id}`}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-[#f6f8fa] dark:hover:bg-[#0d1117] transition-colors border-l-2 border-l-transparent hover:border-l-[#e8490f] dark:hover:border-l-[#ff6b35] group"
+                >
+                  <Avatar
+                    name={`${listing.owner.first_name} ${listing.owner.last_name}`}
+                    src={mediaUrl(listing.owner.avatar_url)}
+                    size="sm"
+                  />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3] truncate">{listing.title}</p>
-                    <p className="text-[11px] text-[#636c76] dark:text-[#848d97] mt-0.5">
-                      {listing.owner.first_name} {listing.owner.last_name} · {listing.owner.university ?? ''}
+                    <p className="font-mono text-[11px] font-medium text-[#1f2328] dark:text-[#e6edf3] truncate group-hover:text-[#e8490f] dark:group-hover:text-[#ff6b35] transition-colors">
+                      {listing.title}
                     </p>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[#ddf4ff] dark:bg-[#121d2f] text-[#0969da] dark:text-[#2f81f7]">{listing.category}</span>
+                    <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5 truncate">
+                      {listing.owner.first_name} {listing.owner.last_name}
+                      {listing.owner.university ? ` · ${listing.owner.university}` : ''}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="font-mono text-[11px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">
+                      {formatPrice(listing)}
+                    </p>
+                    <span className="font-mono text-[9px] px-1.5 py-0.5 border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97]">
+                      {listing.category}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Activity feed */}
+        {notifications.length > 0 && (
+          <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+            <div className="px-4 py-2.5 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
+                <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">activity</span>
+              </div>
+              <Link to="/app/notifications" className="font-mono text-[9px] tracking-wide text-[#e8490f] dark:text-[#ff6b35] hover:underline flex items-center gap-1">
+                <span>&gt;</span> all
+              </Link>
+            </div>
+            <div className="divide-y divide-[#e2e4e8] dark:divide-[#1e2228]">
+              {notifications.map((n) => {
+                const Icon = notifIcon(n.type)
+                return (
+                  <div
+                    key={n.id}
+                    className={`flex items-start gap-3 px-4 py-3 border-l-2 ${!n.is_read ? 'border-l-[#e8490f] dark:border-l-[#ff6b35] bg-[#e8490f05] dark:bg-[#ff6b3508]' : 'border-l-transparent'}`}
+                  >
+                    <Icon className="w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97] shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-mono text-[10px] text-[#1f2328] dark:text-[#e6edf3] leading-snug">{n.title}</p>
+                      {n.body && (
+                        <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5 truncate">{n.body}</p>
+                      )}
                     </div>
+                    <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] shrink-0 whitespace-nowrap">
+                      {timeAgo(n.created_at)}
+                    </span>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-[13px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{formatPrice(listing)}</p>
-                    <Link to="/app/messages" className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-[#0969da] dark:text-[#2f81f7] hover:underline">
-                      <HiOutlineChatBubbleOvalLeft className="w-3.5 h-3.5" /> Contact
-                    </Link>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
-          )}
-        </div>
-      </div>
-
-      <div className="hidden lg:flex flex-col gap-4 w-[260px] shrink-0">
-        <div className="rounded-2xl p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <Avatar name={user?.full_name ?? 'S'} src={user?.avatar_url ?? undefined} size="md" showStatus />
-            <div className="min-w-0">
-              <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3] truncate">{user?.full_name}</p>
-              <p className="text-[11px] text-[#636c76] dark:text-[#848d97]">{user?.email}</p>
-            </div>
-          </div>
-          <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[11px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">Profile strength</p>
-            <span className="text-[11px] font-bold text-[#0969da] dark:text-[#2f81f7]">{completion?.score ?? 0}%</span>
-          </div>
-          <div className="w-full h-1.5 rounded-full bg-[#f6f8fa] dark:bg-[#21262d] overflow-hidden">
-            <div className="h-full rounded-full bg-gradient-to-r from-[#0969da] to-[#2f81f7]" style={{ width: `${completion?.score ?? 0}%` }} />
-          </div>
-          {completion && completion.missing.length > 0 && (
-            <p className="text-[10px] text-[#636c76] dark:text-[#848d97] mt-2">Add {completion.missing[0].toLowerCase()} to strengthen your profile.</p>
-          )}
-          <Link to="/app/profile" className="mt-3 flex items-center justify-center w-full py-2 rounded-xl text-[12px] font-semibold border border-[#d0d7de] dark:border-[#30363d] text-[#636c76] dark:text-[#848d97] hover:border-[#0969da] dark:hover:border-[#2f81f7] hover:text-[#0969da] dark:hover:text-[#2f81f7] transition-colors">
-            Complete profile
-          </Link>
-        </div>
-
-        {myListings.length > 0 && (
-          <div className="rounded-2xl p-4">
-            <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3] mb-3">Your listings</p>
-            <div className="space-y-2">
-              {myListings.slice(0, 3).map((l) => (
-                <div key={l.id} className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${l.is_active ? 'bg-[#1a7f37] dark:bg-[#3fb950]' : 'bg-[#d0d7de] dark:bg-[#30363d]'}`} />
-                  <p className="text-[12px] text-[#636c76] dark:text-[#848d97] truncate flex-1">{l.title}</p>
-                  <HiOutlineStar className="w-3 h-3 text-[#636c76] dark:text-[#848d97] shrink-0" />
-                </div>
-              ))}
-            </div>
-            <Link to="/app/listings" className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[#0969da] dark:text-[#2f81f7] hover:underline">
-              Manage listings <HiOutlineUserPlus className="w-3 h-3" />
-            </Link>
           </div>
         )}
+
       </div>
+
+      {/* ── Right bar ── */}
+      <DashboardRightbar
+        user={user}
+        completion={completion}
+        stats={stats}
+        myListings={myListings}
+      />
+
     </div>
   )
 }

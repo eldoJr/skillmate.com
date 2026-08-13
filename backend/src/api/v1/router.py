@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from src.api.v1.endpoints import auth, users, listings, skills, messages, reviews, notifications, portfolio, skill_gap, roadmap, mentor, matching, recommendation, proposal, resume, search, company
+from src.api.v1.endpoints import auth, users, listings, skills, messages, reviews, notifications, portfolio, skill_gap, roadmap, mentor, matching, recommendation, proposal, resume, search, company, certificates
 
 api_router = APIRouter()
 
@@ -20,3 +20,4 @@ api_router.include_router(proposal.router,          prefix="/proposals",      ta
 api_router.include_router(resume.router,            prefix="/resume",         tags=["Resume"])
 api_router.include_router(search.router,            prefix="/search",         tags=["Search"])
 api_router.include_router(company.router,           prefix="/company",        tags=["Company"])
+api_router.include_router(certificates.router,      prefix="/certificates",   tags=["Certificates"])

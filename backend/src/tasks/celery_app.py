@@ -4,7 +4,7 @@ from src.core.config import settings
 
 _ssl = {"ssl_cert_reqs": "none"} if settings.REDIS_URL.startswith("rediss://") else {}
 
-celery_app = Celery(
+celery = celery_app = Celery(
     "skillmate",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,

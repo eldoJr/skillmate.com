@@ -1,217 +1,863 @@
-import { useEffect, useState, useRef, useMemo } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { clsx } from 'clsx'
 import {
-  HiOutlinePencilSquare, HiOutlineLink, HiOutlineEnvelope,
-  HiOutlineCalendar, HiOutlineArrowUpRight, HiOutlineCheckBadge,
-  HiOutlineEye, HiOutlineBriefcase, HiOutlineGlobeAlt, HiOutlineShieldCheck,
-  HiOutlineSquare2Stack, HiOutlineDocumentArrowDown,
-  HiOutlineAcademicCap, HiOutlineMapPin,
-  HiOutlineStar, HiOutlineChatBubbleOvalLeft, HiOutlineTrophy,
+  HiOutlinePencilSquare, HiOutlineSquare2Stack, HiOutlineDocumentArrowDown,
+  HiOutlineGlobeAlt, HiOutlineShieldCheck, HiOutlineMapPin,
+  HiOutlineAcademicCap, HiOutlineEnvelope, HiOutlineCalendar,
+  HiOutlineLink, HiOutlineArrowUpRight, HiOutlineCamera,
+  HiOutlineBriefcase, HiOutlineStar, HiOutlineEye, HiOutlineTrophy,
+  HiOutlineXMark, HiOutlineCheck, HiOutlineTrash,
 } from 'react-icons/hi2'
 import { HiStar, HiOutlineStar as HiOutlineStarLine } from 'react-icons/hi2'
-import { motion } from 'framer-motion'
-import Avatar from '../../components/atoms/avatar'
 import { useAuth } from '../../contexts/AuthContext'
+import { usersService, type ProfileStats } from '../../services/users'
 import { listingsService, type Listing } from '../../services/listings'
-import { usersService, type ProfileStats, type ActivityDay } from '../../services/users'
 import { reviewsService, type Review } from '../../services/reviews'
-import api from '../../services/api'
+import { certificatesService, type Certificate } from '../../services/certificates'
+import { portfolioService, type PortfolioEntry } from '../../services/portfolio'
+import { skillsService, type Skill } from '../../services/skills'
+import Avatar from '../../components/atoms/avatar'
+import type { AuthUser } from '../../services/auth'
 
 const BACKEND_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1').replace('/api/v1', '')
-
 function mediaUrl(path: string | null | undefined): string | undefined {
   if (!path) return undefined
   if (path.startsWith('http')) return path
   return `${BACKEND_URL}${path}`
 }
-
-interface PortfolioEntry {
-  id: string; user_id: string; title: string; summary: string | null
-  impact_statement: string | null; technologies: string[] | null
-  project_url: string | null; image_url: string | null
-  created_at: string; updated_at: string
-}
-
 function formatPrice(l: Listing) {
   if (l.price) return `R${l.price}/hr`
   if (l.price_min && l.price_max) return `R${l.price_min}–${l.price_max}`
   return 'Negotiable'
 }
 
-/* ─── Activity Heatmap ─── */
-function ActivityHeatmap({ data, activeDays, maxStreak }: { data: ActivityDay[]; activeDays: number; maxStreak: number }) {
-  const weeks = useMemo(() => {
-    const today = new Date()
-    const startDate = new Date(today)
-    startDate.setDate(startDate.getDate() - 364)
-    startDate.setDate(startDate.getDate() - startDate.getDay())
+/* ── shared input style ── */
+const iCls = 'w-full px-3 py-2 border border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22] font-mono text-[11px] text-[#1f2328] dark:text-[#e6edf3] placeholder-[#636c76] dark:placeholder-[#848d97] outline-none focus:border-[#e8490f] transition-colors'
+const lCls = 'font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] mb-1 block'
 
-    const dateMap = new Map<string, number>()
-    data.forEach((d) => dateMap.set(d.date, d.count))
-
-    const result: { date: string; count: number }[][] = []
-    let currentWeek: { date: string; count: number }[] = []
-    const cursor = new Date(startDate)
-
-    while (cursor <= today) {
-      const key = cursor.toISOString().split('T')[0]
-      currentWeek.push({ date: key, count: dateMap.get(key) ?? 0 })
-      if (currentWeek.length === 7) { result.push(currentWeek); currentWeek = [] }
-      cursor.setDate(cursor.getDate() + 1)
-    }
-    if (currentWeek.length > 0) result.push(currentWeek)
-    return result
-  }, [data])
-
-  const getColor = (count: number) => {
-    if (count === 0) return 'bg-[#ebedf0] dark:bg-[#161b22]'
-    if (count <= 2) return 'bg-[#9be9a8] dark:bg-[#0e4429]'
-    if (count <= 4) return 'bg-[#40c463] dark:bg-[#006d32]'
-    if (count <= 6) return 'bg-[#30a14e] dark:bg-[#26a641]'
-    return 'bg-[#216e39] dark:bg-[#39d353]'
-  }
-
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  const totalActivities = data.reduce((sum, d) => sum + d.count, 0)
-
+/* ── Section wrapper ── */
+function Section({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-5">
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <p className="text-[13px] font-medium text-[#1f2328] dark:text-[#e6edf3]">
-          <span className="font-bold">{totalActivities}</span> activities in the past one year
-        </p>
-        <div className="flex items-center gap-3 text-[11px] text-[#636c76] dark:text-[#848d97]">
-          <span>Active days: <span className="font-semibold text-[#1f2328] dark:text-[#e6edf3]">{activeDays}</span></span>
-          <span>Max streak: <span className="font-semibold text-[#1f2328] dark:text-[#e6edf3]">{maxStreak}</span></span>
-        </div>
+    <div className="border border-[#e2e4e8] dark:border-[#1e2228] bg-white dark:bg-[#0d1117]">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22]">
+        <span className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97]">
+          <span className="text-[#e8490f] mr-1">●</span>{title}
+        </span>
+        {action}
       </div>
-      <div className="overflow-x-auto">
-        <div className="flex gap-[3px] min-w-[700px]">
-          {weeks.map((week, wi) => (
-            <div key={wi} className="flex flex-col gap-[3px]">
-              {week.map((day) => (
-                <div key={day.date} className={clsx('w-[11px] h-[11px] rounded-[2px]', getColor(day.count))}
-                  title={`${day.date}: ${day.count} activities`} />
-              ))}
-            </div>
-          ))}
-        </div>
-        <div className="flex justify-between mt-2 text-[10px] text-[#636c76] dark:text-[#848d97] min-w-[700px] px-1">
-          {months.map((m) => <span key={m}>{m}</span>)}
-        </div>
-      </div>
+      <div className="p-5">{children}</div>
     </div>
   )
 }
 
-/* ─── Skill Donut ─── */
-function SkillDonut({ skills, listings, portfolio }: { skills: number; listings: number; portfolio: number }) {
-  const total = skills + listings + portfolio
-  const radius = 52
-  const circumference = 2 * Math.PI * radius
-  const skillPct = total > 0 ? skills / total : 0
-  const listingPct = total > 0 ? listings / total : 0
-  const portfolioPct = total > 0 ? portfolio / total : 0
-
-  const skillDash = skillPct * circumference
-  const listingDash = listingPct * circumference
-  const portfolioDash = portfolioPct * circumference
-
-  const skillOffset = 0
-  const listingOffset = -(skillDash)
-  const portfolioOffset = -(skillDash + listingDash)
-
+/* ── Stat pill ── */
+function StatPill({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-5">
-      <div className="flex items-center gap-6">
-        <div className="relative w-[130px] h-[130px] shrink-0">
-          <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-            <circle cx="60" cy="60" r={radius} fill="none" className="stroke-[#f6f8fa] dark:stroke-[#21262d]" strokeWidth="10" />
-            {portfolioPct > 0 && (
-              <circle cx="60" cy="60" r={radius} fill="none" stroke="#da3633" strokeWidth="10"
-                strokeDasharray={`${portfolioDash} ${circumference - portfolioDash}`}
-                strokeDashoffset={portfolioOffset} strokeLinecap="round" />
-            )}
-            {listingPct > 0 && (
-              <circle cx="60" cy="60" r={radius} fill="none" stroke="#f0883e" strokeWidth="10"
-                strokeDasharray={`${listingDash} ${circumference - listingDash}`}
-                strokeDashoffset={listingOffset} strokeLinecap="round" />
-            )}
-            {skillPct > 0 && (
-              <circle cx="60" cy="60" r={radius} fill="none" stroke="#3fb950" strokeWidth="10"
-                strokeDasharray={`${skillDash} ${circumference - skillDash}`}
-                strokeDashoffset={skillOffset} strokeLinecap="round" />
-            )}
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[22px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{total}</p>
-            <p className="text-[10px] text-[#636c76] dark:text-[#848d97]">Total</p>
+    <div className="flex items-center gap-2 px-3 py-2 border border-[#e2e4e8] dark:border-[#1e2228]">
+      <Icon className="w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97] shrink-0" />
+      <span className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">{label}</span>
+      <span className="font-mono text-[11px] font-bold text-[#1f2328] dark:text-[#e6edf3] ml-auto">{value}</span>
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   INLINE EDIT DRAWER
+   slides in from the right over the hero
+══════════════════════════════════════════ */
+interface DrawerProps {
+  open: boolean
+  onClose: () => void
+  form: Record<string, string>
+  onChange: (k: string, v: string) => void
+  onSave: () => void
+  saving: boolean
+  saveMsg: string
+}
+
+function EditDrawer({ open, onClose, form, onChange, onSave, saving, saveMsg }: DrawerProps) {
+  if (!open) return null
+  return (
+    <>
+      {/* backdrop */}
+      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
+      {/* drawer */}
+      <div className="fixed top-0 right-0 h-full w-full max-w-sm bg-white dark:bg-[#0d1117] border-l border-[#e2e4e8] dark:border-[#1e2228] z-50 flex flex-col">
+        {/* header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22]">
+          <span className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97]">
+            <span className="text-[#e8490f] mr-1">●</span>edit profile
+          </span>
+          <button onClick={onClose} className="p-1 hover:text-[#e8490f] text-[#636c76] dark:text-[#848d97] transition-colors cursor-pointer">
+            <HiOutlineXMark className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* fields */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={lCls}>first name</label>
+              <input className={iCls} value={form.first_name} onChange={(e) => onChange('first_name', e.target.value)} placeholder="John" />
+            </div>
+            <div>
+              <label className={lCls}>last name</label>
+              <input className={iCls} value={form.last_name} onChange={(e) => onChange('last_name', e.target.value)} placeholder="Doe" />
+            </div>
+          </div>
+
+          <div>
+            <label className={lCls}>headline</label>
+            <input className={iCls} value={form.headline} onChange={(e) => onChange('headline', e.target.value)} placeholder="e.g. Full-Stack Developer & Designer" />
+          </div>
+
+          <div>
+            <label className={lCls}>university</label>
+            <input className={iCls} value={form.university} onChange={(e) => onChange('university', e.target.value)} placeholder="e.g. University of Cape Town" />
+          </div>
+
+          <div>
+            <label className={lCls}>location</label>
+            <input className={iCls} value={form.location} onChange={(e) => onChange('location', e.target.value)} placeholder="e.g. Cape Town, South Africa" />
+          </div>
+
+          <div>
+            <label className={lCls}>portfolio / website</label>
+            <input className={iCls} value={form.portfolio_url} onChange={(e) => onChange('portfolio_url', e.target.value)} placeholder="https://yoursite.com" />
+          </div>
+
+          <div>
+            <label className={lCls}>github username</label>
+            <div className="flex items-center border border-[#e2e4e8] dark:border-[#1e2228] focus-within:border-[#e8490f] transition-colors">
+              <span className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] px-2 border-r border-[#e2e4e8] dark:border-[#1e2228] py-2 bg-[#f6f8fa] dark:bg-[#161b22] shrink-0">
+                github.com/
+              </span>
+              <input
+                className="flex-1 px-3 py-2 bg-[#f6f8fa] dark:bg-[#161b22] font-mono text-[11px] text-[#1f2328] dark:text-[#e6edf3] placeholder-[#636c76] outline-none"
+                value={form.github_username}
+                onChange={(e) => onChange('github_username', e.target.value)}
+                placeholder="username"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={lCls}>role</label>
+            <select className={iCls} value={form.role} onChange={(e) => onChange('role', e.target.value)}>
+              <option value="">select role...</option>
+              {['developer','designer','tutor','writer','marketer','video_editor','photographer','data_scientist','other'].map((r) => (
+                <option key={r} value={r}>{r.replace('_', ' ')}</option>
+              ))}
+            </select>
           </div>
         </div>
-        <div className="flex flex-col gap-2.5">
-          {[
-            { color: 'bg-[#3fb950]', label: 'Skills', value: skills },
-            { color: 'bg-[#f0883e]', label: 'Listings', value: listings },
-            { color: 'bg-[#da3633]', label: 'Portfolio', value: portfolio },
-          ].map((item) => (
-            <div key={item.label} className="flex items-center justify-between gap-6">
-              <div className="flex items-center gap-2">
-                <div className={clsx('w-2.5 h-2.5 rounded-full', item.color)} />
-                <span className="text-[12px] text-[#636c76] dark:text-[#848d97]">{item.label}</span>
-              </div>
-              <span className="text-[13px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{item.value}</span>
-            </div>
-          ))}
+
+        {/* footer */}
+        <div className="px-5 py-4 border-t border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22] flex items-center justify-between gap-3">
+          {saveMsg && (
+            <span className={`font-mono text-[10px] ${saveMsg.includes('saved') ? 'text-[#22c55e]' : 'text-[#d1242f]'}`}>
+              {saveMsg.includes('saved') ? '✓' : '!'} {saveMsg}
+            </span>
+          )}
+          <div className="flex items-center gap-2 ml-auto">
+            <button onClick={onClose}
+              className="px-3 py-1.5 border border-[#e2e4e8] dark:border-[#1e2228] font-mono text-[10px] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors cursor-pointer">
+              cancel
+            </button>
+            <button onClick={onSave} disabled={saving}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e8490f] bg-[#e8490f] font-mono text-[10px] text-white hover:bg-[#ff6b35] hover:border-[#ff6b35] transition-colors cursor-pointer disabled:opacity-50">
+              <HiOutlineCheck className="w-3.5 h-3.5" />
+              {saving ? 'saving...' : 'save'}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
-/* ─── Main Profile Page ─── */
-type Tab = 'listings' | 'skills' | 'reviews' | 'portfolio'
+/* ══════════════════════════════════════════
+   MAIN PAGE
+══════════════════════════════════════════ */
+/* ── ABOUT SECTION ── */
+function AboutSection({ user, onUpdate }: { user: AuthUser | null; onUpdate: (u: AuthUser) => void }) {
+  const [editing, setEditing] = useState(false)
+  const [bio, setBio] = useState(user?.bio ?? '')
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => { setBio(user?.bio ?? '') }, [user?.bio])
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const updated = await usersService.updateMe({ bio })
+      onUpdate(updated)
+      setEditing(false)
+    } catch { /* ignore */ } finally { setSaving(false) }
+  }
+
+  return (
+    <Section
+      title="about"
+      action={
+        !editing ? (
+          <button onClick={() => setEditing(true)}
+            className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] transition-colors cursor-pointer">
+            edit
+          </button>
+        ) : null
+      }
+    >
+      {editing ? (
+        <div className="space-y-3">
+          <textarea
+            rows={5}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            maxLength={1000}
+            placeholder="share your background, experience, and what drives you..."
+            className={`${iCls} resize-none`}
+            autoFocus
+          />
+          <div className="flex items-center justify-between">
+            <span className={`font-mono text-[9px] ${bio.length > 900 ? 'text-[#d1242f]' : 'text-[#636c76] dark:text-[#848d97]'}`}>
+              {bio.length}/1000
+            </span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => { setBio(user?.bio ?? ''); setEditing(false) }}
+                className="px-3 py-1.5 border border-[#e2e4e8] dark:border-[#1e2228] font-mono text-[10px] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors cursor-pointer">
+                cancel
+              </button>
+              <button onClick={handleSave} disabled={saving}
+                className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e8490f] bg-[#e8490f] font-mono text-[10px] text-white hover:bg-[#ff6b35] transition-colors cursor-pointer disabled:opacity-50">
+                <HiOutlineCheck className="w-3.5 h-3.5" />
+                {saving ? 'saving...' : 'save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : user?.bio ? (
+        <p className="font-mono text-[12px] text-[#1f2328] dark:text-[#e6edf3] leading-relaxed whitespace-pre-wrap">{user.bio}</p>
+      ) : (
+        <div className="flex items-center justify-between">
+          <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97]">~ no bio yet</p>
+          <button onClick={() => setEditing(true)}
+            className="font-mono text-[10px] text-[#e8490f] hover:underline cursor-pointer">+ add bio</button>
+        </div>
+      )}
+    </Section>
+  )
+}
+
+/* ── SKILLS SECTION ── */
+function SkillsSection({
+  user, onUpdate, allSkills, setAllSkills,
+}: {
+  user: AuthUser | null
+  onUpdate: (u: AuthUser) => void
+  allSkills: Skill[]
+  setAllSkills: React.Dispatch<React.SetStateAction<Skill[]>>
+}) {
+  const [managing, setManaging] = useState(false)
+  const [search, setSearch] = useState('')
+  const [toggling, setToggling] = useState<string | null>(null)
+  const [customName, setCustomName] = useState('')
+  const [customCat, setCustomCat] = useState('Custom')
+  const [creating, setCreating] = useState(false)
+
+  const userSkillIds = new Set(user?.skills?.map((s) => s.id) ?? [])
+  const filtered = search.trim()
+    ? allSkills.filter((s) => s.name.toLowerCase().includes(search.toLowerCase()))
+    : allSkills
+
+  const handleToggle = async (skill: Skill) => {
+    setToggling(skill.id)
+    try {
+      const updated = userSkillIds.has(skill.id)
+        ? await usersService.detachSkill(skill.id)
+        : await usersService.attachSkill(skill.id)
+      onUpdate(updated)
+    } catch { /* ignore */ } finally { setToggling(null) }
+  }
+
+  const handleCreate = async () => {
+    if (!customName.trim()) return
+    setCreating(true)
+    try {
+      const newSkill = await skillsService.create(customName.trim(), customCat)
+      setAllSkills((prev) => prev.some((s) => s.id === newSkill.id) ? prev : [...prev, newSkill])
+      const updated = await usersService.attachSkill(newSkill.id)
+      onUpdate(updated)
+      setCustomName('')
+    } catch { /* ignore */ } finally { setCreating(false) }
+  }
+
+  type SkillItem = NonNullable<AuthUser['skills']>[number]
+  const grouped = (user?.skills ?? []).reduce<Record<string, SkillItem[]>>((acc, s) => {
+    const cat = s.category ?? 'Other'
+    if (!acc[cat]) acc[cat] = []
+    acc[cat]!.push(s)
+    return acc
+  }, {})
+
+  return (
+    <Section
+      title="skills"
+      action={
+        <button onClick={() => setManaging((v) => !v)}
+          className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] transition-colors cursor-pointer">
+          {managing ? 'done' : 'manage'}
+        </button>
+      }
+    >
+      {/* display view */}
+      {!managing && (
+        (user?.skills?.length ?? 0) === 0 ? (
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97]">~ no skills added yet</p>
+            <button onClick={() => setManaging(true)}
+              className="font-mono text-[10px] text-[#e8490f] hover:underline cursor-pointer">+ add skills</button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {Object.entries(grouped).map(([cat, skills]) => (
+              <div key={cat}>
+                <p className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] mb-2">{cat}</p>
+                <div className="flex flex-wrap gap-2">
+                  {skills.map((s) => (
+                    <span key={s.id}
+                      className="font-mono text-[10px] px-2.5 py-1 border border-[#e2e4e8] dark:border-[#1e2228] text-[#1f2328] dark:text-[#e6edf3] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors">
+                      {s.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] pt-1">
+              {user?.skills?.length} skill{(user?.skills?.length ?? 0) !== 1 ? 's' : ''} total
+            </p>
+          </div>
+        )
+      )}
+
+      {/* manage panel */}
+      {managing && (
+        <div className="space-y-4">
+          {(user?.skills?.length ?? 0) > 0 && (
+            <div>
+              <p className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] mb-2">your skills</p>
+              <div className="flex flex-wrap gap-2">
+                {user?.skills?.map((s) => (
+                  <button key={s.id} onClick={() => handleToggle(s)} disabled={toggling === s.id}
+                    className="flex items-center gap-1.5 font-mono text-[10px] px-2.5 py-1 border border-[#e8490f] text-[#e8490f] hover:bg-[#e8490f] hover:text-white transition-colors cursor-pointer disabled:opacity-50">
+                    {s.name} <HiOutlineXMark className="w-3 h-3" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <div>
+            <p className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] mb-2">browse & add</p>
+            <input className={`${iCls} mb-2`} placeholder="search skills..." value={search} onChange={(e) => setSearch(e.target.value)} />
+            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
+              {filtered.filter((s) => !userSkillIds.has(s.id)).map((s) => (
+                <button key={s.id} onClick={() => handleToggle(s)} disabled={toggling === s.id}
+                  className="font-mono text-[10px] px-2.5 py-1 border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors cursor-pointer disabled:opacity-50">
+                  + {s.name}
+                </button>
+              ))}
+              {filtered.filter((s) => !userSkillIds.has(s.id)).length === 0 && (
+                <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">~ no results</p>
+              )}
+            </div>
+          </div>
+          <div>
+            <p className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] mb-2">create custom skill</p>
+            <div className="flex gap-2">
+              <input className={`${iCls} flex-1`} placeholder="e.g. Rust, Blender..." value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreate() } }} />
+              <select className={`${iCls} w-28 shrink-0`} value={customCat} onChange={(e) => setCustomCat(e.target.value)}>
+                {['Custom','Technology','Design','Writing','Media','Education','Business','Music'].map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <button onClick={handleCreate} disabled={creating || !customName.trim()}
+                className="px-3 py-1.5 border border-[#e8490f] bg-[#e8490f] font-mono text-[10px] text-white hover:bg-[#ff6b35] transition-colors cursor-pointer disabled:opacity-50 shrink-0">
+                {creating ? '...' : 'add'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </Section>
+  )
+}
+
+/* ── PORTFOLIO SECTION ── */
+function PortfolioSection({ portfolio }: { portfolio: PortfolioEntry[] }) {
+  return (
+    <Section
+      title="portfolio"
+      action={
+        <Link to="/app/portfolio"
+          className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] transition-colors">
+          manage
+        </Link>
+      }
+    >
+      {portfolio.length === 0 ? (
+        <div className="flex items-center justify-between">
+          <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97]">~ no projects yet</p>
+          <Link to="/app/portfolio" className="font-mono text-[10px] text-[#e8490f] hover:underline">+ add project</Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {portfolio.map((p) => (
+            <div key={p.id} className="border border-[#e2e4e8] dark:border-[#1e2228] hover:border-[#e8490f] transition-colors group">
+              {p.imageUrl ? (
+                <div className="h-32 overflow-hidden border-b border-[#e2e4e8] dark:border-[#1e2228]">
+                  <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                </div>
+              ) : (
+                <div className="h-32 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22] flex items-center justify-center">
+                  <span className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] opacity-40">no image</span>
+                </div>
+              )}
+              <div className="p-3">
+                <p className="font-mono text-[12px] font-bold text-[#1f2328] dark:text-[#e6edf3] truncate">{p.title}</p>
+                {p.summary && (
+                  <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] mt-1 line-clamp-2 leading-relaxed">{p.summary}</p>
+                )}
+                {p.technologies && p.technologies.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {p.technologies.slice(0, 3).map((t) => (
+                      <span key={t} className="font-mono text-[9px] px-1.5 py-0.5 border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97]">{t}</span>
+                    ))}
+                    {p.technologies.length > 3 && (
+                      <span className="font-mono text-[9px] px-1.5 py-0.5 text-[#636c76] dark:text-[#848d97]">+{p.technologies.length - 3}</span>
+                    )}
+                  </div>
+                )}
+                {p.projectUrl && (
+                  <a href={p.projectUrl} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 mt-2 font-mono text-[9px] text-[#e8490f] hover:underline">
+                    view project <HiOutlineArrowUpRight className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Section>
+  )
+}
+
+/* ── LISTINGS SECTION ── */
+function ListingsSection({ listings }: { listings: Listing[] }) {
+  return (
+    <Section
+      title="listings"
+      action={
+        <Link to="/app/listings"
+          className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] transition-colors">
+          manage
+        </Link>
+      }
+    >
+      {listings.length === 0 ? (
+        <div className="flex items-center justify-between">
+          <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97]">~ no listings yet</p>
+          <Link to="/app/listings/new" className="font-mono text-[10px] text-[#e8490f] hover:underline">+ create listing</Link>
+        </div>
+      ) : (
+        <div className="divide-y divide-[#e2e4e8] dark:divide-[#1e2228]">
+          {listings.map((l) => (
+            <Link key={l.id} to={`/app/listings/${l.id}`}
+              className="flex items-center justify-between gap-4 py-3 group hover:bg-[#f6f8fa] dark:hover:bg-[#161b22] -mx-5 px-5 transition-colors">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[11px] font-bold text-[#1f2328] dark:text-[#e6edf3] group-hover:text-[#e8490f] transition-colors truncate">
+                    {l.title}
+                  </span>
+                  <span className={`font-mono text-[9px] px-1.5 py-0.5 border shrink-0 ${
+                    l.is_active
+                      ? 'border-[#22c55e] text-[#22c55e]'
+                      : 'border-[#636c76] text-[#636c76] dark:border-[#848d97] dark:text-[#848d97]'
+                  }`}>
+                    {l.is_active ? 'active' : 'paused'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 mt-0.5">
+                  <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">{l.category}</span>
+                  <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">·</span>
+                  <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">{formatPrice(l)}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">
+                  {l.created_at ? new Date(l.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
+                </span>
+                <HiOutlineArrowUpRight className="w-3 h-3 text-[#636c76] dark:text-[#848d97] opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </Section>
+  )
+}
+
+/* ── CERTIFICATES SECTION ── */
+type CertForm = {
+  title: string; issuer: string; issue_date: string
+  expiry_date: string; credential_id: string; credential_url: string; description: string
+}
+const emptyCertForm = (): CertForm => ({
+  title: '', issuer: '', issue_date: '', expiry_date: '',
+  credential_id: '', credential_url: '', description: '',
+})
+
+function CertificatesSection({
+  certificates, setCertificates,
+}: {
+  certificates: Certificate[]
+  setCertificates: React.Dispatch<React.SetStateAction<Certificate[]>>
+}) {
+  const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [form, setForm] = useState<CertForm>(emptyCertForm())
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState<string | null>(null)
+
+  const set = (k: keyof CertForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }))
+
+  const openAdd = () => { setForm(emptyCertForm()); setEditingId(null); setShowForm(true) }
+  const openEdit = (c: Certificate) => {
+    setForm({
+      title: c.title, issuer: c.issuer, issue_date: c.issue_date,
+      expiry_date: c.expiry_date ?? '', credential_id: c.credential_id ?? '',
+      credential_url: c.credential_url ?? '', description: c.description ?? '',
+    })
+    setEditingId(c.id); setShowForm(true)
+  }
+  const cancel = () => { setShowForm(false); setEditingId(null) }
+
+  const handleSave = async () => {
+    if (!form.title.trim() || !form.issuer.trim() || !form.issue_date) return
+    setSaving(true)
+    try {
+      const payload = {
+        title: form.title, issuer: form.issuer, issue_date: form.issue_date,
+        expiry_date: form.expiry_date || null,
+        credential_id: form.credential_id || null,
+        credential_url: form.credential_url || null,
+        description: form.description || null,
+      }
+      if (editingId) {
+        const updated = await certificatesService.update(editingId, payload)
+        setCertificates((prev) => prev.map((c) => c.id === editingId ? updated : c))
+      } else {
+        const created = await certificatesService.create(payload)
+        setCertificates((prev) => [created, ...prev])
+      }
+      cancel()
+    } catch { /* ignore */ } finally { setSaving(false) }
+  }
+
+  const handleDelete = async (id: string) => {
+    setDeleting(id)
+    try {
+      await certificatesService.delete(id)
+      setCertificates((prev) => prev.filter((c) => c.id !== id))
+    } catch { /* ignore */ } finally { setDeleting(null) }
+  }
+
+  return (
+    <Section
+      title="licenses & certifications"
+      action={
+        !showForm ? (
+          <button onClick={openAdd}
+            className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] transition-colors cursor-pointer">
+            + add
+          </button>
+        ) : null
+      }
+    >
+      <div className="space-y-4">
+        {/* list */}
+        {certificates.length === 0 && !showForm && (
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97]">~ no certificates yet</p>
+            <button onClick={openAdd} className="font-mono text-[10px] text-[#e8490f] hover:underline cursor-pointer">+ add certificate</button>
+          </div>
+        )}
+        {certificates.length > 0 && (
+          <div className="divide-y divide-[#e2e4e8] dark:divide-[#1e2228]">
+            {certificates.map((cert) => (
+              <div key={cert.id} className="flex items-start gap-4 py-4 first:pt-0">
+                <div className="w-10 h-10 shrink-0 border border-[#e2e4e8] dark:border-[#1e2228] flex items-center justify-center bg-[#f6f8fa] dark:bg-[#161b22]">
+                  <HiOutlineShieldCheck className="w-5 h-5 text-[#e8490f]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-mono text-[12px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{cert.title}</p>
+                  <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] mt-0.5">{cert.issuer}</p>
+                  <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">
+                    issued {new Date(cert.issue_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                    {cert.expiry_date ? ` · expires ${new Date(cert.expiry_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}` : ' · no expiration'}
+                  </p>
+                  {cert.credential_id && <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">id: {cert.credential_id}</p>}
+                  {cert.description && <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] mt-1 line-clamp-2 leading-relaxed">{cert.description}</p>}
+                  {cert.credential_url && (
+                    <a href={cert.credential_url} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 mt-1.5 font-mono text-[9px] text-[#e8490f] hover:underline">
+                      show credential <HiOutlineArrowUpRight className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => openEdit(cert)}
+                    className="p-1.5 border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors cursor-pointer">
+                    <HiOutlinePencilSquare className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={() => handleDelete(cert.id)} disabled={deleting === cert.id}
+                    className="p-1.5 border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:border-[#d1242f] hover:text-[#d1242f] transition-colors cursor-pointer disabled:opacity-50">
+                    <HiOutlineTrash className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* inline form */}
+        {showForm && (
+          <div className="border border-[#e2e4e8] dark:border-[#1e2228] p-4 space-y-3">
+            <p className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97]">
+              {editingId ? 'edit certificate' : 'new certificate'}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="sm:col-span-2">
+                <label className={lCls}>title *</label>
+                <input className={iCls} value={form.title} onChange={set('title')} placeholder="e.g. AWS Solutions Architect" />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={lCls}>issuing organization *</label>
+                <input className={iCls} value={form.issuer} onChange={set('issuer')} placeholder="e.g. Amazon Web Services" />
+              </div>
+              <div>
+                <label className={lCls}>issue date *</label>
+                <input type="date" className={iCls} value={form.issue_date} onChange={set('issue_date')} />
+              </div>
+              <div>
+                <label className={lCls}>expiry date</label>
+                <input type="date" className={iCls} value={form.expiry_date} onChange={set('expiry_date')} />
+              </div>
+              <div>
+                <label className={lCls}>credential id</label>
+                <input className={iCls} value={form.credential_id} onChange={set('credential_id')} placeholder="e.g. ABC123" />
+              </div>
+              <div>
+                <label className={lCls}>credential url</label>
+                <input className={iCls} value={form.credential_url} onChange={set('credential_url')} placeholder="https://..." />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={lCls}>description</label>
+                <textarea rows={2} className={`${iCls} resize-none`} value={form.description} onChange={set('description')} placeholder="brief description..." />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 pt-1">
+              <button onClick={cancel}
+                className="px-3 py-1.5 border border-[#e2e4e8] dark:border-[#1e2228] font-mono text-[10px] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors cursor-pointer">
+                cancel
+              </button>
+              <button onClick={handleSave} disabled={saving || !form.title.trim() || !form.issuer.trim() || !form.issue_date}
+                className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e8490f] bg-[#e8490f] font-mono text-[10px] text-white hover:bg-[#ff6b35] transition-colors cursor-pointer disabled:opacity-50">
+                <HiOutlineCheck className="w-3.5 h-3.5" />
+                {saving ? 'saving...' : editingId ? 'update' : 'add certificate'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </Section>
+  )
+}
+
+/* ── REVIEWS SECTION ── */
+function ReviewsSection({ reviews, avgRating }: { reviews: Review[]; avgRating: number }) {
+  return (
+    <Section title="reviews received">
+      {reviews.length === 0 ? (
+        <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97]">~ no reviews yet — complete projects to receive reviews</p>
+      ) : (
+        <div className="space-y-1">
+          {/* aggregate */}
+          <div className="flex items-center gap-4 pb-4 mb-2 border-b border-[#e2e4e8] dark:border-[#1e2228]">
+            <div className="text-center shrink-0">
+              <p className="font-mono text-[32px] font-bold text-[#1f2328] dark:text-[#e6edf3] leading-none">{avgRating.toFixed(1)}</p>
+              <div className="flex items-center gap-0.5 mt-1 justify-center">
+                {[1,2,3,4,5].map((s) => s <= Math.round(avgRating)
+                  ? <HiStar key={s} className="w-3 h-3 text-[#e8490f]" />
+                  : <HiOutlineStarLine key={s} className="w-3 h-3 text-[#636c76] dark:text-[#848d97]" />
+                )}
+              </div>
+              <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-1">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</p>
+            </div>
+            <div className="flex-1 space-y-1.5">
+              {(['reliability', 'professionalism', 'growth'] as const).map((key) => {
+                const avg = reviews.reduce((s, r) => s + r[`${key}_score`], 0) / reviews.length
+                return (
+                  <div key={key} className="flex items-center gap-2">
+                    <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] w-24 shrink-0">{key}</span>
+                    <div className="flex-1 h-1 bg-[#f6f8fa] dark:bg-[#1e2228]">
+                      <div className="h-full bg-[#e8490f] transition-all" style={{ width: `${(avg / 5) * 100}%` }} />
+                    </div>
+                    <span className="font-mono text-[9px] text-[#1f2328] dark:text-[#e6edf3] w-6 text-right">{avg.toFixed(1)}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          {/* list */}
+          <div className="divide-y divide-[#e2e4e8] dark:divide-[#1e2228]">
+            {reviews.map((r) => {
+              const avg = (r.reliability_score + r.professionalism_score + r.growth_score) / 3
+              const name = `${r.reviewer.first_name} ${r.reviewer.last_name}`
+              return (
+                <div key={r.id} className="flex gap-3 py-4 first:pt-0">
+                  <Avatar name={name} src={r.reviewer.avatar_url ?? undefined} size="sm" className="shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-mono text-[11px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{name}</p>
+                      <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] shrink-0">
+                        {new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 my-1">
+                      {[1,2,3,4,5].map((s) => s <= Math.round(avg)
+                        ? <HiStar key={s} className="w-3 h-3 text-[#e8490f]" />
+                        : <HiOutlineStarLine key={s} className="w-3 h-3 text-[#636c76] dark:text-[#848d97]" />
+                      )}
+                      <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] ml-1">{avg.toFixed(1)}</span>
+                    </div>
+                    {r.comment && <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97] leading-relaxed">{r.comment}</p>}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </Section>
+  )
+}
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth()
-  const [activeTab, setActiveTab] = useState<Tab>('listings')
+  const fileRef = useRef<HTMLInputElement>(null)
+
   const [listings, setListings] = useState<Listing[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
   const [portfolio, setPortfolio] = useState<PortfolioEntry[]>([])
+  const [certificates, setCertificates] = useState<Certificate[]>([])
   const [stats, setStats] = useState<ProfileStats | null>(null)
+  const [allSkills, setAllSkills] = useState<Skill[]>([])
   const [copied, setCopied] = useState(false)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+
+  /* drawer state */
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerSaving, setDrawerSaving] = useState(false)
+  const [drawerMsg, setDrawerMsg] = useState('')
+  const [form, setForm] = useState({
+    first_name: '', last_name: '', headline: '', university: '',
+    location: '', portfolio_url: '', github_username: '', role: '',
+  })
 
   useEffect(() => {
     listingsService.getMine().then(setListings)
     usersService.getMe().then(updateUser)
     usersService.getMyStats().then(setStats).catch(() => {})
+    certificatesService.getMine().then(setCertificates).catch(() => {})
+    skillsService.getAll().then(setAllSkills).catch(() => {})
     if (user?.id) {
       reviewsService.getForUser(user.id).then((r) => setReviews(r.items)).catch(() => {})
-      api.get<PortfolioEntry[]>(`/portfolio/user/${user.id}`).then((r) => setPortfolio(r.data)).catch(() => {})
+      portfolioService.getByUser(user.id).then(setPortfolio).catch(() => {})
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  /* sync form when user loads */
+  useEffect(() => {
+    if (!user) return
+    setForm({
+      first_name: user.first_name ?? '',
+      last_name: user.last_name ?? '',
+      headline: user.headline ?? '',
+      university: user.university ?? '',
+      location: user.location ?? '',
+      portfolio_url: user.portfolio_url ?? '',
+      github_username: user.github_username ?? '',
+      role: user.role ?? '',
+    })
+  }, [user])
+
+  const openDrawer = () => { setDrawerMsg(''); setDrawerOpen(true) }
+
+  const handleDrawerSave = async () => {
+    setDrawerSaving(true); setDrawerMsg('')
+    try {
+      const updated = await usersService.updateMe(form)
+      updateUser(updated)
+      setDrawerMsg('changes saved')
+      setTimeout(() => { setDrawerOpen(false); setDrawerMsg('') }, 800)
+    } catch {
+      setDrawerMsg('failed to save')
+    } finally {
+      setDrawerSaving(false)
+    }
+  }
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAvatarUploading(true)
+    try {
+      const url = await usersService.uploadAvatar(file)
+      const fresh = await usersService.getMe()
+      updateUser({ ...fresh, avatar_url: url })
+    } catch { /* ignore */ } finally {
+      setAvatarUploading(false)
+      if (fileRef.current) fileRef.current.value = ''
+    }
+  }
+
   const publicProfileUrl = user ? `${window.location.origin}/app/profile/${user.id}` : ''
+  const fullName = user ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() : ''
+  const joinedDate = user?.created_at
+    ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    : ''
+  const avgRating = reviews.length
+    ? reviews.reduce((s, r) => s + (r.reliability_score + r.professionalism_score + r.growth_score) / 3, 0) / reviews.length
+    : 0
 
   const handleShare = async () => {
     try { await navigator.clipboard.writeText(publicProfileUrl) } catch {
-      const input = document.createElement('input')
-      input.value = publicProfileUrl
-      document.body.appendChild(input)
-      input.select()
-      document.execCommand('copy')
-      document.body.removeChild(input)
+      const el = document.createElement('input')
+      el.value = publicProfileUrl
+      document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el)
     }
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    setCopied(true); setTimeout(() => setCopied(false), 2000)
   }
 
   const handleDownloadResume = () => {
     const skills = user?.skills?.map((s) => s.name).join(', ') || 'None listed'
-    const resume = [
-      `${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim(),
-      user?.headline ?? '', '',
+    const lines = [
+      fullName, user?.headline ?? '', '',
       'Contact', `Email: ${user?.email ?? ''}`,
       user?.portfolio_url ? `Portfolio: ${user.portfolio_url}` : '',
       user?.university ? `University: ${user.university}` : '', '',
@@ -219,390 +865,166 @@ export default function ProfilePage() {
       'Skills', skills, '',
       'Listings', ...listings.map((l) => `- ${l.title} (${l.category}) — ${formatPrice(l)}`),
     ].filter(Boolean).join('\n')
-    const blob = new Blob([resume], { type: 'text/plain' })
+    const blob = new Blob([lines], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = url
-    a.download = `${user?.first_name ?? 'profile'}_resume.txt`
-    a.click()
+    a.href = url; a.download = `${user?.first_name ?? 'profile'}_resume.txt`; a.click()
     URL.revokeObjectURL(url)
   }
 
-  const fullName = user ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() : ''
-  const joinedDate = user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''
-
   return (
-    <div className="flex gap-6 items-start">
-      {/* ═══ LEFT SIDEBAR ═══ */}
-      <div className="w-[280px] shrink-0 space-y-4 hidden md:block">
-        {/* Avatar & Name */}
-        <div className="flex flex-col items-center text-center">
-          <div className="relative">
-            {user?.avatar_url ? (
-              <img
-                src={mediaUrl(user.avatar_url)}
-                alt={fullName || 'Avatar'}
-                className="w-[140px] h-[140px] rounded-xl object-cover border-2 border-[#d0d7de] dark:border-[#30363d] ring-4 ring-[#d0d7de] dark:ring-[#30363d]"
-              />
-            ) : (
-              <div className="w-[140px] h-[140px] rounded-xl flex items-center justify-center text-4xl font-semibold bg-[#ddf4ff] dark:bg-[#121d2f] text-[#0969da] dark:text-[#2f81f7] border-2 border-[#d0d7de] dark:border-[#30363d] ring-4 ring-[#d0d7de] dark:ring-[#30363d]">
-                {fullName ? fullName.charAt(0).toUpperCase() : 'S'}
-              </div>
-            )}
-            {user?.is_verified && (
-              <div className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-[#1a7f37] flex items-center justify-center ring-3 ring-white dark:ring-[#0d1117]">
-                <HiOutlineShieldCheck className="w-4 h-4 text-white" />
-              </div>
-            )}
+    <div className="space-y-4">
+
+      {/* ── EDIT DRAWER ── */}
+      <EditDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        form={form}
+        onChange={(k, v) => setForm((f) => ({ ...f, [k]: v }))}
+        onSave={handleDrawerSave}
+        saving={drawerSaving}
+        saveMsg={drawerMsg}
+      />
+
+      {/* ── HERO CARD ── */}
+      <div className="border border-[#e2e4e8] dark:border-[#1e2228] bg-white dark:bg-[#0d1117] overflow-hidden">
+
+        {/* Cover banner */}
+        <div className="relative h-36 bg-[#f6f8fa] dark:bg-[#161b22] border-b border-[#e2e4e8] dark:border-[#1e2228]">
+          <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08]"
+            style={{ backgroundImage: 'repeating-linear-gradient(0deg,#000 0,#000 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,#000 0,#000 1px,transparent 1px,transparent 32px)' }} />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="font-mono text-[11px] tracking-widest text-[#636c76] dark:text-[#848d97] opacity-40 select-none">
+              {user?.university ?? 'skillmate.com'}
+            </span>
           </div>
-          <h1 className="text-[20px] font-bold text-[#1f2328] dark:text-[#e6edf3] mt-4">{fullName || 'Your Name'}</h1>
-          {user?.github_username && (
-            <p className="text-[13px] text-[#636c76] dark:text-[#848d97]">@{user.github_username}</p>
-          )}
-          {user?.headline && (
-            <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mt-1 leading-relaxed max-w-[240px]">{user.headline}</p>
-          )}
-          {user?.is_verified && (
-            <div className="flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full bg-[#dafbe1] dark:bg-[#0f2d1a] border border-[#aef0b8] dark:border-[#1f5f33]">
-              <HiOutlineCheckBadge className="w-3.5 h-3.5 text-[#1a7f37] dark:text-[#3fb950]" />
-              <span className="text-[10px] font-semibold text-[#1a7f37] dark:text-[#3fb950]">Verified Student</span>
-            </div>
-          )}
         </div>
 
-        {/* Edit Profile Button */}
-        <Link
-          to="/app/settings"
-          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-[13px] font-semibold bg-[#238636] border border-[#2ea043] text-white hover:bg-[#2ea043] transition-colors"
-        >
-          <HiOutlinePencilSquare className="w-4 h-4" /> Edit Profile
-        </Link>
+        {/* Avatar + actions row */}
+        <div className="px-6 pb-5">
+          <div className="flex items-end justify-between -mt-10 mb-4">
 
-        {/* Bio */}
-        {user?.bio && (
-          <p className="text-[12px] text-[#636c76] dark:text-[#848d97] leading-relaxed">{user.bio}</p>
-        )}
-
-        {/* Info Links */}
-        <div className="space-y-2.5 text-[12px] text-[#636c76] dark:text-[#848d97]">
-          {user?.location && (
-            <div className="flex items-center gap-2.5">
-              <HiOutlineMapPin className="w-4 h-4 shrink-0" /><span>{user.location}</span>
-            </div>
-          )}
-          {user?.university && (
-            <div className="flex items-center gap-2.5">
-              <HiOutlineAcademicCap className="w-4 h-4 shrink-0" /><span>{user.university}</span>
-            </div>
-          )}
-          {user?.portfolio_url && (
-            <a href={user.portfolio_url} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2.5 hover:text-[#0969da] dark:hover:text-[#2f81f7] transition-colors">
-              <HiOutlineGlobeAlt className="w-4 h-4 shrink-0" />
-              <span className="truncate">{user.portfolio_url.replace(/^https?:\/\//, '')}</span>
-            </a>
-          )}
-          {user?.github_username && (
-            <a href={`https://github.com/${user.github_username}`} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2.5 hover:text-[#0969da] dark:hover:text-[#2f81f7] transition-colors">
-              <HiOutlineLink className="w-4 h-4 shrink-0" /><span>{user.github_username}</span>
-            </a>
-          )}
-          {user?.email && (
-            <div className="flex items-center gap-2.5">
-              <HiOutlineEnvelope className="w-4 h-4 shrink-0" /><span className="truncate">{user.email}</span>
-            </div>
-          )}
-          {joinedDate && (
-            <div className="flex items-center gap-2.5">
-              <HiOutlineCalendar className="w-4 h-4 shrink-0" /><span>Joined {joinedDate}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Community Stats */}
-        <div className="rounded-lg border border-[#d0d7de] dark:border-[#30363d] bg-[#f6f8fa] dark:bg-[#161b22] p-4">
-          <p className="text-[12px] font-semibold text-[#1f2328] dark:text-[#e6edf3] mb-3">Community Stats</p>
-          <div className="space-y-3">
-            {[
-              { icon: HiOutlineEye, color: 'text-[#0969da] dark:text-[#2f81f7]', label: 'Views', value: stats?.profile_views ?? 0 },
-              { icon: HiOutlineStar, color: 'text-[#9a6700] dark:text-[#d29922]', label: 'Reviews', value: stats?.total_reviews ?? 0 },
-              { icon: HiOutlineChatBubbleOvalLeft, color: 'text-[#1a7f37] dark:text-[#3fb950]', label: 'Reputation', value: stats?.reputation_score?.toFixed(1) ?? '0.0' },
-              { icon: HiOutlineTrophy, color: 'text-[#cf222e] dark:text-[#da3633]', label: 'Projects', value: stats?.total_portfolio ?? 0 },
-            ].map((s) => {
-              const Icon = s.icon
-              return (
-                <div key={s.label} className="flex items-center gap-2.5">
-                  <Icon className={clsx('w-4 h-4 shrink-0', s.color)} />
-                  <p className="text-[12px] text-[#1f2328] dark:text-[#e6edf3]">
-                    {s.label} <span className="font-bold">{s.value}</span>
-                  </p>
+            {/* Avatar with upload overlay */}
+            <div className="relative shrink-0 group">
+              {user?.avatar_url ? (
+                <img src={mediaUrl(user.avatar_url)} alt={fullName}
+                  className="w-20 h-20 object-cover border-2 border-white dark:border-[#0d1117] ring-2 ring-[#e2e4e8] dark:ring-[#1e2228]" />
+              ) : (
+                <div className="w-20 h-20 flex items-center justify-center text-2xl font-bold font-mono border-2 border-white dark:border-[#0d1117] ring-2 ring-[#e2e4e8] dark:ring-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22] text-[#e8490f]">
+                  {fullName ? fullName.charAt(0).toUpperCase() : 'S'}
                 </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="space-y-1">
-          <a href={publicProfileUrl} target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] text-[#636c76] dark:text-[#848d97] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors w-full">
-            <HiOutlineGlobeAlt className="w-4 h-4" /> View Public Profile
-            <HiOutlineArrowUpRight className="w-3 h-3 ml-auto opacity-50" />
-          </a>
-          <button onClick={handleShare}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] text-[#636c76] dark:text-[#848d97] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors w-full text-left cursor-pointer">
-            <HiOutlineSquare2Stack className="w-4 h-4" />
-            {copied ? <span className="text-[#1a7f37] dark:text-[#3fb950]">Link copied!</span> : 'Copy Profile Link'}
-          </button>
-          <button onClick={handleDownloadResume}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] text-[#636c76] dark:text-[#848d97] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors w-full text-left cursor-pointer">
-            <HiOutlineDocumentArrowDown className="w-4 h-4" /> Download Resume
-          </button>
-        </div>
-      </div>
-
-      {/* ═══ RIGHT CONTENT ═══ */}
-      <div className="flex-1 min-w-0 space-y-4">
-        {/* Top Row: Donut + Badges */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <SkillDonut skills={user?.skills?.length ?? 0} listings={listings.length} portfolio={portfolio.length} />
-
-          {/* Badges card */}
-          <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-5">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">Badges</p>
-              <span className="text-[20px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{stats?.total_reviews ?? 0}</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {(user?.skills?.length ?? 0) > 0 && (
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-[#dafbe1] dark:bg-[#0f2d1a] border border-[#aef0b8] dark:border-[#1f5f33] text-[#1a7f37] dark:text-[#3fb950]">
-                  Skill Builder
-                </span>
               )}
-              {listings.length > 0 && (
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-[#fff8c5] dark:bg-[#2d2000] border border-[#d4a72c] dark:border-[#5c4200] text-[#9a6700] dark:text-[#d29922]">
-                  Active Freelancer
-                </span>
-              )}
-              {portfolio.length > 0 && (
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-[#fff0ee] dark:bg-[#2d1a1a] border border-[#ffcecb] dark:border-[#5c3333] text-[#cf222e] dark:text-[#da3633]">
-                  Portfolio Pro
-                </span>
-              )}
-              {(stats?.total_reviews ?? 0) > 0 && (
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-[#ddf4ff] dark:bg-[#121d2f] border border-[#b6e3ff] dark:border-[#1f3d5c] text-[#0969da] dark:text-[#2f81f7]">
-                  Reviewed
-                </span>
-              )}
-              {user?.is_verified && (
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-[#dafbe1] dark:bg-[#0f2d1a] border border-[#aef0b8] dark:border-[#1f5f33] text-[#1a7f37] dark:text-[#3fb950]">
-                  Verified
-                </span>
-              )}
-            </div>
-            {(stats?.total_reviews ?? 0) === 0 && portfolio.length === 0 && listings.length === 0 && (
-              <p className="text-[11px] text-[#636c76] dark:text-[#848d97] mt-3">Complete projects and get reviews to earn badges!</p>
-            )}
-            {/* Locked badge teaser */}
-            <div className="mt-3 pt-3 border-t border-[#d0d7de] dark:border-[#21262d]">
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-[#f6f8fa] dark:bg-[#21262d] border border-[#d0d7de] dark:border-[#30363d] text-[#636c76] dark:text-[#848d97] opacity-60">
-                Locked: Top Rated Student
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Activity Heatmap */}
-        <ActivityHeatmap
-          data={stats?.activity_heatmap ?? []}
-          activeDays={stats?.active_days ?? 0}
-          maxStreak={stats?.max_streak ?? 0}
-        />
-
-        {/* Tabs */}
-        <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d]">
-          <div className="flex items-center gap-1 px-5 pt-4 pb-0 border-b border-[#d0d7de] dark:border-[#21262d]">
-            {([
-              { id: 'listings' as Tab, label: 'Listings', count: listings.length },
-              { id: 'skills' as Tab, label: 'Skills', count: user?.skills?.length ?? 0 },
-              { id: 'reviews' as Tab, label: 'Reviews', count: reviews.length },
-              { id: 'portfolio' as Tab, label: 'Portfolio', count: portfolio.length },
-            ]).map((tab) => (
+              {/* hover overlay */}
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={clsx(
-                  'flex items-center gap-1.5 px-3.5 py-2.5 text-[12px] font-medium transition-colors cursor-pointer border-b-2 -mb-px whitespace-nowrap shrink-0',
-                  activeTab === tab.id
-                    ? 'text-[#1f2328] dark:text-[#e6edf3] border-[#f0883e]'
-                    : 'text-[#636c76] dark:text-[#848d97] border-transparent hover:text-[#1f2328] dark:hover:text-[#e6edf3]',
-                )}
+                onClick={() => fileRef.current?.click()}
+                disabled={avatarUploading}
+                className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-wait"
               >
-                {tab.label}
-                <span className={clsx(
-                  'text-[10px] font-bold px-1.5 py-0.5 rounded-full',
-                  activeTab === tab.id
-                    ? 'bg-[#f6f8fa] dark:bg-[#30363d] text-[#1f2328] dark:text-[#e6edf3]'
-                    : 'bg-[#f6f8fa] dark:bg-[#21262d] text-[#636c76] dark:text-[#848d97]',
-                )}>
-                  {tab.count}
+                <HiOutlineCamera className="w-5 h-5 text-white" />
+                <span className="font-mono text-[8px] text-white mt-0.5">
+                  {avatarUploading ? 'uploading...' : 'change'}
                 </span>
               </button>
-            ))}
-            {activeTab === 'listings' && listings.length > 0 && (
-              <Link to="/app/listings" className="ml-auto text-[11px] text-[#636c76] dark:text-[#848d97] hover:text-[#0969da] dark:hover:text-[#2f81f7] transition-colors shrink-0">
-                View all &rsaquo;
-              </Link>
-            )}
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+              {user?.is_verified && (
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#22c55e] flex items-center justify-center border border-white dark:border-[#0d1117]">
+                  <HiOutlineShieldCheck className="w-3 h-3 text-white" />
+                </div>
+              )}
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              <button onClick={openDrawer}
+                className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e8490f] font-mono text-[10px] tracking-wide text-[#e8490f] hover:bg-[#e8490f] hover:text-white transition-colors cursor-pointer">
+                <HiOutlinePencilSquare className="w-3.5 h-3.5" /> edit profile
+              </button>
+              <button onClick={handleShare}
+                className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e2e4e8] dark:border-[#1e2228] font-mono text-[10px] tracking-wide text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors cursor-pointer">
+                <HiOutlineSquare2Stack className="w-3.5 h-3.5" />
+                {copied ? <span className="text-[#22c55e]">copied!</span> : 'copy link'}
+              </button>
+              <button onClick={handleDownloadResume}
+                className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e2e4e8] dark:border-[#1e2228] font-mono text-[10px] tracking-wide text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors cursor-pointer">
+                <HiOutlineDocumentArrowDown className="w-3.5 h-3.5" /> resume
+              </button>
+              <a href={publicProfileUrl} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e2e4e8] dark:border-[#1e2228] font-mono text-[10px] tracking-wide text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors">
+                <HiOutlineGlobeAlt className="w-3.5 h-3.5" /> public view
+                <HiOutlineArrowUpRight className="w-3 h-3 opacity-50" />
+              </a>
+            </div>
           </div>
 
-          <div className="p-5">
-            {/* Listings Tab */}
-            {activeTab === 'listings' && (
-              listings.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-[13px] text-[#636c76] dark:text-[#848d97] mb-3">No listings yet.</p>
-                  <Link to="/app/listings/new" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12px] font-semibold bg-[#238636] text-white hover:bg-[#2ea043] transition-colors">
-                    Create your first listing
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {listings.map((l, i) => (
-                    <motion.div key={l.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: i * 0.04 }}>
-                      <Link to={`/app/listings/${l.id}`}
-                        className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] transition-colors group">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-medium text-[#1f2328] dark:text-[#e6edf3] group-hover:text-[#0969da] dark:group-hover:text-[#2f81f7] transition-colors">{l.title}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#f6f8fa] dark:bg-[#21262d] text-[#636c76] dark:text-[#848d97]">{l.category}</span>
-                            {l.is_active ? (
-                              <span className="text-[9px] font-semibold text-[#1a7f37] dark:text-[#3fb950]">active</span>
-                            ) : (
-                              <span className="text-[9px] font-semibold text-[#636c76] dark:text-[#848d97]">paused</span>
-                            )}
-                          </div>
-                        </div>
-                        <span className="text-[12px] text-[#636c76] dark:text-[#848d97] shrink-0">
-                          {l.created_at ? new Date(l.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
-                        </span>
-                      </Link>
-                    </motion.div>
-                  ))}
-                </div>
-              )
+          {/* Name + headline */}
+          <div className="mb-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="font-mono text-[18px] font-bold text-[#1f2328] dark:text-[#e6edf3]">
+                {fullName || 'Your Name'}
+              </h1>
+              {user?.is_verified && (
+                <span className="font-mono text-[9px] tracking-widest uppercase px-2 py-0.5 border border-[#22c55e] text-[#22c55e]">
+                  verified
+                </span>
+              )}
+            </div>
+            {user?.headline && (
+              <p className="font-mono text-[12px] text-[#636c76] dark:text-[#848d97] mt-1">{user.headline}</p>
             )}
+            {/* Meta row */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+              {user?.university && (
+                <span className="flex items-center gap-1 font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">
+                  <HiOutlineAcademicCap className="w-3 h-3" /> {user.university}
+                </span>
+              )}
+              {user?.location && (
+                <span className="flex items-center gap-1 font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">
+                  <HiOutlineMapPin className="w-3 h-3" /> {user.location}
+                </span>
+              )}
+              {user?.email && (
+                <span className="flex items-center gap-1 font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">
+                  <HiOutlineEnvelope className="w-3 h-3" /> {user.email}
+                </span>
+              )}
+              {joinedDate && (
+                <span className="flex items-center gap-1 font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">
+                  <HiOutlineCalendar className="w-3 h-3" /> joined {joinedDate}
+                </span>
+              )}
+              {user?.portfolio_url && (
+                <a href={user.portfolio_url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 font-mono text-[10px] text-[#e8490f] hover:underline">
+                  <HiOutlineLink className="w-3 h-3" />
+                  {user.portfolio_url.replace(/^https?:\/\//, '')}
+                </a>
+              )}
+            </div>
+          </div>
 
-            {/* Skills Tab */}
-            {activeTab === 'skills' && (
-              (user?.skills?.length ?? 0) === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-[13px] text-[#636c76] dark:text-[#848d97] mb-3">No skills added yet.</p>
-                  <Link to="/app/settings" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12px] font-semibold bg-[#f6f8fa] dark:bg-[#21262d] border border-[#d0d7de] dark:border-[#363b42] text-[#1f2328] dark:text-[#e6edf3] hover:bg-[#eaeef2] dark:hover:bg-[#30363d] transition-colors">
-                    Add skills
-                  </Link>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {user?.skills?.map((s) => (
-                    <span key={s.id} className="px-3 py-1.5 rounded-full text-[12px] font-medium bg-[#f6f8fa] dark:bg-[#21262d] text-[#636c76] dark:text-[#848d97] border border-[#d0d7de] dark:border-[#30363d] hover:border-[#0969da] dark:hover:border-[#2f81f7] hover:text-[#0969da] dark:hover:text-[#2f81f7] transition-colors">
-                      {s.name}
-                    </span>
-                  ))}
-                </div>
-              )
-            )}
-
-            {/* Reviews Tab */}
-            {activeTab === 'reviews' && (
-              reviews.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-[13px] text-[#636c76] dark:text-[#848d97]">No reviews yet. Complete projects to receive reviews.</p>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {reviews.map((r) => {
-                    const avg = (r.reliability_score + r.professionalism_score + r.growth_score) / 3
-                    const name = `${r.reviewer.first_name} ${r.reviewer.last_name}`
-                    return (
-                      <div key={r.id} className="flex gap-3 px-3 py-3 rounded-lg hover:bg-[#f6f8fa] dark:hover:bg-[#21262d] transition-colors">
-                        <Avatar name={name} src={r.reviewer.avatar_url ?? undefined} size="sm" className="shrink-0 mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-[12px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">{name}</p>
-                            <span className="text-[10px] text-[#636c76] dark:text-[#848d97] shrink-0">
-                              {new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1 my-1">
-                            {[1,2,3,4,5].map((s) => s <= Math.round(avg)
-                              ? <HiStar key={s} className="w-3 h-3 text-[#9a6700] dark:text-[#d29922]" />
-                              : <HiOutlineStarLine key={s} className="w-3 h-3 text-[#d0d7de] dark:text-[#30363d]" />
-                            )}
-                            <span className="text-[10px] text-[#636c76] dark:text-[#848d97] ml-1">{avg.toFixed(1)}</span>
-                          </div>
-                          {r.comment && <p className="text-[12px] text-[#636c76] dark:text-[#848d97] leading-relaxed">{r.comment}</p>}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )
-            )}
-
-            {/* Portfolio Tab */}
-            {activeTab === 'portfolio' && (
-              portfolio.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-[13px] text-[#636c76] dark:text-[#848d97] mb-3">No portfolio projects yet.</p>
-                  <Link to="/app/portfolio" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12px] font-semibold bg-[#238636] text-white hover:bg-[#2ea043] transition-colors">
-                    Add your first project
-                  </Link>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {portfolio.map((p, i) => (
-                    <motion.div
-                      key={p.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25, delay: i * 0.05 }}
-                      className="rounded-xl border border-[#d0d7de] dark:border-[#30363d] hover:border-[#0969da]/50 dark:hover:border-[#2f81f7]/50 transition-colors overflow-hidden bg-[#f6f8fa] dark:bg-[#0d1117]"
-                    >
-                      {p.image_url && (
-                        <div className="h-28 bg-[#eaeef2] dark:bg-[#21262d]">
-                          <img src={p.image_url} alt={p.title} className="w-full h-full object-cover" />
-                        </div>
-                      )}
-                      <div className="p-3.5">
-                        <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3] line-clamp-1">{p.title}</p>
-                        {p.summary && <p className="text-[11px] text-[#636c76] dark:text-[#848d97] mt-1 line-clamp-2">{p.summary}</p>}
-                        {p.technologies && p.technologies.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {p.technologies.slice(0, 4).map((t) => (
-                              <span key={t} className="text-[9px] px-1.5 py-0.5 rounded-full bg-white dark:bg-[#21262d] text-[#636c76] dark:text-[#848d97] border border-[#d0d7de] dark:border-[#30363d]">{t}</span>
-                            ))}
-                            {p.technologies.length > 4 && (
-                              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-white dark:bg-[#21262d] text-[#636c76] dark:text-[#848d97]">+{p.technologies.length - 4}</span>
-                            )}
-                          </div>
-                        )}
-                        {p.project_url && (
-                          <a href={p.project_url} target="_blank" rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 mt-2 text-[10px] text-[#0969da] dark:text-[#2f81f7] hover:underline">
-                            <HiOutlineLink className="w-3 h-3" /> View project
-                          </a>
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              )
-            )}
+          {/* Stats bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border-t border-[#e2e4e8] dark:border-[#1e2228] pt-4">
+            <StatPill icon={HiOutlineEye} label="profile views" value={stats?.profile_views ?? 0} />
+            <StatPill icon={HiOutlineBriefcase} label="listings" value={listings.length} />
+            <StatPill icon={HiOutlineStar} label="avg rating" value={avgRating > 0 ? avgRating.toFixed(1) : '—'} />
+            <StatPill icon={HiOutlineTrophy} label="projects" value={portfolio.length} />
           </div>
         </div>
       </div>
+
+      {/* ── ABOUT ── */}
+      <AboutSection user={user} onUpdate={updateUser} />
+
+      {/* ── SKILLS ── */}
+      <SkillsSection user={user} onUpdate={updateUser} allSkills={allSkills} setAllSkills={setAllSkills} />
+      <PortfolioSection portfolio={portfolio} />
+
+      <ListingsSection listings={listings} />
+      <CertificatesSection certificates={certificates} setCertificates={setCertificates} />
+
+      <ReviewsSection reviews={reviews} avgRating={avgRating} />
+
     </div>
   )
 }

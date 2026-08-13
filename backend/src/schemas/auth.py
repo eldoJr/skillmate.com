@@ -42,6 +42,13 @@ class TokenResponse(BaseModel):
     user: "UserResponse"
 
 
+class SkillBrief(BaseModel):
+    id: str
+    name: str
+    category: str
+    model_config = {"from_attributes": True}
+
+
 class UserResponse(BaseModel):
     id: str
     email: str
@@ -54,7 +61,7 @@ class UserResponse(BaseModel):
     avatar_url: str | None
     portfolio_url: str | None
     is_verified: bool
-    skills: list
+    skills: list[SkillBrief]
     created_at: datetime
 
     model_config = {"from_attributes": True}

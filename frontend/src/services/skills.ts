@@ -12,4 +12,8 @@ export const skillsService = {
     const { data } = await api.get<SkillsByCategory[]>('/skills/')
     return data
   },
+  async create(name: string, category: string = 'Custom'): Promise<Skill> {
+    const { data } = await api.post<Skill>('/skills/', { name, category })
+    return data
+  },
 }

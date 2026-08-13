@@ -1,24 +1,20 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import {
-  HiOutlineSparkles, HiOutlineArrowPath, HiOutlineClock,
-  HiOutlineStar, HiOutlineCheckBadge,
-} from 'react-icons/hi2'
+import { HiOutlineSparkles, HiOutlineArrowPath, HiOutlineClock, HiOutlineCheckBadge } from 'react-icons/hi2'
 import { aiService, type MatchResult } from '../../services/ai'
 import Avatar from '../../components/atoms/avatar'
 
-function ScoreBar({ value, label }: { value: number; label: string }) {
+function ScoreBar({ value }: { value: number }) {
   const pct = Math.round(value * 100)
-  const color = pct >= 80 ? 'bg-[#1a7f37] dark:bg-[#3fb950]' : pct >= 60 ? 'bg-[#9a6700] dark:bg-[#d29922]' : 'bg-[#0969da] dark:bg-[#2f81f7]'
+  const color = pct >= 80 ? 'bg-[#22c55e]' : pct >= 60 ? 'bg-[#d29922]' : 'bg-[#e8490f] dark:bg-[#ff6b35]'
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] text-[#636c76] dark:text-[#848d97] w-10 shrink-0">{label}</span>
-      <div className="flex-1 h-1.5 rounded-full bg-[#f6f8fa] dark:bg-[#21262d] overflow-hidden">
-        <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.6, ease: 'easeOut' }}
-          className={`h-full rounded-full ${color}`} />
+      <div className="flex-1 h-1 bg-[#e2e4e8] dark:bg-[#1e2228]">
+        <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.5, ease: 'easeOut' }}
+          className={`h-full ${color}`} />
       </div>
-      <span className="text-[10px] font-semibold text-[#1f2328] dark:text-[#e6edf3] w-8 text-right">{pct}%</span>
+      <span className="font-mono text-[9px] font-medium text-[#1f2328] dark:text-[#e6edf3] w-7 text-right shrink-0">{pct}%</span>
     </div>
   )
 }
@@ -27,51 +23,54 @@ function MatchCard({ match, index }: { match: MatchResult; index: number }) {
   const navigate = useNavigate()
   const { listing } = match
   const ownerName = `${listing.owner.first_name} ${listing.owner.last_name}`
-
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }}
       onClick={() => navigate(`/app/listings/${listing.id}`)}
-      className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-5 cursor-pointer hover:border-[#0969da] dark:hover:border-[#2f81f7] transition-colors group"
+      className="border border-[#e2e4e8] dark:border-[#1e2228] hover:border-[#e8490f]/40 dark:hover:border-[#ff6b35]/40 transition-colors cursor-pointer group"
     >
-      <div className="flex items-start gap-3 mb-3">
-        <Avatar name={ownerName} src={listing.owner.avatar_url ?? undefined} size="sm" className="shrink-0 mt-0.5" />
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3] group-hover:text-[#0969da] dark:group-hover:text-[#2f81f7] transition-colors truncate">{listing.title}</p>
-          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-            <span className="text-[11px] text-[#636c76] dark:text-[#848d97]">{ownerName}</span>
-            {listing.owner.is_verified && <HiOutlineCheckBadge className="w-3.5 h-3.5 text-[#1a7f37] dark:text-[#3fb950]" />}
+      <div className="p-4">
+        <div className="flex items-start gap-3 mb-2">
+          <Avatar name={ownerName} src={listing.owner.avatar_url ?? undefined} size="sm" />
+          <div className="flex-1 min-w-0">
+            <p className="font-mono text-[11px] font-medium text-[#1f2328] dark:text-[#e6edf3] group-hover:text-[#e8490f] dark:group-hover:text-[#ff6b35] transition-colors truncate">{listing.title}</p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">{ownerName}</span>
+              {listing.owner.is_verified && <HiOutlineCheckBadge className="w-3 h-3 text-[#22c55e]" />}
+            </div>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="font-mono text-[11px] font-bold text-[#1f2328] dark:text-[#e6edf3]">
+              {listing.price ? `R${listing.price}/hr` : listing.price_min ? `R${listing.price_min}–${listing.price_max}` : 'negotiable'}
+            </p>
+            {listing.delivery_days && (
+              <p className="flex items-center gap-0.5 font-mono text-[9px] text-[#636c76] dark:text-[#848d97] justify-end mt-0.5">
+                <HiOutlineClock className="w-3 h-3" />{listing.delivery_days}d
+              </p>
+            )}
           </div>
         </div>
-        <div className="shrink-0 text-right">
-          <p className="text-[15px] font-bold text-[#1f2328] dark:text-[#e6edf3]">
-            {listing.price ? `R${listing.price}/hr` : listing.price_min ? `R${listing.price_min}–${listing.price_max}` : 'Negotiable'}
+        <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] leading-relaxed line-clamp-2 mb-3">{listing.description}</p>
+        {listing.skills.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {listing.skills.slice(0, 5).map((s) => (
+              <span key={s.id} className="px-2 py-0.5 font-mono text-[9px] border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97]">{s.name}</span>
+            ))}
+            {listing.skills.length > 5 && <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] self-center">+{listing.skills.length - 5}</span>}
+          </div>
+        )}
+        <div className="pt-3 border-t border-[#e2e4e8] dark:border-[#1e2228] space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">match score</span>
+            <span className="font-mono text-[9px] text-[#e8490f] dark:text-[#ff6b35]">{Math.round(match.score * 100)}%</span>
+          </div>
+          <ScoreBar value={match.score} />
+        </div>
+        {match.explanation && (
+          <p className="mt-2 font-mono text-[9px] text-[#636c76] dark:text-[#848d97] leading-relaxed">
+            <span className="text-[#e8490f] dark:text-[#ff6b35] mr-1">›</span>{match.explanation}
           </p>
-          {listing.delivery_days && (
-            <p className="text-[10px] text-[#636c76] dark:text-[#848d97] flex items-center gap-1 justify-end mt-0.5">
-              <HiOutlineClock className="w-3 h-3" />{listing.delivery_days}d
-            </p>
-          )}
-        </div>
+        )}
       </div>
-
-      <p className="text-[12px] text-[#636c76] dark:text-[#848d97] leading-relaxed line-clamp-2 mb-3">{listing.description}</p>
-
-      {listing.skills.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-3">
-          {listing.skills.slice(0, 4).map((s) => (
-            <span key={s.id} className="px-2 py-0.5 text-[10px] font-medium rounded-lg bg-[#f6f8fa] dark:bg-[#21262d] text-[#636c76] dark:text-[#848d97] border border-[#d0d7de] dark:border-[#30363d]">{s.name}</span>
-          ))}
-          {listing.skills.length > 4 && <span className="text-[10px] text-[#636c76] dark:text-[#848d97] self-center">+{listing.skills.length - 4}</span>}
-        </div>
-      )}
-
-      <div className="pt-3 border-t border-[#d0d7de] dark:border-[#30363d] space-y-1.5">
-        <ScoreBar value={match.score} label="Match" />
-      </div>
-
-      {match.explanation && (
-        <p className="mt-2 text-[11px] text-[#636c76] dark:text-[#848d97] italic leading-relaxed">{match.explanation}</p>
-      )}
     </motion.div>
   )
 }
@@ -84,57 +83,50 @@ export default function MatchingPage() {
 
   const load = async () => {
     setLoading(true)
-    try {
-      const res = await aiService.getMatches(20)
-      setMatches(res.items)
-      setTotal(res.total)
-    } finally {
-      setLoading(false)
-    }
+    try { const res = await aiService.getMatches(20); setMatches(res.items); setTotal(res.total) }
+    finally { setLoading(false) }
   }
 
   useEffect(() => { load() }, [])
 
   const handleRefresh = async () => {
     setRefreshing(true)
-    try {
-      await aiService.refreshMatches()
-      await load()
-    } finally {
-      setRefreshing(false)
-    }
+    try { await aiService.refreshMatches(); await load() }
+    finally { setRefreshing(false) }
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h2 className="text-[16px] font-bold text-[#1f2328] dark:text-[#e6edf3]">AI Matches</h2>
-          <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mt-0.5">Listings matched to your skills and profile using vector similarity.</p>
+    <div className="space-y-4">
+
+      {/* Header */}
+      <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+        <div className="px-4 py-2.5 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
+            <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">ai matches</span>
+          </div>
+          <button onClick={handleRefresh} disabled={refreshing || loading}
+            className="flex items-center gap-1 px-2.5 py-1 font-mono text-[9px] tracking-wide border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] dark:hover:border-[#ff6b35] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors cursor-pointer disabled:opacity-50"
+          >
+            <HiOutlineArrowPath className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? 'refreshing…' : 'refresh'}
+          </button>
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={refreshing || loading}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold border border-[#d0d7de] dark:border-[#30363d] text-[#636c76] dark:text-[#848d97] hover:border-[#0969da] dark:hover:border-[#2f81f7] hover:text-[#0969da] dark:hover:text-[#2f81f7] transition-colors cursor-pointer disabled:opacity-60"
-        >
-          <HiOutlineArrowPath className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-          {refreshing ? 'Refreshing…' : 'Refresh'}
-        </button>
+        <div className="px-4 py-3">
+          <p className="font-mono text-[11px] font-medium text-[#1f2328] dark:text-[#e6edf3]">
+            {!loading && total > 0 ? `${total} match${total !== 1 ? 'es' : ''} found` : 'listings matched to your profile'}
+          </p>
+          <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">ranked by vector similarity to your skills and activity</p>
+        </div>
       </div>
 
-      {!loading && total > 0 && (
-        <p className="text-[12px] text-[#636c76] dark:text-[#848d97]">{total} match{total !== 1 ? 'es' : ''} found</p>
-      )}
-
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <HiOutlineArrowPath className="w-6 h-6 text-[#636c76] dark:text-[#848d97] animate-spin" />
+        <div className="flex items-center justify-center py-16">
+          <HiOutlineArrowPath className="w-4 h-4 text-[#636c76] dark:text-[#848d97] animate-spin" />
         </div>
       ) : matches.length === 0 ? (
-        <div className="rounded-2xl bg-white dark:bg-[#161b22] border border-[#d0d7de] dark:border-[#30363d] p-12 text-center">
-          <HiOutlineSparkles className="w-8 h-8 text-[#d0d7de] dark:text-[#30363d] mx-auto mb-3" />
-          <p className="text-[13px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">No matches yet</p>
-          <p className="text-[12px] text-[#636c76] dark:text-[#848d97] mt-1">Add skills to your profile and click Refresh to find matches.</p>
+        <div className="border border-[#e2e4e8] dark:border-[#1e2228] p-12 text-center">
+          <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">~ no matches yet — add skills to your profile and click refresh</p>
         </div>
       ) : (
         <div className="space-y-3">

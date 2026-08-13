@@ -15,6 +15,7 @@ from src.ai.mentor import stream_mentor_response, build_mentor_graph
 from src.ai.graph_runner import run_graph
 from src.ai.graph_state import AgentState
 from src.services.reviews import get_aggregate
+from src.db.session import AsyncSessionLocal
 
 
 async def _build_context(db: AsyncSession, user: User) -> dict:
@@ -76,19 +77,9 @@ async def _get_or_create_conversation(
     return conv
 
 
-async def _load_history(conv: MentorConversation) -> list:
-    """Convert stored messages to LangChain message objects."""
-    history = []
-    for m in conv.messages:
-        if m.role == "user":
-            history.append(HumanMessage(content=m.content))
-        else:
-            history.append(AIMessage(content=m.content))
-    return history
-
-
 async def _persist_messages(
-    db: AsyncSession, conv: MentorConversation, user_content: str, assistant_content: str
+    db: AsyncSession, conv: MentorConversation, user_content: str, assistant_content: str,
+    set_title: bool = False,
 ) -> None:
     db.add(MentorMessage(
         id=str(uuid.uuid4()), conversation_id=conv.id, role="user", content=user_content
@@ -96,19 +87,36 @@ async def _persist_messages(
     db.add(MentorMessage(
         id=str(uuid.uuid4()), conversation_id=conv.id, role="assistant", content=assistant_content
     ))
-    # Auto-title from first user message
-    if not conv.messages or len(conv.messages) == 0:
+    if set_title:
         conv.title = user_content[:80] + ("..." if len(user_content) > 80 else "")
     await db.commit()
-    await db.refresh(conv)
 
 
 async def stream_chat(
     db: AsyncSession, user: User, req: ChatRequest
 ) -> AsyncGenerator[str, None]:
-    context = await _build_context(db, user)
-    conv = await _get_or_create_conversation(db, user, req.conversation_id)
-    history = await _load_history(conv)
+    # ── All DB work must happen HERE, before the first yield. ──────────────
+    # FastAPI closes dependency-injected sessions before StreamingResponse
+    # starts iterating the generator, so any lazy load after yield will crash.
+    async with AsyncSessionLocal() as fresh_db:
+        context = await _build_context(fresh_db, user)
+        conv = await _get_or_create_conversation(fresh_db, user, req.conversation_id)
+
+        # Eagerly load messages while the session is open
+        msgs_result = await fresh_db.scalars(
+            select(MentorMessage)
+            .where(MentorMessage.conversation_id == conv.id)
+            .order_by(MentorMessage.created_at)
+        )
+        history = [
+            HumanMessage(content=m.content) if m.role == "user" else AIMessage(content=m.content)
+            for m in msgs_result.all()
+        ]
+        conv_id = conv.id
+        is_new = not req.conversation_id
+        await fresh_db.commit()  # flush the new conv row if created
+
+    import json as _json
 
     state: AgentState = {
         "messages": history + [HumanMessage(content=req.message)],
@@ -117,13 +125,10 @@ async def stream_chat(
         "output": None,
     }
 
-    # Yield conversation_id first so client knows which conversation to track
-    import json as _json
-    yield f"data: {_json.dumps({'conversation_id': conv.id})}\n\n"
+    yield f"data: {_json.dumps({'conversation_id': conv_id})}\n\n"
 
     full_reply = []
     async for chunk in stream_mentor_response(state):
-        # Collect content for persistence
         try:
             payload = _json.loads(chunk.removeprefix("data: ").strip())
             if payload.get("content"):
@@ -132,7 +137,10 @@ async def stream_chat(
             pass
         yield chunk
 
-    await _persist_messages(db, conv, req.message, "".join(full_reply))
+    async with AsyncSessionLocal() as persist_db:
+        persist_conv = await persist_db.get(MentorConversation, conv_id)
+        if persist_conv:
+            await _persist_messages(persist_db, persist_conv, req.message, "".join(full_reply), set_title=is_new)
 
 
 async def get_conversation(db: AsyncSession, user: User, conversation_id: str) -> ConversationResponse:

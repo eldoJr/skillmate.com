@@ -60,8 +60,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
   }, [])
 
+  const updateUser = useCallback((u: AuthUser) => {
+    const enriched = { ...u, full_name: `${u.first_name} ${u.last_name}`.trim() }
+    localStorage.setItem('skillmate_user', JSON.stringify(enriched))
+    setUser(enriched)
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, updateUser: persist.bind(null, token ?? '') }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

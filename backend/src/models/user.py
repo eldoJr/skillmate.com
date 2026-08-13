@@ -54,3 +54,4 @@ class User(Base):
     notifications: Mapped[list["Notification"]] = relationship(back_populates="user", lazy="selectin")
     portfolios: Mapped[list["Portfolio"]] = relationship(back_populates="user", lazy="selectin")
     activities: Mapped[list["UserActivity"]] = relationship(back_populates="user", lazy="selectin")
+    certificates: Mapped[list["Certificate"]] = relationship(back_populates="user", lazy="selectin")

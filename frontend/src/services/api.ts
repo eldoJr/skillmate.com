@@ -8,6 +8,8 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('skillmate_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
+  // Hono doesn't match trailing slashes
+  if (config.url) config.url = config.url.replace(/\/+$/, '') || '/'
   return config
 })
 

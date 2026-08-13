@@ -61,12 +61,9 @@ export interface AuthResponse {
 
 export const authService = {
   async login(payload: LoginPayload): Promise<AuthResponse> {
-    // FastAPI OAuth2 expects form data for /auth/login
-    const form = new URLSearchParams()
-    form.append('username', payload.email)
-    form.append('password', payload.password)
-    const { data } = await api.post<AuthResponse>('/auth/login', form, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    const { data } = await api.post<AuthResponse>('/auth/login', {
+      email: payload.email,
+      password: payload.password,
     })
     return data
   },
@@ -77,7 +74,7 @@ export const authService = {
   },
 
   async me(): Promise<AuthUser> {
-    const { data } = await api.get<AuthUser>('/auth/me')
+    const { data } = await api.get<AuthUser>('/users/me')
     return data
   },
 }

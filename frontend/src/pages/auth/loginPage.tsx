@@ -6,6 +6,7 @@ import Logo from '../../components/atoms/logo'
 import Button from '../../components/atoms/button'
 import ThemeToggle from '../../components/atoms/themeToggle'
 import Dropdown, { DropdownItem } from '../../components/molecules/dropdown'
+import ProgressBar from '../../components/atoms/progressBar'
 import { useAuth } from '../../contexts/AuthContext'
 import { extractErrorMessage } from '../../services/auth'
 
@@ -34,6 +35,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0d1117] flex flex-col items-center justify-center px-5 py-12 relative">
+      <ProgressBar loading={loading} />
       <div className="absolute top-4 right-4 flex items-center gap-2">
         <Dropdown
           trigger={

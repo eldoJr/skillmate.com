@@ -27,6 +27,8 @@ export interface ListingCreate {
   delivery_days?: number | null; skill_ids?: string[]
 }
 
+export interface ListingUpdate extends Partial<ListingCreate> {}
+
 export const listingsService = {
   async getAll(params?: Record<string, string | number | undefined>): Promise<PaginatedListings> {
     const { data } = await api.get<PaginatedListings>('/listings/', { params })
@@ -46,6 +48,10 @@ export const listingsService = {
   },
   async getById(id: string): Promise<Listing> {
     const { data } = await api.get<Listing>(`/listings/${id}`)
+    return data
+  },
+  async update(id: string, payload: ListingUpdate): Promise<Listing> {
+    const { data } = await api.patch<Listing>(`/listings/${id}`, payload)
     return data
   },
   async remove(id: string): Promise<void> {
