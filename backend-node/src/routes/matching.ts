@@ -86,17 +86,53 @@ app.get('/', requireAuth, async c => {
   const scoreMap = Object.fromEntries(raw.map(r => [r.id, r.score]))
   const listingRows = await db.select().from(listings).where(sql`id = ANY(ARRAY[${sql.join(raw.map(r => sql`${r.id}`), sql`, `)}])`)
   const filtered = raw.map(r => listingRows.find(l => l.id === r.id)).filter(l => l && l.ownerId !== user.id) as typeof listingRows
+  if (!filtered.length) return c.json({ items: [], total: 0 })
+
+  // join owners
+  const ownerIds = [...new Set(filtered.map(l => l.ownerId))]
+  const ownerRows = await db.select().from(users).where(sql`id = ANY(ARRAY[${sql.join(ownerIds.map(id => sql`${id}`), sql`, `)}])`)
+  const ownerMap = Object.fromEntries(ownerRows.map(u => [u.id, u]))
+
+  // join skills
+  const listingIds = filtered.map(l => l.id)
+  const skillRows = await db.select({ listingId: listingSkills.listingId, id: skills.id, name: skills.name, category: skills.category })
+    .from(listingSkills).innerJoin(skills, eq(listingSkills.skillId, skills.id))
+    .where(sql`${listingSkills.listingId} = ANY(ARRAY[${sql.join(listingIds.map(id => sql`${id}`), sql`, `)}])`)
+  const skillMap: Record<string, { id: string; name: string; category: string }[]> = {}
+  for (const s of skillRows) {
+    if (!skillMap[s.listingId]) skillMap[s.listingId] = []
+    skillMap[s.listingId].push({ id: s.id, name: s.name, category: s.category })
+  }
 
   let explanations: string[] = []
   if (explain && filtered.length) {
     const skillNames = await db.select({ name: skills.name }).from(userSkills)
       .innerJoin(skills, eq(userSkills.skillId, skills.id)).where(eq(userSkills.userId, user.id))
-    const items = filtered.map((l, i) => `${i + 1}. ${l.title} | score: ${scoreMap[l.id]?.toFixed(0)}%`).join('\n')
+    const items = filtered.map((l, i) => `${i + 1}. ${l.title}`).join('\n')
     const raw2 = await chatCompletion([{ role: 'user', content: `Student skills: ${skillNames.map(s => s.name).join(', ') || 'none'}\n\nListings:\n${items}\n\nFor each listing, write exactly one sentence explaining why it matches this student. Return a JSON array of ${filtered.length} strings in the same order. No explanation outside the JSON.` }], { temperature: 0.4, maxTokens: 600 })
     explanations = parseJSON(raw2, [])
   }
 
-  const items = filtered.map((l, i) => ({ listing: l, score: scoreMap[l.id], explanation: explanations[i] ?? null }))
+  const items = filtered.map((l, i) => {
+    const owner = ownerMap[l.ownerId]
+    return {
+      score: scoreMap[l.id],
+      explanation: explanations[i] ?? null,
+      listing: {
+        id: l.id, owner_id: l.ownerId, title: l.title, description: l.description,
+        category: l.category, listing_type: l.listingType,
+        price: l.price, price_min: l.priceMin, price_max: l.priceMax,
+        delivery_days: l.deliveryDays, cover_image: l.coverImage,
+        is_active: l.isActive, created_at: l.createdAt, updated_at: l.updatedAt,
+        skills: skillMap[l.id] ?? [],
+        owner: owner ? {
+          id: owner.id, first_name: owner.firstName, last_name: owner.lastName,
+          university: owner.university, headline: owner.headline,
+          avatar_url: owner.avatarUrl, is_verified: owner.isVerified,
+        } : null,
+      },
+    }
+  })
   return c.json({ items, total: items.length })
 })
 

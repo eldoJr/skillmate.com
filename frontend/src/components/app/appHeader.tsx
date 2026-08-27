@@ -177,15 +177,15 @@ export default function AppHeader() {
     <header
       className={clsx(
         'sticky top-0 z-30 h-14 flex items-center gap-3 px-4 transition-shadow duration-300',
-        'bg-[#fafafa] dark:bg-[#0a0c0f]',
-        'border-b border-[#e2e4e8] dark:border-[#1e2228]',
+        'bg-canvas-subtle dark:bg-canvas-dark-default',
+        'border-b border-border-default dark:border-border-dark-default',
         scrolled && 'shadow-none',
       )}
     >
       {/* Mobile hamburger */}
       <button
         onClick={openMobile}
-        className="md:hidden p-2 -ml-1 text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors cursor-pointer shrink-0"
+        className="md:hidden p-2 -ml-1 text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer shrink-0"
         aria-label="Open navigation"
       >
         <HiOutlineBars3 className="w-5 h-5" />
@@ -194,32 +194,31 @@ export default function AppHeader() {
       {/* Left — terminal breadcrumb */}
       <div className="flex items-center min-w-0 shrink-0">
         <div className="flex items-center gap-1 font-mono text-[11px] tracking-wide">
-          <span className="text-[#e8490f] dark:text-[#ff6b35] select-none">~/</span>
+          <span className="text-brand dark:text-brand-dark-DEFAULT select-none">~/</span>
           {meta.parent && (
             <>
-              <span className="text-[#636c76] dark:text-[#848d97]">{meta.parent}</span>
-              <span className="text-[#d0d7de] dark:text-[#30363d] mx-0.5">/</span>
+              <span className="text-fg-muted dark:text-fg-dark-muted">{meta.parent}</span>
+              <span className="text-border-default dark:text-border-dark-default mx-0.5">/</span>
             </>
           )}
-          <span className="text-[#1f2328] dark:text-[#e6edf3] font-medium">{meta.label}</span>
-          <span className="text-[#e8490f] dark:text-[#ff6b35] animate-pulse select-none ml-0.5">_</span>
+          <span className="text-fg-default dark:text-fg-dark-default font-medium">{meta.label}</span>
+          <span className="text-brand dark:text-brand-dark-DEFAULT animate-pulse select-none ml-0.5">_</span>
         </div>
       </div>
 
-      {/* Center — search (flex-1 on md+, hidden on mobile) */}
+      {/* Center — search */}
       <div className="hidden md:flex flex-1 justify-center px-4" ref={searchRef}>
         <div className={clsx(
-          'relative w-full max-w-[360px] flex items-center border bg-white dark:bg-[#0d1117] transition-all duration-150',
+          'relative w-full max-w-[360px] flex items-center border bg-canvas-overlay dark:bg-canvas-dark-inset transition-all duration-150',
           searchFocused
-            ? 'border-[#e8490f] dark:border-[#ff6b35]'
-            : 'border-[#e2e4e8] dark:border-[#1e2228]',
+            ? 'border-brand dark:border-brand-dark-DEFAULT'
+            : 'border-border-default dark:border-border-dark-default',
         )}>
-          {/* Terminal prompt */}
-          <span className="absolute left-3 font-mono text-[11px] text-[#e8490f] dark:text-[#ff6b35] select-none pointer-events-none">
+          <span className="absolute left-3 font-mono text-[11px] text-brand dark:text-brand-dark-DEFAULT select-none pointer-events-none">
             {searchLoading ? '~' : '$'}
           </span>
           {searchLoading && (
-            <HiOutlineArrowPath className="absolute left-7 top-1/2 -translate-y-1/2 w-3 h-3 text-[#636c76] dark:text-[#848d97] animate-spin pointer-events-none" />
+            <HiOutlineArrowPath className="absolute left-7 top-1/2 -translate-y-1/2 w-3 h-3 text-fg-muted dark:text-fg-dark-muted animate-spin pointer-events-none" />
           )}
           <input
             type="text"
@@ -228,76 +227,75 @@ export default function AppHeader() {
             onFocus={() => { setSearchFocused(true); searchResults && setSearchOpen(true) }}
             onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
             placeholder="search skills, students, listings…"
-            className="flex-1 min-w-0 pl-10 pr-3 py-2 font-mono text-[11px] tracking-wide bg-transparent text-[#1f2328] dark:text-[#e6edf3] placeholder-[#adb5bd] dark:placeholder-[#4a5568] outline-none"
+            className="flex-1 min-w-0 pl-10 pr-3 py-2 font-mono text-[11px] tracking-wide bg-transparent text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none"
           />
           <button
             onClick={handleSearchSubmit}
-            className="shrink-0 self-stretch px-3 border-l border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22] hover:bg-[#e8490f] dark:hover:bg-[#ff6b35] hover:text-white transition-colors duration-150 cursor-pointer flex items-center justify-center group"
+            className="shrink-0 self-stretch px-3 border-l border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-overlay hover:bg-brand dark:hover:bg-brand-dark-DEFAULT hover:text-white transition-colors duration-150 cursor-pointer flex items-center justify-center group"
           >
-            <HiOutlineMagnifyingGlass className="w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97] group-hover:text-white transition-colors" />
+            <HiOutlineMagnifyingGlass className="w-3.5 h-3.5 text-fg-muted dark:text-fg-dark-muted group-hover:text-white transition-colors" />
           </button>
         </div>
 
         {/* Dropdown */}
         {searchOpen && searchResults && searchResults.total > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-white dark:bg-[#0d1117] border border-[#e2e4e8] dark:border-[#1e2228] shadow-xl overflow-hidden">
-            {/* Terminal header */}
-            <div className="px-3 py-1.5 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22] flex items-center gap-1.5">
-              <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">results for "{search}"</span>
+          <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-canvas-overlay dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default shadow-xl overflow-hidden">
+            <div className="px-3 py-1.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-overlay flex items-center gap-1.5">
+              <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">results for "{search}"</span>
             </div>
             {searchResults.listings.hits.length > 0 && (
               <div>
-                <p className="px-3 pt-2 pb-1 font-mono text-[9px] tracking-widest text-[#e8490f] dark:text-[#ff6b35] uppercase flex items-center gap-1.5">
+                <p className="px-3 pt-2 pb-1 font-mono text-[9px] tracking-widest text-brand dark:text-brand-dark-DEFAULT uppercase flex items-center gap-1.5">
                   <HiOutlineRectangleStack className="w-3 h-3" /> listings
                 </p>
                 {searchResults.listings.hits.map((hit) => (
                   <button key={hit.id} onClick={() => handleSearchNav(hit)}
-                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#f6f8fa] dark:hover:bg-[#161b22] transition-colors cursor-pointer text-left border-l-2 border-l-transparent hover:border-l-[#e8490f] dark:hover:border-l-[#ff6b35]">
-                    <HiOutlineRectangleStack className="w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97] shrink-0" />
+                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay transition-colors cursor-pointer text-left border-l-2 border-l-transparent hover:border-l-brand dark:hover:border-l-brand-dark-DEFAULT">
+                    <HiOutlineRectangleStack className="w-3.5 h-3.5 text-fg-muted dark:text-fg-dark-muted shrink-0" />
                     <div className="min-w-0">
-                      <p className="font-mono text-[11px] text-[#1f2328] dark:text-[#e6edf3] truncate">{hit.title}</p>
-                      {hit.subtitle && <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] truncate">{hit.subtitle}</p>}
+                      <p className="font-mono text-[11px] text-fg-default dark:text-fg-dark-default truncate">{hit.title}</p>
+                      {hit.subtitle && <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted truncate">{hit.subtitle}</p>}
                     </div>
                   </button>
                 ))}
               </div>
             )}
             {searchResults.users.hits.length > 0 && (
-              <div className={searchResults.listings.hits.length > 0 ? 'border-t border-[#f6f8fa] dark:border-[#1e2228]' : ''}>
-                <p className="px-3 pt-2 pb-1 font-mono text-[9px] tracking-widest text-[#e8490f] dark:text-[#ff6b35] uppercase flex items-center gap-1.5">
+              <div className={searchResults.listings.hits.length > 0 ? 'border-t border-border-subtle dark:border-border-dark-muted' : ''}>
+                <p className="px-3 pt-2 pb-1 font-mono text-[9px] tracking-widest text-brand dark:text-brand-dark-DEFAULT uppercase flex items-center gap-1.5">
                   <HiOutlineUser className="w-3 h-3" /> students
                 </p>
                 {searchResults.users.hits.map((hit) => (
                   <button key={hit.id} onClick={() => handleSearchNav(hit)}
-                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#f6f8fa] dark:hover:bg-[#161b22] transition-colors cursor-pointer text-left border-l-2 border-l-transparent hover:border-l-[#e8490f] dark:hover:border-l-[#ff6b35]">
+                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay transition-colors cursor-pointer text-left border-l-2 border-l-transparent hover:border-l-brand dark:hover:border-l-brand-dark-DEFAULT">
                     <Avatar name={hit.title} size="sm" className="shrink-0" />
                     <div className="min-w-0">
-                      <p className="font-mono text-[11px] text-[#1f2328] dark:text-[#e6edf3] truncate">{hit.title}</p>
-                      {hit.subtitle && <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] truncate">{hit.subtitle}</p>}
+                      <p className="font-mono text-[11px] text-fg-default dark:text-fg-dark-default truncate">{hit.title}</p>
+                      {hit.subtitle && <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted truncate">{hit.subtitle}</p>}
                     </div>
                   </button>
                 ))}
               </div>
             )}
             {searchResults.skills.hits.length > 0 && (
-              <div className={searchResults.listings.hits.length > 0 || searchResults.users.hits.length > 0 ? 'border-t border-[#f6f8fa] dark:border-[#1e2228]' : ''}>
-                <p className="px-3 pt-2 pb-1 font-mono text-[9px] tracking-widest text-[#e8490f] dark:text-[#ff6b35] uppercase flex items-center gap-1.5">
+              <div className={searchResults.listings.hits.length > 0 || searchResults.users.hits.length > 0 ? 'border-t border-border-subtle dark:border-border-dark-muted' : ''}>
+                <p className="px-3 pt-2 pb-1 font-mono text-[9px] tracking-widest text-brand dark:text-brand-dark-DEFAULT uppercase flex items-center gap-1.5">
                   <HiOutlineSparkles className="w-3 h-3" /> skills
                 </p>
                 {searchResults.skills.hits.map((hit) => (
                   <button key={hit.id} onClick={() => handleSearchNav(hit)}
-                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#f6f8fa] dark:hover:bg-[#161b22] transition-colors cursor-pointer text-left border-l-2 border-l-transparent hover:border-l-[#e8490f] dark:hover:border-l-[#ff6b35]">
-                    <HiOutlineSparkles className="w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97] shrink-0" />
+                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay transition-colors cursor-pointer text-left border-l-2 border-l-transparent hover:border-l-brand dark:hover:border-l-brand-dark-DEFAULT">
+                    <HiOutlineSparkles className="w-3.5 h-3.5 text-fg-muted dark:text-fg-dark-muted shrink-0" />
                     <div className="min-w-0">
-                      <p className="font-mono text-[11px] text-[#1f2328] dark:text-[#e6edf3] truncate">{hit.title}</p>
-                      {hit.subtitle && <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] truncate">{hit.subtitle}</p>}
+                      <p className="font-mono text-[11px] text-fg-default dark:text-fg-dark-default truncate">{hit.title}</p>
+                      {hit.subtitle && <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted truncate">{hit.subtitle}</p>}
                     </div>
                   </button>
                 ))}
               </div>
             )}
-            <div className="border-t border-[#e2e4e8] dark:border-[#1e2228] px-3 py-2 bg-[#f6f8fa] dark:bg-[#161b22]">
-              <button onClick={handleSearchSubmit} className="font-mono text-[10px] text-[#e8490f] dark:text-[#ff6b35] hover:underline cursor-pointer">
+            <div className="border-t border-border-default dark:border-border-dark-default px-3 py-2 bg-canvas-inset dark:bg-canvas-dark-overlay">
+              <button onClick={handleSearchSubmit} className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT hover:underline cursor-pointer">
                 &gt; see all results for "{search}"
               </button>
             </div>
@@ -310,11 +308,11 @@ export default function AppHeader() {
         {/* Messages */}
         <Link
           to="/app/messages"
-          className="relative p-2 transition-colors text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] dark:hover:text-[#ff6b35] hover:bg-[#f6f8fa] dark:hover:bg-[#161b22]"
+          className="relative p-2 transition-colors text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay"
         >
           <HiOutlineChatBubbleLeftRight className="w-[17px] h-[17px]" />
           {unreadMessages > 0 && (
-            <span className="absolute top-1.5 right-1.5 min-w-[13px] h-3 px-0.5 font-mono text-[8px] font-bold bg-[#e8490f] dark:bg-[#ff6b35] text-white flex items-center justify-center leading-none">
+            <span className="absolute top-1.5 right-1.5 min-w-[13px] h-3 px-0.5 font-mono text-[8px] font-bold bg-brand dark:bg-brand-dark-DEFAULT text-white flex items-center justify-center leading-none">
               {unreadMessages > 9 ? '9+' : unreadMessages}
             </span>
           )}
@@ -323,22 +321,22 @@ export default function AppHeader() {
         {/* Notifications */}
         <Link
           to="/app/notifications"
-          className="relative p-2 transition-colors text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] dark:hover:text-[#ff6b35] hover:bg-[#f6f8fa] dark:hover:bg-[#161b22]"
+          className="relative p-2 transition-colors text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay"
         >
           <HiOutlineBell className="w-[17px] h-[17px]" />
           {unreadNotifs > 0 && (
-            <span className="absolute top-1.5 right-1.5 min-w-[13px] h-3 px-0.5 font-mono text-[8px] font-bold bg-[#e8490f] dark:bg-[#ff6b35] text-white flex items-center justify-center leading-none">
+            <span className="absolute top-1.5 right-1.5 min-w-[13px] h-3 px-0.5 font-mono text-[8px] font-bold bg-brand dark:bg-brand-dark-DEFAULT text-white flex items-center justify-center leading-none">
               {unreadNotifs > 9 ? '9+' : unreadNotifs}
             </span>
           )}
         </Link>
 
-        <div className="w-px h-4 bg-[#e2e4e8] dark:bg-[#1e2228] mx-1" />
+        <div className="w-px h-4 bg-border-default dark:bg-border-dark-default mx-1" />
 
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
-          className="p-2 transition-colors text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] dark:hover:text-[#ff6b35] hover:bg-[#f6f8fa] dark:hover:bg-[#161b22] cursor-pointer"
+          className="p-2 transition-colors text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay cursor-pointer"
         >
           <div className="relative w-[17px] h-[17px]">
             <HiOutlineSun className="w-[17px] h-[17px]" />
@@ -346,37 +344,36 @@ export default function AppHeader() {
           </div>
         </button>
 
-        <div className="w-px h-4 bg-[#e2e4e8] dark:bg-[#1e2228] mx-1" />
+        <div className="w-px h-4 bg-border-default dark:bg-border-dark-default mx-1" />
 
         {/* Avatar dropdown */}
         <div ref={avatarRef} className="relative">
           <button
             onClick={() => setAvatarOpen((v) => !v)}
-            className="flex items-center gap-2 p-1 hover:bg-[#f6f8fa] dark:hover:bg-[#161b22] transition-colors cursor-pointer"
+            className="flex items-center gap-2 p-1 hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay transition-colors cursor-pointer"
           >
             <Avatar name={user?.full_name ?? 'S'} src={mediaUrl(user?.avatar_url)} size="sm" showStatus />
           </button>
 
           {avatarOpen && (
-            <div className="absolute top-full right-0 mt-1 w-[200px] z-50 bg-[#fafafa] dark:bg-[#0d1117] border border-[#e2e4e8] dark:border-[#1e2228] shadow-xl overflow-hidden">
-              {/* Terminal header */}
-              <div className="px-3 py-2 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22] flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
+            <div className="absolute top-full right-0 mt-1 w-[200px] z-50 bg-canvas-subtle dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default shadow-xl overflow-hidden">
+              <div className="px-3 py-2 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-overlay flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT" />
                 <div className="min-w-0">
-                  <p className="font-mono text-[11px] font-semibold text-[#1f2328] dark:text-[#e6edf3] truncate">{user?.full_name ?? 'student'}</p>
-                  <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] truncate">{user?.email ?? ''}</p>
+                  <p className="font-mono text-[11px] font-semibold text-fg-default dark:text-fg-dark-default truncate">{user?.full_name ?? 'student'}</p>
+                  <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted truncate">{user?.email ?? ''}</p>
                 </div>
               </div>
               <div className="py-1">
-                <Link to="/app/profile" onClick={() => setAvatarOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 font-mono text-[10px] tracking-wide text-[#636c76] dark:text-[#848d97] hover:bg-[#f6f8fa] dark:hover:bg-[#161b22] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors border-l-2 border-l-transparent hover:border-l-[#e8490f] dark:hover:border-l-[#ff6b35]">
+                <Link to="/app/profile" onClick={() => setAvatarOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 font-mono text-[10px] tracking-wide text-fg-muted dark:text-fg-dark-muted hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay hover:text-fg-default dark:hover:text-fg-dark-default transition-colors border-l-2 border-l-transparent hover:border-l-brand dark:hover:border-l-brand-dark-DEFAULT">
                   <HiOutlineUser className="w-3.5 h-3.5" /> profile
                 </Link>
-                <Link to="/app/settings" onClick={() => setAvatarOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 font-mono text-[10px] tracking-wide text-[#636c76] dark:text-[#848d97] hover:bg-[#f6f8fa] dark:hover:bg-[#161b22] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors border-l-2 border-l-transparent hover:border-l-[#e8490f] dark:hover:border-l-[#ff6b35]">
+                <Link to="/app/settings" onClick={() => setAvatarOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 font-mono text-[10px] tracking-wide text-fg-muted dark:text-fg-dark-muted hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay hover:text-fg-default dark:hover:text-fg-dark-default transition-colors border-l-2 border-l-transparent hover:border-l-brand dark:hover:border-l-brand-dark-DEFAULT">
                   <HiOutlineCog6Tooth className="w-3.5 h-3.5" /> settings
                 </Link>
               </div>
-              <div className="border-t border-[#e2e4e8] dark:border-[#1e2228] py-1">
-                <button onClick={handleSignOut} className="w-full flex items-center gap-2.5 px-3 py-1.5 font-mono text-[10px] tracking-wide text-[#d1242f] dark:text-[#f85149] hover:bg-[#fff0ee] dark:hover:bg-[#2d1216] transition-colors cursor-pointer border-l-2 border-l-transparent hover:border-l-[#d1242f]">
+              <div className="border-t border-border-default dark:border-border-dark-default py-1">
+                <button onClick={handleSignOut} className="w-full flex items-center gap-2.5 px-3 py-1.5 font-mono text-[10px] tracking-wide text-danger-fg dark:text-danger-dark-fg hover:bg-danger-subtle dark:hover:bg-danger-dark-subtle transition-colors cursor-pointer border-l-2 border-l-transparent hover:border-l-danger-fg">
                   <HiOutlineArrowRightOnRectangle className="w-3.5 h-3.5" /> sign-out
                 </button>
               </div>

@@ -12,6 +12,7 @@ export function serializeUser(u: UserRow, userSkills: SkillRow[] = []) {
     last_name:        u.lastName,
     full_name:        `${u.firstName} ${u.lastName}`.trim(),
     avatar_url:       u.avatarUrl,
+    cover_url:        u.coverUrl,
     university:       u.university,
     role:             u.role,
     headline:         u.headline,

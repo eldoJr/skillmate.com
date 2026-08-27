@@ -7,6 +7,7 @@ export interface AuthUser {
   last_name: string
   full_name?: string          // computed client-side
   avatar_url: string | null
+  cover_url: string | null
   university: string | null
   headline: string | null
   bio: string | null

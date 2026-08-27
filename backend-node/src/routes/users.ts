@@ -12,6 +12,7 @@ import { serializeUser } from '../lib/serialize.js'
 
 const app = new Hono<AppEnv>()
 const AVATAR_DIR = 'media/avatars'
+const COVER_DIR  = 'media/covers'
 const ALLOWED    = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const MAX_SIZE   = 5 * 1024 * 1024
 
@@ -88,6 +89,30 @@ app.post('/me/avatar', requireAuth, async c => {
   return c.json({ avatar_url: avatarUrl })
 })
 
+app.post('/me/cover', requireAuth, async c => {
+  const user = c.get('user')
+  const body = await c.req.parseBody()
+  const file = body['file'] as File
+  if (!file) return c.json({ detail: 'No file provided' }, 400)
+  if (!ALLOWED.has(file.type)) return c.json({ detail: 'Only JPEG, PNG, and WebP allowed' }, 400)
+
+  const buf = await file.arrayBuffer()
+  if (buf.byteLength > MAX_SIZE) return c.json({ detail: 'Image must be under 5MB' }, 400)
+
+  if (!existsSync(COVER_DIR)) mkdirSync(COVER_DIR, { recursive: true })
+  if (user.coverUrl) {
+    const old = user.coverUrl.replace(/^\//, '')
+    if (existsSync(old)) await unlink(old).catch(() => {})
+  }
+
+  const ext      = file.type.split('/')[1]
+  const filename = `${user.id}_${uuidv4().replace(/-/g, '')}.${ext}`
+  await writeFile(path.join(COVER_DIR, filename), Buffer.from(buf))
+
+  const coverUrl = `/media/covers/${filename}`
+  await db.update(users).set({ coverUrl, updatedAt: new Date() }).where(eq(users.id, user.id))
+  return c.json({ cover_url: coverUrl })
+})
 app.put('/me/skills', requireAuth, async c => {
   const user = c.get('user')
   const { skill_ids } = await c.req.json() as { skill_ids: string[] }

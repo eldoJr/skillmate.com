@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { HiOutlineArrowLeft } from 'react-icons/hi2'
-import ListingForm, { type ListingFormValues, skillTags } from '../../components/app/listingForm'
+import ListingForm, { type ListingFormValues } from '../../components/app/listingForm'
 import { listingsService } from '../../services/listings'
 
 const empty: ListingFormValues = {
@@ -43,21 +43,21 @@ export default function NewListingPage() {
     <div className="max-w-2xl mx-auto space-y-4">
 
       {/* Page header */}
-      <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
-        <div className="px-4 py-2.5 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-          <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">new listing</span>
+      <div className="border border-border-default dark:border-border-dark-default">
+        <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT" />
+          <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">new listing</span>
         </div>
         <div className="px-4 py-3 flex items-center justify-between gap-4">
           <div>
-            <p className="font-mono text-[11px] text-[#1f2328] dark:text-[#e6edf3] font-medium">create a listing</p>
-            <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">
+            <p className="font-mono text-[11px] text-fg-default dark:text-fg-dark-default font-medium">create a listing</p>
+            <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
               describe the skill or service you're offering to other students
             </p>
           </div>
           <Link
             to="/app/listings"
-            className="flex items-center gap-1.5 font-mono text-[9px] tracking-wide text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors"
+            className="flex items-center gap-1.5 font-mono text-[9px] tracking-wide text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors"
           >
             <HiOutlineArrowLeft className="w-3.5 h-3.5" />
             back

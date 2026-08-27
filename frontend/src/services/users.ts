@@ -55,6 +55,14 @@ export const usersService = {
     })
     return data.avatar_url
   },
+  async uploadCover(file: File): Promise<string> {
+    const form = new FormData()
+    form.append('file', file)
+    const { data } = await api.post<{ cover_url: string }>('/users/me/cover', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return data.cover_url
+  },
   async setSkills(skillIds: string[]): Promise<AuthUser> {
     const { data } = await api.put<AuthUser>('/users/me/skills', { skill_ids: skillIds })
     return data

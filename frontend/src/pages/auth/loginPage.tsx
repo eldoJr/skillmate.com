@@ -1,14 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { HiEye, HiEyeSlash } from 'react-icons/hi2'
-import Logo from '../../components/atoms/logo'
-import Button from '../../components/atoms/button'
 import ThemeToggle from '../../components/atoms/themeToggle'
-import Dropdown, { DropdownItem } from '../../components/molecules/dropdown'
 import ProgressBar from '../../components/atoms/progressBar'
 import { useAuth } from '../../contexts/AuthContext'
 import { extractErrorMessage } from '../../services/auth'
+
+const lCls = 'font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted mb-1 block'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -34,115 +32,121 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0d1117] flex flex-col items-center justify-center px-5 py-12 relative">
+    <div className="min-h-screen bg-canvas-default dark:bg-canvas-dark-default flex flex-col items-center justify-center px-5 py-12 relative">
       <ProgressBar loading={loading} />
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <Dropdown
-          trigger={
-            <span className="text-xs font-semibold tracking-wider uppercase text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors">
-              EN
-            </span>
-          }
-        >
-          <DropdownItem>🇬🇧 English</DropdownItem>
-          <DropdownItem>🇵🇹 Português</DropdownItem>
-          <DropdownItem>🇫🇷 Français</DropdownItem>
-          <DropdownItem>🇪🇸 Español</DropdownItem>
-          <DropdownItem>🇩🇪 Deutsch</DropdownItem>
-        </Dropdown>
+
+      <div className="absolute top-4 left-5 flex items-center gap-2">
+        <img src="/ico.svg" alt="Skillmate" width={22} height={22} />
+        <span className="font-mono text-[11px] font-bold text-fg-default dark:text-fg-dark-default tracking-tight">skillmate</span>
+      </div>
+
+      <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-[380px]"
-      >
-        <div className="flex flex-col items-center mb-8">
-          <Link to="/" className="mb-6">
-            <Logo width={32} height={32} />
-          </Link>
-          <h1 className="text-xl font-bold text-[#1f2328] dark:text-[#e6edf3] mb-1">Welcome back</h1>
-          <p className="text-sm text-[#636c76] dark:text-[#848d97]">Sign in to your Skillmate account</p>
+      {/* terminal window */}
+      <div className="w-full max-w-[400px] border border-border-default dark:border-border-dark-default bg-canvas-default dark:bg-canvas-dark-default">
+
+        {/* title bar */}
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT" />
+            <span className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted">
+              skillmate — sign in
+            </span>
+          </div>
+          <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">auth/login</span>
         </div>
 
-        <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+        <div className="p-6 space-y-5">
+
+          {/* header */}
+          <div>
+            <p className="font-mono text-[15px] font-bold text-fg-default dark:text-fg-dark-default">welcome back</p>
+            <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
+              sign in to your skillmate account
+            </p>
+          </div>
+
+          {/* error */}
           {error && (
-            <div className="px-3 py-2.5 rounded-lg bg-[#fff0ee] dark:bg-[#2d1216] border border-[#ffcecb] dark:border-[#f8514926] text-[#d1242f] dark:text-[#f85149] text-xs">
-              {error}
+            <div className="px-3 py-2 border border-danger-fg dark:border-danger-dark-fg bg-canvas-inset dark:bg-canvas-dark-inset font-mono text-[10px] text-danger-fg dark:text-danger-dark-fg">
+              <span className="mr-1.5">!</span>{error}
             </div>
           )}
 
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-[#1f2328] dark:text-[#e6edf3]">Email</label>
-            <input
-              type="email"
-              placeholder="you@university.edu"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="auth-input"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-[#1f2328] dark:text-[#e6edf3]">Password</label>
-              <Link to="/forgot-password" className="text-xs text-[#0969da] dark:text-[#2f81f7] hover:underline">
-                Forgot password?
-              </Link>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div>
+              <label className={lCls}>email</label>
+              <div className="flex items-center border border-border-default dark:border-border-dark-default focus-within:border-brand dark:focus-within:border-brand-dark-DEFAULT transition-colors">
+                <span className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT px-2.5 py-2.5 border-r border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset shrink-0 select-none">$</span>
+                <input
+                  type="email"
+                  placeholder="you@university.edu"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 px-3 py-2.5 bg-canvas-inset dark:bg-canvas-dark-inset font-mono text-[11px] text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none"
+                />
+              </div>
             </div>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="auth-input pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] cursor-pointer"
-              >
-                {showPassword ? <HiEyeSlash className="w-4 h-4" /> : <HiEye className="w-4 h-4" />}
-              </button>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className={lCls}>password</label>
+                <Link to="/forgot-password" className="font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT hover:underline">
+                  forgot password?
+                </Link>
+              </div>
+              <div className="flex items-center border border-border-default dark:border-border-dark-default focus-within:border-brand dark:focus-within:border-brand-dark-DEFAULT transition-colors">
+                <span className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT px-2.5 py-2.5 border-r border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset shrink-0 select-none">$</span>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="enter your password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="flex-1 px-3 py-2.5 bg-canvas-inset dark:bg-canvas-dark-inset font-mono text-[11px] text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="px-2.5 text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer"
+                >
+                  {showPassword ? <HiEyeSlash className="w-3.5 h-3.5" /> : <HiEye className="w-3.5 h-3.5" />}
+                </button>
+              </div>
             </div>
-          </div>
 
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" className="w-3.5 h-3.5 rounded border-[#d0d7de] dark:border-[#30363d] accent-[#0969da]" />
-            <span className="text-xs text-[#636c76] dark:text-[#848d97]">Remember me for 30 days</span>
-          </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" className="w-3 h-3 border-border-default dark:border-border-dark-default accent-brand" />
+              <span className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">remember me for 30 days</span>
+            </label>
 
-          <Button size="md" className="w-full rounded-xl mt-1" disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign in'}
-          </Button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 bg-brand dark:bg-brand-dark-DEFAULT border border-brand dark:border-brand-dark-DEFAULT font-mono text-[11px] text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? '> signing in...' : '> sign in'}
+            </button>
+          </form>
 
-        <div className="relative my-5">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[#d0d7de] dark:border-[#30363d]" />
-          </div>
-          <div className="relative flex justify-center">
-            <span className="px-3 text-xs text-[#636c76] dark:text-[#848d97] bg-white dark:bg-[#0d1117]">
-              New to Skillmate?
-            </span>
+          <div className="border-t border-border-default dark:border-border-dark-default pt-4 flex items-center justify-between">
+            <span className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">~ new to skillmate?</span>
+            <Link
+              to="/register"
+              className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT border border-brand dark:border-brand-dark-DEFAULT px-3 py-1.5 hover:bg-brand dark:hover:bg-brand-dark-DEFAULT hover:text-white transition-colors"
+            >
+              create account
+            </Link>
           </div>
         </div>
+      </div>
 
-        <Link to="/register">
-          <Button variant="secondary" size="md" className="w-full rounded-xl">
-            Create an account
-          </Button>
-        </Link>
-
-        <p className="text-xs text-[#636c76] dark:text-[#848d97] text-center mt-8">
-          © {new Date().getFullYear()} Skillmate
-        </p>
-      </motion.div>
+      <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted text-center mt-5">
+        © {new Date().getFullYear()} skillmate.com
+      </p>
     </div>
   )
 }

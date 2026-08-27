@@ -152,34 +152,33 @@ export default function MessagesPage() {
   const totalUnread = conversations.reduce((s, c) => s + c.unread_count, 0)
 
   return (
-    <div className="flex h-[calc(100vh-112px)] overflow-hidden border border-[#e2e4e8] dark:border-[#1e2228]">
+    <div className="flex h-[calc(100vh-112px)] overflow-hidden border border-border-default dark:border-border-dark-default">
 
       {/* ── Sidebar ── */}
-      <div className="w-[260px] shrink-0 border-r border-[#e2e4e8] dark:border-[#1e2228] flex flex-col bg-white dark:bg-[#0d1117]">
+      <div className="w-[260px] shrink-0 border-r border-border-default dark:border-border-dark-default flex flex-col bg-canvas-overlay dark:bg-canvas-dark-inset">
 
-        {/* Sidebar header */}
-        <div className="px-3 py-2.5 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center justify-between">
+        <div className="px-3 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-            <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">messages</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT" />
+            <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">messages</span>
           </div>
           {totalUnread > 0 && (
-            <span className="px-1.5 py-0.5 font-mono text-[9px] bg-[#e8490f] dark:bg-[#ff6b35] text-white">
+            <span className="px-1.5 py-0.5 font-mono text-[9px] bg-brand dark:bg-brand-dark-DEFAULT text-white">
               {totalUnread > 99 ? '99+' : totalUnread}
             </span>
           )}
         </div>
 
         {/* Search */}
-        <div className="px-3 py-2 border-b border-[#e2e4e8] dark:border-[#1e2228]">
+        <div className="px-3 py-2 border-b border-border-default dark:border-border-dark-default">
           <div className="relative">
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 font-mono text-[9px] text-[#636c76] dark:text-[#848d97] pointer-events-none">$</span>
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT pointer-events-none">$</span>
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="search…"
-              className="w-full pl-7 pr-3 py-1.5 font-mono text-[10px] tracking-wide bg-white dark:bg-[#0d1117] border border-[#e2e4e8] dark:border-[#1e2228] text-[#1f2328] dark:text-[#e6edf3] placeholder-[#adb5bd] dark:placeholder-[#4a5568] outline-none focus:border-[#e8490f] dark:focus:border-[#ff6b35] transition-colors"
+              className="w-full pl-7 pr-3 py-1.5 font-mono text-[10px] tracking-wide bg-canvas-overlay dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT transition-colors"
             />
           </div>
         </div>
@@ -189,22 +188,22 @@ export default function MessagesPage() {
           {loadingConvos ? (
             <div>
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="flex items-center gap-2.5 px-3 py-3 border-b border-[#e2e4e8] dark:border-[#1e2228]">
-                  <div className="w-8 h-8 bg-[#f6f8fa] dark:bg-[#1e2228] animate-pulse shrink-0" />
+                <div key={i} className="flex items-center gap-2.5 px-3 py-3 border-b border-border-default dark:border-border-dark-default">
+                  <div className="w-8 h-8 bg-canvas-inset dark:bg-border-dark-default animate-pulse shrink-0" />
                   <div className="flex-1 space-y-1.5">
-                    <div className="h-2 w-20 bg-[#f6f8fa] dark:bg-[#1e2228] animate-pulse" />
-                    <div className="h-2 w-28 bg-[#f6f8fa] dark:bg-[#1e2228] animate-pulse" />
+                    <div className="h-2 w-20 bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
+                    <div className="h-2 w-28 bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
                   </div>
                 </div>
               ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-2 py-12 px-4 text-center">
-              <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">
+              <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">
                 {search ? '~ no results' : '~ no conversations yet'}
               </p>
               {!search && (
-                <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] leading-relaxed">
+                <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted leading-relaxed">
                   visit a student's profile to start a conversation
                 </p>
               )}
@@ -218,16 +217,16 @@ export default function MessagesPage() {
                   key={convo.partner.id}
                   onClick={() => selectPartner(convo.partner.id)}
                   className={clsx(
-                    'w-full flex items-center gap-2.5 px-3 py-3 transition-colors cursor-pointer text-left border-b border-[#e2e4e8] dark:border-[#1e2228] last:border-0',
+                    'w-full flex items-center gap-2.5 px-3 py-3 transition-colors cursor-pointer text-left border-b border-border-default dark:border-border-dark-default last:border-0 border-l-2',
                     isActive
-                      ? 'bg-[#f6f8fa] dark:bg-[#1e2228] border-l-2 border-l-[#e8490f] dark:border-l-[#ff6b35]'
-                      : 'hover:bg-[#f6f8fa] dark:hover:bg-[#0d1117]',
+                      ? 'bg-canvas-inset dark:bg-canvas-dark-overlay border-l-brand dark:border-l-brand-dark-DEFAULT'
+                      : 'border-l-transparent hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay',
                   )}
                 >
                   <div className="relative shrink-0">
                     <Avatar name={name} src={convo.partner.avatar_url ?? undefined} size="md" />
                     {convo.unread_count > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-[#e8490f] dark:bg-[#ff6b35] text-white font-mono text-[7px] font-bold flex items-center justify-center">
+                      <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-brand dark:bg-brand-dark-DEFAULT text-white font-mono text-[7px] font-bold flex items-center justify-center">
                         {convo.unread_count > 9 ? '9+' : convo.unread_count}
                       </span>
                     )}
@@ -237,20 +236,20 @@ export default function MessagesPage() {
                       <p className={clsx(
                         'font-mono text-[10px] truncate',
                         convo.unread_count > 0
-                          ? 'font-bold text-[#1f2328] dark:text-[#e6edf3]'
-                          : 'font-medium text-[#1f2328] dark:text-[#e6edf3]'
+                          ? 'font-bold text-fg-default dark:text-fg-dark-default'
+                          : 'font-medium text-fg-default dark:text-fg-dark-default',
                       )}>
                         {name}
                       </p>
-                      <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] shrink-0">
+                      <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted shrink-0">
                         {formatTime(convo.last_message_at)}
                       </span>
                     </div>
                     <p className={clsx(
                       'font-mono text-[9px] truncate mt-0.5',
                       convo.unread_count > 0
-                        ? 'text-[#1f2328] dark:text-[#e6edf3] font-medium'
-                        : 'text-[#636c76] dark:text-[#848d97]'
+                        ? 'text-fg-default dark:text-fg-dark-default font-medium'
+                        : 'text-fg-muted dark:text-fg-dark-muted',
                     )}>
                       {convo.last_message || 'start a conversation'}
                     </p>
@@ -263,7 +262,7 @@ export default function MessagesPage() {
       </div>
 
       {/* ── Chat area ── */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-0 bg-[#f6f8fa] dark:bg-[#0a0c0f]">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 bg-canvas-subtle dark:bg-canvas-dark-default">
         <AnimatePresence mode="wait">
           {!activePartnerId ? (
             <motion.div
@@ -274,20 +273,20 @@ export default function MessagesPage() {
               transition={{ duration: 0.15 }}
               className="flex-1 flex flex-col items-center justify-center gap-4 px-8 text-center"
             >
-              <p className="font-mono text-[11px] text-[#1f2328] dark:text-[#e6edf3]">
+              <p className="font-mono text-[11px] text-fg-default dark:text-fg-dark-default">
                 select a conversation
               </p>
-              <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] max-w-[240px] leading-relaxed">
+              <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted max-w-[240px] leading-relaxed">
                 or visit a student's profile to start a new one
               </p>
-              <div className="flex items-center gap-1.5 px-3 py-2 border border-[#e2e4e8] dark:border-[#1e2228] bg-white dark:bg-[#0d1117]">
-                <HiOutlineLockClosed className="w-3 h-3 text-[#636c76] dark:text-[#848d97] shrink-0" />
-                <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">
+              <div className="flex items-center gap-1.5 px-3 py-2 border border-border-default dark:border-border-dark-default bg-canvas-overlay dark:bg-canvas-dark-inset">
+                <HiOutlineLockClosed className="w-3 h-3 text-fg-muted dark:text-fg-dark-muted shrink-0" />
+                <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">
                   messages are private between you and the recipient
                 </p>
               </div>
               {conversations.length > 0 && (
-                <p className="font-mono text-[9px] text-[#e8490f] dark:text-[#ff6b35]">
+                <p className="font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT">
                   › {conversations.length} conversation{conversations.length !== 1 ? 's' : ''} in sidebar
                 </p>
               )}
@@ -302,7 +301,7 @@ export default function MessagesPage() {
               className="flex-1 flex flex-col min-h-0"
             >
               {/* Chat header */}
-              <div className="flex items-center gap-3 px-4 py-2.5 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-white dark:bg-[#0d1117] shrink-0">
+              <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-overlay dark:bg-canvas-dark-inset shrink-0">
                 {displayPartner ? (
                   <>
                     <Avatar
@@ -313,25 +312,25 @@ export default function MessagesPage() {
                     <div className="flex-1 min-w-0">
                       <Link
                         to={`/app/profile/${displayPartner.id}`}
-                        className="font-mono text-[11px] font-medium text-[#1f2328] dark:text-[#e6edf3] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors block truncate"
+                        className="font-mono text-[11px] font-medium text-fg-default dark:text-fg-dark-default hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors block truncate"
                       >
                         {`${displayPartner.first_name} ${displayPartner.last_name}`.trim()}
                       </Link>
-                      <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">skillmate student</p>
+                      <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">skillmate student</p>
                     </div>
                     <Link
                       to={`/app/profile/${displayPartner.id}`}
-                      className="shrink-0 px-3 py-1.5 font-mono text-[9px] tracking-wide border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] dark:hover:border-[#ff6b35] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors"
+                      className="shrink-0 px-3 py-1.5 font-mono text-[9px] tracking-wide border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors"
                     >
                       view profile
                     </Link>
                   </>
                 ) : (
                   <>
-                    <div className="w-8 h-8 bg-[#f6f8fa] dark:bg-[#1e2228] animate-pulse" />
+                    <div className="w-8 h-8 bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-2.5 w-24 bg-[#f6f8fa] dark:bg-[#1e2228] animate-pulse" />
-                      <div className="h-2 w-16 bg-[#f6f8fa] dark:bg-[#1e2228] animate-pulse" />
+                      <div className="h-2.5 w-24 bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
+                      <div className="h-2 w-16 bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
                     </div>
                   </>
                 )}
@@ -341,7 +340,7 @@ export default function MessagesPage() {
               <div className="flex-1 overflow-y-auto min-h-0 px-4 py-4">
                 {loadingThread ? (
                   <div className="flex items-center justify-center h-full">
-                    <HiOutlineArrowPath className="w-4 h-4 text-[#636c76] dark:text-[#848d97] animate-spin" />
+                    <HiOutlineArrowPath className="w-4 h-4 text-fg-muted dark:text-fg-dark-muted animate-spin" />
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2">
@@ -352,10 +351,10 @@ export default function MessagesPage() {
                         size="lg"
                       />
                     )}
-                    <p className="font-mono text-[10px] font-medium text-[#1f2328] dark:text-[#e6edf3] mt-1">
+                    <p className="font-mono text-[10px] font-medium text-fg-default dark:text-fg-dark-default mt-1">
                       {displayPartner ? `${displayPartner.first_name} ${displayPartner.last_name}`.trim() : ''}
                     </p>
-                    <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">
+                    <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">
                       no messages yet — say hello
                     </p>
                   </div>
@@ -363,13 +362,12 @@ export default function MessagesPage() {
                   <div className="space-y-1">
                     {grouped.map((group) => (
                       <div key={group.label}>
-                        {/* Date divider */}
                         <div className="flex items-center gap-3 my-4">
-                          <div className="flex-1 h-px bg-[#e2e4e8] dark:bg-[#1e2228]" />
-                          <span className="font-mono text-[9px] tracking-wide text-[#636c76] dark:text-[#848d97] px-2 py-0.5 border border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0a0c0f]">
+                          <div className="flex-1 h-px bg-border-default dark:bg-border-dark-default" />
+                          <span className="font-mono text-[9px] tracking-wide text-fg-muted dark:text-fg-dark-muted px-2 py-0.5 border border-border-default dark:border-border-dark-default bg-canvas-subtle dark:bg-canvas-dark-default">
                             {group.label}
                           </span>
-                          <div className="flex-1 h-px bg-[#e2e4e8] dark:bg-[#1e2228]" />
+                          <div className="flex-1 h-px bg-border-default dark:bg-border-dark-default" />
                         </div>
                         <div className="space-y-0.5">
                           {group.messages.map((msg, i) => {
@@ -388,7 +386,6 @@ export default function MessagesPage() {
                                   isFirstInBlock ? 'mt-3' : 'mt-0.5',
                                 )}
                               >
-                                {/* Partner avatar */}
                                 {!isMe && (
                                   <div className="w-6 shrink-0 self-end mb-0.5">
                                     {isLastInBlock && displayPartner ? (
@@ -405,13 +402,13 @@ export default function MessagesPage() {
                                   <div className={clsx(
                                     'px-3 py-2 font-mono text-[11px] leading-relaxed break-words',
                                     isMe
-                                      ? 'bg-[#e8490f] dark:bg-[#ff6b35] text-white'
-                                      : 'bg-white dark:bg-[#1e2228] text-[#1f2328] dark:text-[#e6edf3] border border-[#e2e4e8] dark:border-[#2a2f38]',
+                                      ? 'bg-brand dark:bg-brand-dark-DEFAULT text-white'
+                                      : 'bg-canvas-overlay dark:bg-canvas-dark-overlay text-fg-default dark:text-fg-dark-default border border-border-default dark:border-border-dark-default',
                                   )}>
                                     {msg.content}
                                   </div>
                                   {isLastInBlock && (
-                                    <span className="font-mono text-[8px] text-[#636c76] dark:text-[#848d97] mt-1 px-0.5 opacity-0 group-hover:opacity-100 transition-opacity select-none">
+                                    <span className="font-mono text-[8px] text-fg-muted dark:text-fg-dark-muted mt-1 px-0.5 opacity-0 group-hover:opacity-100 transition-opacity select-none">
                                       {formatMsgTime(msg.createdAt)}
                                       {isMe && (
                                         <span className="ml-1">
@@ -433,7 +430,7 @@ export default function MessagesPage() {
               </div>
 
               {/* Input bar */}
-              <div className="px-4 py-3 border-t border-[#e2e4e8] dark:border-[#1e2228] bg-white dark:bg-[#0d1117] shrink-0">
+              <div className="px-4 py-3 border-t border-border-default dark:border-border-dark-default bg-canvas-overlay dark:bg-canvas-dark-inset shrink-0">
                 <div className="flex items-center gap-2">
                   <input
                     ref={inputRef}
@@ -441,7 +438,7 @@ export default function MessagesPage() {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder={displayPartner ? `message ${displayPartner.first_name.toLowerCase()}…` : 'type a message…'}
-                    className="flex-1 px-3 py-2 font-mono text-[11px] tracking-wide bg-[#f6f8fa] dark:bg-[#0a0c0f] border border-[#e2e4e8] dark:border-[#1e2228] text-[#1f2328] dark:text-[#e6edf3] placeholder-[#adb5bd] dark:placeholder-[#4a5568] outline-none focus:border-[#e8490f] dark:focus:border-[#ff6b35] transition-colors"
+                    className="flex-1 px-3 py-2 font-mono text-[11px] tracking-wide bg-canvas-subtle dark:bg-canvas-dark-default border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT transition-colors"
                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
                   />
                   <button
@@ -450,8 +447,8 @@ export default function MessagesPage() {
                     className={clsx(
                       'p-2 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
                       newMessage.trim()
-                        ? 'bg-[#e8490f] dark:bg-[#ff6b35] text-white hover:bg-[#d03d0a] dark:hover:bg-[#e85c20]'
-                        : 'bg-[#f6f8fa] dark:bg-[#1e2228] text-[#636c76] dark:text-[#848d97] border border-[#e2e4e8] dark:border-[#1e2228]',
+                        ? 'bg-brand dark:bg-brand-dark-DEFAULT text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover'
+                        : 'bg-canvas-inset dark:bg-canvas-dark-overlay text-fg-muted dark:text-fg-dark-muted border border-border-default dark:border-border-dark-default',
                     )}
                   >
                     <HiOutlinePaperAirplane className="w-4 h-4" />

@@ -25,19 +25,19 @@ export interface ListingFormValues {
 
 const inputCls = [
   'w-full px-3 py-2 font-mono text-[11px] tracking-wide',
-  'bg-white dark:bg-[#0d1117]',
-  'border border-[#e2e4e8] dark:border-[#1e2228]',
-  'text-[#1f2328] dark:text-[#e6edf3]',
-  'placeholder-[#adb5bd] dark:placeholder-[#4a5568]',
-  'outline-none focus:border-[#e8490f] dark:focus:border-[#ff6b35]',
+  'bg-canvas-overlay dark:bg-canvas-dark-inset',
+  'border border-border-default dark:border-border-dark-default',
+  'text-fg-default dark:text-fg-dark-default',
+  'placeholder-fg-subtle dark:placeholder-fg-dark-subtle',
+  'outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT',
   'transition-colors duration-150',
 ].join(' ')
 
 function SectionHeader({ label }: { label: string }) {
   return (
-    <div className="px-4 py-2 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center gap-1.5">
-      <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-      <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">{label}</span>
+    <div className="px-4 py-2 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center gap-1.5">
+      <span className="w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT" />
+      <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">{label}</span>
     </div>
   )
 }
@@ -47,12 +47,12 @@ function Field({ label, hint, required, children }: {
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase flex items-center gap-1">
+      <label className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase flex items-center gap-1">
         {label}
-        {required && <span className="text-[#e8490f] dark:text-[#ff6b35]">*</span>}
+        {required && <span className="text-danger-fg dark:text-danger-dark-fg">*</span>}
       </label>
       {children}
-      {hint && <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">{hint}</p>}
+      {hint && <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">{hint}</p>}
     </div>
   )
 }
@@ -77,13 +77,13 @@ export default function ListingForm({
     <form onSubmit={onSubmit} className="space-y-4">
 
       {error && (
-        <div className="px-4 py-3 border border-[#f8514926] bg-[#fff0ee] dark:bg-[#2d1216] font-mono text-[10px] text-[#d1242f] dark:text-[#f85149]">
-          <span className="text-[#d1242f] dark:text-[#f85149] mr-1">!</span>{error}
+        <div className="px-4 py-3 border border-danger-muted dark:border-danger-dark-muted bg-danger-subtle dark:bg-danger-dark-subtle font-mono text-[10px] text-danger-fg dark:text-danger-dark-fg">
+          <span className="mr-1">!</span>{error}
         </div>
       )}
 
       {/* Basic info */}
-      <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+      <div className="border border-border-default dark:border-border-dark-default">
         <SectionHeader label="basic info" />
         <div className="p-4 space-y-4">
           <Field label="title" required>
@@ -136,13 +136,13 @@ export default function ListingForm({
       </div>
 
       {/* Pricing */}
-      <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+      <div className="border border-border-default dark:border-border-dark-default">
         <SectionHeader label="pricing & delivery" />
         <div className="p-4">
           <div className="grid grid-cols-2 gap-3">
             <Field label="hourly rate (R)" hint="leave blank for negotiable">
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-[10px] text-[#636c76] dark:text-[#848d97] pointer-events-none">R</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted pointer-events-none">R</span>
                 <input
                   type="number"
                   min="0"
@@ -168,13 +168,13 @@ export default function ListingForm({
       </div>
 
       {/* Skills */}
-      <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+      <div className="border border-border-default dark:border-border-dark-default">
         <SectionHeader label="skills & tags" />
         <div className="p-4 space-y-3">
-          <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">
+          <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">
             select tags that best describe your skills
             {selectedTags.length > 0 && (
-              <span className="ml-2 text-[#e8490f] dark:text-[#ff6b35]">· {selectedTags.length} selected</span>
+              <span className="ml-2 text-brand dark:text-brand-dark-DEFAULT">· {selectedTags.length} selected</span>
             )}
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -188,8 +188,8 @@ export default function ListingForm({
                   className={clsx(
                     'flex items-center gap-1 px-2.5 py-1 font-mono text-[9px] tracking-wide border transition-all duration-150 cursor-pointer',
                     active
-                      ? 'bg-[#e8490f] dark:bg-[#ff6b35] text-white border-[#e8490f] dark:border-[#ff6b35]'
-                      : 'bg-transparent text-[#636c76] dark:text-[#848d97] border-[#e2e4e8] dark:border-[#1e2228] hover:border-[#e8490f] dark:hover:border-[#ff6b35] hover:text-[#e8490f] dark:hover:text-[#ff6b35]',
+                      ? 'bg-brand dark:bg-brand-dark-DEFAULT text-white border-brand dark:border-brand-dark-DEFAULT'
+                      : 'bg-transparent text-fg-muted dark:text-fg-dark-muted border-border-default dark:border-border-dark-default hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT',
                   )}
                 >
                   {active && <HiOutlineXMark className="w-2.5 h-2.5" />}
@@ -206,14 +206,14 @@ export default function ListingForm({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 font-mono text-[10px] tracking-wide border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] hover:border-[#636c76] dark:hover:border-[#848d97] transition-colors cursor-pointer"
+          className="px-4 py-2 font-mono text-[10px] tracking-wide border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:border-fg-muted dark:hover:border-fg-dark-muted transition-colors cursor-pointer"
         >
           cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-5 py-2 font-mono text-[10px] tracking-wide bg-[#e8490f] dark:bg-[#ff6b35] text-white hover:bg-[#d03d0a] dark:hover:bg-[#e85c20] transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
+          className="px-5 py-2 font-mono text-[10px] tracking-wide bg-brand dark:bg-brand-dark-DEFAULT text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
         >
           {loading && (
             <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">

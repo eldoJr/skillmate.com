@@ -1,13 +1,13 @@
 import api from './api'
 
 export interface ProposalResponse {
-  id: string; ownerId: string; listingId: string; status: string
+  id: string; owner_id: string; listing_id: string; status: string
   intro: string; understanding: string; plan: string; timeline: string; pricing: string
-  createdAt: string; updatedAt: string
+  created_at: string; updated_at: string
 }
 
 export interface ProposalBrief {
-  id: string; listingId: string; status: string; createdAt: string; updatedAt: string
+  id: string; listing_id: string; status: string; created_at: string; updated_at: string
 }
 
 export const proposalsService = {
@@ -17,10 +17,6 @@ export const proposalsService = {
   },
   async get(id: string): Promise<ProposalResponse> {
     const { data } = await api.get<ProposalResponse>(`/proposals/${id}`)
-    return data
-  },
-  async create(payload: { listing_id: string; intro: string; understanding: string; plan: string; timeline: string; pricing: string }): Promise<ProposalResponse> {
-    const { data } = await api.post<ProposalResponse>('/proposals/', payload)
     return data
   },
   async update(id: string, payload: Partial<Pick<ProposalResponse, 'intro' | 'understanding' | 'plan' | 'timeline' | 'pricing'>>): Promise<ProposalResponse> {

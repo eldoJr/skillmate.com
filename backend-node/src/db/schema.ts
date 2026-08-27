@@ -28,6 +28,7 @@ export const users = pgTable('users', {
   headline:                    text('headline'),
   bio:                         text('bio'),
   avatarUrl:                   text('avatar_url'),
+  coverUrl:                    text('cover_url'),
   portfolioUrl:                text('portfolio_url'),
   githubUsername:              text('github_username'),
   location:                    text('location'),

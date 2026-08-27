@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { clsx } from 'clsx'
 import {
   HiOutlinePlusCircle, HiOutlineClock,
-  HiOutlineArrowPath, HiOutlineXMark,
+  HiOutlineArrowPath, HiOutlineXMark, HiOutlineMagnifyingGlass,
+  HiOutlineClipboardDocumentList,
 } from 'react-icons/hi2'
 import Avatar from '../../components/atoms/avatar'
 import { listingsService, type Listing } from '../../services/listings'
@@ -11,28 +12,101 @@ import { categories } from '../../components/app/listingForm'
 const filters = ['all', 'programming', 'design', 'writing', 'tutoring', 'video editing', 'data analysis', 'other'] as const
 type Filter = typeof filters[number]
 
-function formatPrice(l: Listing) {
+function formatBudget(l: Listing) {
   if (l.price) return `R${l.price}`
   if (l.price_min && l.price_max) return `R${l.price_min}–${l.price_max}`
   return 'negotiable'
 }
 
-function formatTime(iso: string) {
-  const diffMins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`
-  return `${Math.floor(diffMins / 1440)}d ago`
+function timeAgo(iso: string) {
+  const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
+  if (m < 60) return `${m}m ago`
+  if (m < 1440) return `${Math.floor(m / 60)}h ago`
+  return `${Math.floor(m / 1440)}d ago`
 }
 
 const inputCls = [
   'w-full px-3 py-2 font-mono text-[11px] tracking-wide',
-  'bg-white dark:bg-[#0d1117]',
-  'border border-[#e2e4e8] dark:border-[#1e2228]',
-  'text-[#1f2328] dark:text-[#e6edf3]',
-  'placeholder-[#adb5bd] dark:placeholder-[#4a5568]',
-  'outline-none focus:border-[#e8490f] dark:focus:border-[#ff6b35]',
+  'bg-canvas-overlay dark:bg-canvas-dark-inset',
+  'border border-border-default dark:border-border-dark-default',
+  'text-fg-default dark:text-fg-dark-default',
+  'placeholder-fg-subtle dark:placeholder-fg-dark-subtle',
+  'outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT',
   'transition-colors duration-150',
 ].join(' ')
+
+const dot = 'w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT'
+const sectionHeader = 'px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-between'
+
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">
+        {label}{required && <span className="text-danger-fg dark:text-danger-dark-fg ml-1">*</span>}
+      </label>
+      {children}
+    </div>
+  )
+}
+
+function RequestCard({ req }: { req: Listing }) {
+  const ownerName = `${req.owner.first_name} ${req.owner.last_name}`
+  const budget = formatBudget(req)
+  const isNegotiable = budget === 'negotiable'
+
+  return (
+    <div className="border border-border-default dark:border-border-dark-default hover:border-brand dark:hover:border-brand-dark-DEFAULT transition-colors bg-canvas-overlay dark:bg-canvas-dark-default group">
+      {/* Top strip */}
+      <div className="h-[2px] bg-brand dark:bg-brand-dark-DEFAULT opacity-0 group-hover:opacity-100 transition-opacity" />
+
+      <div className="p-4 flex items-start gap-3">
+        <Avatar name={ownerName} src={req.owner.avatar_url ?? undefined} size="md" />
+
+        <div className="flex-1 min-w-0">
+          {/* Title + budget */}
+          <div className="flex items-start justify-between gap-3">
+            <p className="font-mono text-[12px] font-semibold text-fg-default dark:text-fg-dark-default leading-snug group-hover:text-brand dark:group-hover:text-brand-dark-DEFAULT transition-colors">
+              {req.title}
+            </p>
+            <span className={clsx(
+              'shrink-0 font-mono text-[11px] font-bold',
+              isNegotiable ? 'text-fg-muted dark:text-fg-dark-muted' : 'text-success-fg dark:text-success-dark-fg',
+            )}>
+              {budget}
+            </span>
+          </div>
+
+          {/* Owner meta */}
+          <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
+            {ownerName}
+            {req.owner.university && <> · {req.owner.university}</>}
+            {' · '}{timeAgo(req.created_at)}
+          </p>
+
+          {/* Description */}
+          <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted mt-2 leading-relaxed line-clamp-2">
+            {req.description}
+          </p>
+
+          {/* Footer */}
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <span className="font-mono text-[8px] tracking-wide px-1.5 py-0.5 border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted">
+              {req.category.toLowerCase()}
+            </span>
+            {req.delivery_days && (
+              <span className="flex items-center gap-1 font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">
+                <HiOutlineClock className="w-3 h-3" />due in {req.delivery_days}d
+              </span>
+            )}
+            <button className="ml-auto px-3 py-1 font-mono text-[9px] tracking-wide border border-brand dark:border-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT hover:bg-brand dark:hover:bg-brand-dark-DEFAULT hover:text-white transition-colors cursor-pointer">
+              apply
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function RequestsPage() {
   const [activeFilter, setActiveFilter] = useState<Filter>('all')
@@ -93,52 +167,52 @@ export default function RequestsPage() {
       <div className="flex-1 min-w-0 space-y-4">
 
         {/* Header */}
-        <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
-          <div className="px-4 py-2.5 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-            <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">task requests</span>
-          </div>
-          <div className="px-4 py-3 flex items-center justify-between gap-4">
-            <div>
-              <p className="font-mono text-[11px] text-[#1f2328] dark:text-[#e6edf3] font-medium">
-                {total > 0 ? `${total} open request${total !== 1 ? 's' : ''}` : 'open requests'}
-              </p>
-              <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">
-                students looking for skills — apply to help them
-              </p>
+        <div className="border border-border-default dark:border-border-dark-default">
+          <div className={sectionHeader}>
+            <div className="flex items-center gap-1.5">
+              <span className={dot} />
+              <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">task requests</span>
             </div>
             <button
               onClick={() => setShowForm((v) => !v)}
-              className="flex items-center gap-1.5 px-3 py-1.5 font-mono text-[9px] tracking-wide border border-[#e8490f] dark:border-[#ff6b35] text-[#e8490f] dark:text-[#ff6b35] hover:bg-[#e8490f] dark:hover:bg-[#ff6b35] hover:text-white transition-colors cursor-pointer"
+              className={clsx(
+                'flex items-center gap-1.5 px-3 py-1.5 font-mono text-[9px] tracking-wide border transition-colors cursor-pointer',
+                showForm
+                  ? 'bg-brand dark:bg-brand-dark-DEFAULT text-white border-brand dark:border-brand-dark-DEFAULT'
+                  : 'border-brand dark:border-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT hover:bg-brand dark:hover:bg-brand-dark-DEFAULT hover:text-white',
+              )}
             >
               <HiOutlinePlusCircle className="w-3.5 h-3.5" />
               post request
             </button>
           </div>
+          <div className="px-4 py-2.5">
+            <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">
+              {loading ? '—' : `${total} open request${total !== 1 ? 's' : ''}`}
+              <span className="ml-2 text-fg-subtle dark:text-fg-dark-subtle">· students looking for skills — apply to help them</span>
+            </p>
+          </div>
         </div>
 
         {/* Post form */}
         {showForm && (
-          <div className="border border-[#e8490f]/40 dark:border-[#ff6b35]/40">
-            <div className="px-4 py-2.5 border-b border-[#e8490f]/40 dark:border-[#ff6b35]/40 bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center justify-between">
+          <div className="border border-brand/30 dark:border-brand-dark-DEFAULT/30 bg-canvas-overlay dark:bg-canvas-dark-default">
+            <div className="px-4 py-2.5 border-b border-brand/30 dark:border-brand-dark-DEFAULT/30 bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-                <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">new request</span>
+                <span className={dot} />
+                <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">new request</span>
               </div>
-              <button onClick={() => setShowForm(false)} className="text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors cursor-pointer">
+              <button onClick={() => setShowForm(false)} className="text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
                 <HiOutlineXMark className="w-3.5 h-3.5" />
               </button>
             </div>
             <form onSubmit={handlePost} className="p-4 space-y-3">
               {formError && (
-                <div className="px-3 py-2 border border-[#f8514926] bg-[#fff0ee] dark:bg-[#2d1216] font-mono text-[10px] text-[#d1242f] dark:text-[#f85149]">
+                <div className="px-3 py-2 border border-danger-muted dark:border-danger-dark-muted bg-danger-subtle dark:bg-danger-dark-subtle font-mono text-[10px] text-danger-fg dark:text-danger-dark-fg">
                   ! {formError}
                 </div>
               )}
-              <div className="flex flex-col gap-1">
-                <label className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">
-                  title <span className="text-[#e8490f] dark:text-[#ff6b35]">*</span>
-                </label>
+              <Field label="title" required>
                 <input
                   type="text" required
                   placeholder="what do you need help with?"
@@ -146,11 +220,8 @@ export default function RequestsPage() {
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                   className={inputCls}
                 />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">
-                  description <span className="text-[#e8490f] dark:text-[#ff6b35]">*</span>
-                </label>
+              </Field>
+              <Field label="description" required>
                 <textarea
                   rows={3} required
                   placeholder="describe your request in detail…"
@@ -158,10 +229,9 @@ export default function RequestsPage() {
                   onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                   className={clsx(inputCls, 'resize-none')}
                 />
-              </div>
+              </Field>
               <div className="grid grid-cols-3 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">category</label>
+                <Field label="category">
                   <select
                     value={form.category}
                     onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
@@ -170,9 +240,8 @@ export default function RequestsPage() {
                     <option value="">select…</option>
                     {categories.map((c) => <option key={c} value={c}>{c.toLowerCase()}</option>)}
                   </select>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">budget (R)</label>
+                </Field>
+                <Field label="budget (R)">
                   <input
                     type="text"
                     placeholder="e.g. 200"
@@ -180,9 +249,8 @@ export default function RequestsPage() {
                     onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))}
                     className={inputCls}
                   />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">deadline</label>
+                </Field>
+                <Field label="deadline">
                   <input
                     type="text"
                     placeholder="e.g. 3 days"
@@ -190,20 +258,20 @@ export default function RequestsPage() {
                     onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))}
                     className={inputCls}
                   />
-                </div>
+                </Field>
               </div>
               <div className="flex items-center gap-2 justify-end pt-1">
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="px-4 py-2 font-mono text-[10px] tracking-wide border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] hover:border-[#636c76] dark:hover:border-[#848d97] transition-colors cursor-pointer"
+                  className="px-4 py-2 font-mono text-[10px] tracking-wide border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:border-fg-muted dark:hover:border-fg-dark-muted transition-colors cursor-pointer"
                 >
                   cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 font-mono text-[10px] tracking-wide bg-[#e8490f] dark:bg-[#ff6b35] text-white hover:bg-[#d03d0a] dark:hover:bg-[#e85c20] transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                  className="px-5 py-2 font-mono text-[10px] tracking-wide bg-brand dark:bg-brand-dark-DEFAULT text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
                 >
                   {submitting && <HiOutlineArrowPath className="w-3 h-3 animate-spin" />}
                   {submitting ? 'posting…' : 'post request'}
@@ -214,19 +282,22 @@ export default function RequestsPage() {
         )}
 
         {/* Search */}
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-[10px] text-[#636c76] dark:text-[#848d97] pointer-events-none">$</span>
+        <div className="border border-border-default dark:border-border-dark-default flex items-center">
+          <span className="px-3 font-mono text-[11px] text-brand dark:text-brand-dark-DEFAULT select-none border-r border-border-default dark:border-border-dark-default py-2.5">
+            {loading ? '~' : '$'}
+          </span>
+          <HiOutlineMagnifyingGlass className="ml-3 w-3.5 h-3.5 text-fg-muted dark:text-fg-dark-muted shrink-0" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="search requests…"
-            className="w-full pl-8 pr-4 py-2 font-mono text-[11px] tracking-wide bg-white dark:bg-[#0d1117] border border-[#e2e4e8] dark:border-[#1e2228] text-[#1f2328] dark:text-[#e6edf3] placeholder-[#adb5bd] dark:placeholder-[#4a5568] outline-none focus:border-[#e8490f] dark:focus:border-[#ff6b35] transition-colors"
+            className="flex-1 px-3 py-2.5 font-mono text-[11px] tracking-wide bg-transparent text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors cursor-pointer"
+              className="px-3 text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer"
             >
               <HiOutlineXMark className="w-3.5 h-3.5" />
             </button>
@@ -234,16 +305,16 @@ export default function RequestsPage() {
         </div>
 
         {/* Filter tabs */}
-        <div className="flex items-center gap-0 border-b border-[#e2e4e8] dark:border-[#1e2228] overflow-hidden pb-px">
+        <div className="flex items-center border border-border-default dark:border-border-dark-default overflow-x-auto">
           {filters.map((f) => (
             <button
               key={f}
               onClick={() => setActiveFilter(f)}
               className={clsx(
-                'px-3 py-2 font-mono text-[9px] tracking-wide whitespace-nowrap shrink-0 transition-colors cursor-pointer border-b-2',
+                'px-3 py-2 font-mono text-[9px] tracking-wide whitespace-nowrap shrink-0 transition-colors cursor-pointer border-r border-border-default dark:border-border-dark-default last:border-r-0 border-b-2',
                 activeFilter === f
-                  ? 'border-[#e8490f] dark:border-[#ff6b35] text-[#e8490f] dark:text-[#ff6b35]'
-                  : 'border-transparent text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3]',
+                  ? 'border-b-brand dark:border-b-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT bg-brand-muted dark:bg-brand-dark-muted'
+                  : 'border-b-transparent text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:bg-canvas-inset dark:hover:bg-canvas-dark-inset',
               )}
             >
               {f}
@@ -254,93 +325,71 @@ export default function RequestsPage() {
         {/* Results */}
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <HiOutlineArrowPath className="w-5 h-5 text-[#636c76] dark:text-[#848d97] animate-spin" />
+            <HiOutlineArrowPath className="w-4 h-4 text-fg-muted dark:text-fg-dark-muted animate-spin" />
           </div>
         ) : listings.length === 0 ? (
-          <div className="border border-[#e2e4e8] dark:border-[#1e2228] p-12 text-center">
-            <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97]">~ no requests found</p>
+          <div className="border border-border-default dark:border-border-dark-default p-12 text-center">
+            <HiOutlineClipboardDocumentList className="w-6 h-6 text-fg-muted dark:text-fg-dark-muted mx-auto mb-2" />
+            <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">~ no requests found</p>
+            {search && (
+              <button onClick={() => setSearch('')} className="mt-2 font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT hover:underline cursor-pointer">
+                &gt; clear search
+              </button>
+            )}
           </div>
         ) : (
-          <div className="space-y-3">
-            {listings.map((req) => (
-              <div key={req.id} className="border border-[#e2e4e8] dark:border-[#1e2228] hover:border-[#e8490f]/40 dark:hover:border-[#ff6b35]/40 transition-colors">
-                <div className="p-4 flex items-start gap-3">
-                  <Avatar name={`${req.owner.first_name} ${req.owner.last_name}`} src={req.owner.avatar_url ?? undefined} size="md" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-mono text-[11px] font-medium text-[#1f2328] dark:text-[#e6edf3] leading-snug">{req.title}</p>
-                      <span className="shrink-0 font-mono text-[11px] font-bold text-[#22c55e]">{formatPrice(req)}</span>
-                    </div>
-                    <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">
-                      {req.owner.first_name} {req.owner.last_name}
-                      {req.owner.university && ` · ${req.owner.university}`}
-                      {' · '}{formatTime(req.created_at)}
-                    </p>
-                    <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] mt-2 leading-relaxed line-clamp-2">{req.description}</p>
-                    <div className="flex flex-wrap items-center gap-2 mt-3">
-                      <span className="px-2 py-0.5 font-mono text-[9px] border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97]">
-                        {req.category.toLowerCase()}
-                      </span>
-                      {req.delivery_days && (
-                        <span className="flex items-center gap-0.5 font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">
-                          <HiOutlineClock className="w-3 h-3" />due in {req.delivery_days}d
-                        </span>
-                      )}
-                      <button className="ml-auto px-3 py-1.5 font-mono text-[9px] tracking-wide border border-[#e8490f] dark:border-[#ff6b35] text-[#e8490f] dark:text-[#ff6b35] hover:bg-[#e8490f] dark:hover:bg-[#ff6b35] hover:text-white transition-colors cursor-pointer">
-                        apply
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="space-y-2">
+            {listings.map((req) => <RequestCard key={req.id} req={req} />)}
           </div>
         )}
       </div>
 
-      {/* Right sidebar */}
+      {/* ── Right sidebar ── */}
       <div className="w-[220px] shrink-0 hidden lg:flex flex-col gap-4">
-        <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
-          <div className="px-3 py-2 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-            <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">how it works</span>
+
+        <div className="border border-border-default dark:border-border-dark-default">
+          <div className="px-3 py-2 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center gap-1.5">
+            <span className={dot} />
+            <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">how it works</span>
           </div>
-          <div className="p-3 space-y-3">
+          <div className="divide-y divide-border-default dark:divide-border-dark-default">
             {[
               { n: '01', t: 'browse requests', d: 'find tasks that match your skills' },
-              { n: '02', t: 'apply', d: 'send a short pitch to the requester' },
-              { n: '03', t: 'get hired', d: 'agree on scope and get to work' },
-              { n: '04', t: 'get paid', d: 'receive payment on completion' },
+              { n: '02', t: 'apply',           d: 'send a short pitch to the requester' },
+              { n: '03', t: 'get hired',       d: 'agree on scope and get to work' },
+              { n: '04', t: 'get paid',        d: 'receive payment on completion' },
             ].map(({ n, t, d }) => (
-              <div key={n} className="flex gap-2">
-                <span className="font-mono text-[9px] text-[#e8490f] dark:text-[#ff6b35] shrink-0 mt-0.5">{n}</span>
+              <div key={n} className="flex gap-2.5 px-3 py-2.5">
+                <span className="font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT shrink-0 mt-0.5">{n}</span>
                 <div>
-                  <p className="font-mono text-[9px] font-medium text-[#1f2328] dark:text-[#e6edf3]">{t}</p>
-                  <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">{d}</p>
+                  <p className="font-mono text-[9px] font-medium text-fg-default dark:text-fg-dark-default">{t}</p>
+                  <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5">{d}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
-          <div className="px-3 py-2 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-            <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">tips</span>
+        <div className="border border-border-default dark:border-border-dark-default">
+          <div className="px-3 py-2 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center gap-1.5">
+            <span className={dot} />
+            <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">tips</span>
           </div>
-          <div className="p-3 space-y-2">
+          <div className="divide-y divide-border-default dark:divide-border-dark-default">
             {[
               'be specific about your budget',
               'include a clear deadline',
               'describe the expected output',
               'mention your tech stack if relevant',
-            ].map((tip) => (
-              <p key={tip} className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] flex gap-1.5">
-                <span className="text-[#e8490f] dark:text-[#ff6b35] shrink-0">›</span>{tip}
-              </p>
+            ].map((tip, i) => (
+              <div key={i} className="flex gap-2.5 px-3 py-2.5">
+                <span className="font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT shrink-0">{String(i + 1).padStart(2, '0')}</span>
+                <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted leading-relaxed">{tip}</p>
+              </div>
             ))}
           </div>
         </div>
+
       </div>
     </div>
   )

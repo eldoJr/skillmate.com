@@ -86,8 +86,8 @@ function NavLink({
         className={clsx(
           'flex items-center gap-3 px-3 py-2.5 transition-all duration-150 font-mono text-[11px] tracking-wide border-l-2',
           active
-            ? 'border-l-[#e8490f] dark:border-l-[#ff6b35] text-[#e8490f] dark:text-[#ff6b35] bg-[#e8490f0d] dark:bg-[#ff6b3510]'
-            : 'border-l-transparent text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d]/60',
+            ? 'border-l-brand dark:border-l-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT bg-brand-muted dark:bg-brand-dark-muted'
+            : 'border-l-transparent text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay',
         )}
       >
         <div className="shrink-0 flex items-center justify-center w-4 h-4">
@@ -97,7 +97,7 @@ function NavLink({
         </div>
         {showLabel && (
           <span className="whitespace-nowrap overflow-hidden">
-            {active && <span className="text-[#e8490f] dark:text-[#ff6b35] mr-1 opacity-70">&gt;</span>}
+            {active && <span className="text-brand dark:text-brand-dark-DEFAULT mr-1 opacity-70">&gt;</span>}
             {item.label}
           </span>
         )}
@@ -110,9 +110,9 @@ function NavLink({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -6 }}
             transition={{ duration: 0.08 }}
-            className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 px-2.5 py-1.5 bg-[#1f2328] dark:bg-[#e6edf3] text-white dark:text-[#1f2328] text-[10px] font-mono tracking-wide whitespace-nowrap shadow-lg pointer-events-none border border-[#30363d] dark:border-[#d0d7de]"
+            className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 px-2.5 py-1.5 bg-fg-default dark:bg-fg-dark-default text-canvas-default dark:text-fg-default text-[10px] font-mono tracking-wide whitespace-nowrap shadow-lg pointer-events-none border border-border-dark-default dark:border-border-default"
           >
-            <span className="text-[#e8490f] mr-1">&gt;</span>{item.label}
+            <span className="text-brand mr-1">&gt;</span>{item.label}
           </motion.div>
         )}
       </AnimatePresence>
@@ -163,10 +163,10 @@ function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarB
   return (
     <>
       {/* Logo */}
-      <div className="h-14 flex items-center shrink-0 px-4 border-b border-[#e2e4e8] dark:border-[#1e2228] gap-3 overflow-hidden">
+      <div className="h-14 flex items-center shrink-0 px-4 border-b border-border-default dark:border-border-dark-default gap-3 overflow-hidden">
         <img src="/ico.svg" alt="Skillmate" width={20} height={20} className="shrink-0" />
         {showLabel && (
-          <span className="font-mono text-[11px] font-semibold tracking-widest text-[#1f2328] dark:text-[#e6edf3] uppercase whitespace-nowrap">
+          <span className="font-mono text-[11px] font-semibold tracking-widest text-fg-default dark:text-fg-dark-default uppercase whitespace-nowrap">
             skillmate
           </span>
         )}
@@ -178,7 +178,7 @@ function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarB
           <NavLink key={item.route} item={item} showLabel={showLabel} active={isActive(item.route)} onClick={onNavClick} />
         ))}
 
-        <div className="my-2 mx-3 h-px bg-[#e2e4e8] dark:bg-[#1e2228]" />
+        <div className="my-2 mx-3 h-px bg-border-default dark:bg-border-dark-default" />
 
         <NavLink item={aiMentor} showLabel={showLabel} active={isActive(aiMentor.route)} onClick={onNavClick} aiIcon />
 
@@ -189,8 +189,8 @@ function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarB
           className={clsx(
             'flex items-center gap-3 px-3 py-2.5 transition-all duration-150 w-full cursor-pointer font-mono text-[11px] tracking-wide border-l-2',
             overflowOpen || overflowNav.some((i) => isActive(i.route))
-              ? 'border-l-[#e8490f] dark:border-l-[#ff6b35] text-[#e8490f] dark:text-[#ff6b35] bg-[#e8490f0d] dark:bg-[#ff6b3510]'
-              : 'border-l-transparent text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d]/60',
+              ? 'border-l-brand dark:border-l-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT bg-brand-muted dark:bg-brand-dark-muted'
+              : 'border-l-transparent text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay',
           )}
         >
           <div className="shrink-0 flex items-center justify-center w-4 h-4">
@@ -208,7 +208,7 @@ function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarB
               exit={{ opacity: 0, x: -4 }}
               transition={{ duration: 0.12, ease: 'easeOut' }}
               style={{ position: 'fixed', top: overflowPos.top, left: overflowPos.left, zIndex: 9999 }}
-              className="bg-[#fafafa] dark:bg-[#0d1117] border border-[#e2e4e8] dark:border-[#1e2228] py-1 shadow-lg w-[160px]"
+              className="bg-canvas-subtle dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default py-1 shadow-lg w-[160px]"
             >
               {overflowNav.map((item) => {
                 const active = isActive(item.route)
@@ -220,11 +220,11 @@ function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarB
                     className={clsx(
                       'block px-4 py-1.5 font-mono text-[10px] tracking-wide transition-colors border-l-2',
                       active
-                        ? 'border-l-[#e8490f] dark:border-l-[#ff6b35] text-[#e8490f] dark:text-[#ff6b35] bg-[#e8490f0d]'
-                        : 'border-l-transparent text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d]/60',
+                        ? 'border-l-brand dark:border-l-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT bg-brand-muted dark:bg-brand-dark-muted'
+                        : 'border-l-transparent text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay',
                     )}
                   >
-                    {active && <span className="text-[#e8490f] dark:text-[#ff6b35] mr-1">&gt;</span>}
+                    {active && <span className="text-brand dark:text-brand-dark-DEFAULT mr-1">&gt;</span>}
                     {item.label}
                   </Link>
                 )
@@ -236,11 +236,11 @@ function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarB
       </nav>
 
       {/* Settings */}
-      <div className="py-3 border-t border-[#e2e4e8] dark:border-[#1e2228]">
+      <div className="py-3 border-t border-border-default dark:border-border-dark-default">
         <button
           ref={menuBtnRef}
           onClick={() => setMenuOpen((v) => !v)}
-          className="flex items-center gap-3 px-3 py-2.5 transition-colors duration-150 w-full cursor-pointer font-mono text-[11px] tracking-wide border-l-2 border-l-transparent text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d]/60"
+          className="flex items-center gap-3 px-3 py-2.5 transition-colors duration-150 w-full cursor-pointer font-mono text-[11px] tracking-wide border-l-2 border-l-transparent text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay"
         >
           <HiOutlineCog6Tooth className="w-4 h-4 shrink-0" />
           {showLabel && <span className="whitespace-nowrap">settings</span>}
@@ -255,11 +255,11 @@ function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarB
               exit={{ opacity: 0, x: -4 }}
               transition={{ duration: 0.12, ease: 'easeOut' }}
               style={{ position: 'fixed', top: menuPos.top, left: menuPos.left, zIndex: 9999 }}
-              className="w-[180px] bg-[#fafafa] dark:bg-[#0d1117] border border-[#e2e4e8] dark:border-[#1e2228] py-1 shadow-lg"
+              className="w-[180px] bg-canvas-subtle dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default py-1 shadow-lg"
             >
-              <div className="px-3 py-1.5 border-b border-[#e2e4e8] dark:border-[#1e2228] flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-                <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">menu</span>
+              <div className="px-3 py-1.5 border-b border-border-default dark:border-border-dark-default flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT" />
+                <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">menu</span>
               </div>
               {menuItems.map((item) => (
                 <button
@@ -268,8 +268,8 @@ function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarB
                   className={clsx(
                     'w-full text-left px-4 py-1.5 font-mono text-[10px] tracking-wide transition-colors cursor-pointer border-l-2 border-l-transparent',
                     'danger' in item && item.danger
-                      ? 'text-[#d1242f] dark:text-[#f85149] hover:bg-[#fff0ee] dark:hover:bg-[#2d1216] hover:border-l-[#d1242f]'
-                      : 'text-[#636c76] dark:text-[#848d97] hover:bg-[#f6f8fa] dark:hover:bg-[#21262d]/60 hover:text-[#1f2328] dark:hover:text-[#e6edf3] hover:border-l-[#e8490f] dark:hover:border-l-[#ff6b35]',
+                      ? 'text-danger-fg dark:text-danger-dark-fg hover:bg-danger-subtle dark:hover:bg-danger-dark-subtle hover:border-l-danger-fg'
+                      : 'text-fg-muted dark:text-fg-dark-muted hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay hover:text-fg-default dark:hover:text-fg-dark-default hover:border-l-brand dark:hover:border-l-brand-dark-DEFAULT',
                   )}
                 >
                   {item.label}
@@ -325,7 +325,7 @@ export default function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProp
     <>
       {/* Desktop sidebar */}
       <aside className={clsx(
-        'hidden md:flex fixed top-0 left-0 z-40 flex-col h-screen border-r border-[#e2e4e8] dark:border-[#1e2228]',
+        'hidden md:flex fixed top-0 left-0 z-40 flex-col h-screen border-r border-border-default dark:border-border-dark-default bg-canvas-subtle dark:bg-canvas-dark-default',
         isLg ? 'w-[220px]' : 'w-[52px]',
       )}>
         <SidebarBody
@@ -354,7 +354,7 @@ export default function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProp
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-              className="fixed top-0 left-0 z-50 flex flex-col h-screen w-[260px] bg-[#fafafa] dark:bg-[#0a0c0f] border-r border-[#e2e4e8] dark:border-[#1e2228] md:hidden"
+              className="fixed top-0 left-0 z-50 flex flex-col h-screen w-[260px] bg-canvas-subtle dark:bg-canvas-dark-default border-r border-border-default dark:border-border-dark-default md:hidden"
             >
               <SidebarBody
                 showLabel={true}

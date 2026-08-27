@@ -76,11 +76,26 @@ app.get('/:targetRole', requireAuth, async c => {
   return c.json(formatReport(report))
 })
 
+app.delete('/:id', requireAuth, async c => {
+  const user = c.get('user')
+  const [report] = await db.select().from(skillGapReports)
+    .where(and(eq(skillGapReports.id, c.req.param('id')), eq(skillGapReports.userId, user.id))).limit(1)
+  if (!report) return c.json({ detail: 'Not found' }, 404)
+  await db.delete(skillGapReports).where(eq(skillGapReports.id, report.id))
+  return c.json({ ok: true })
+})
+
 function formatReport(r: typeof skillGapReports.$inferSelect) {
   return {
-    ...r,
-    presentSkills: JSON.parse(r.presentSkills),
-    missingSkills: JSON.parse(r.missingSkills),
+    id:               r.id,
+    user_id:          r.userId,
+    target_role:      r.targetRole,
+    present_skills:   JSON.parse(r.presentSkills),
+    missing_skills:   JSON.parse(r.missingSkills),
+    summary:          r.summary,
+    estimated_weeks:  r.estimatedWeeks,
+    created_at:       r.createdAt,
+    updated_at:       r.updatedAt,
   }
 }
 

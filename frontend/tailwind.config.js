@@ -94,14 +94,14 @@ export default {
         secondary: '#1f883d',
         // Skillmate orange-red accent
         brand: {
-          DEFAULT: '#e8490f',
-          hover:   '#ff6b35',
-          muted:   '#e8490f1a',
-          subtle:  '#fff4f0',
-          'dark-DEFAULT': '#ff6b35',
-          'dark-hover':   '#ff8c5a',
-          'dark-muted':   '#ff6b3520',
-          'dark-subtle':  '#2a1208',
+          DEFAULT: '#0969da',
+          hover:   '#0550ae',
+          muted:   '#54aeff26',
+          subtle:  '#ddf4ff',
+          'dark-DEFAULT': '#2f81f7',
+          'dark-hover':   '#58a6ff',
+          'dark-muted':   '#388bfd26',
+          'dark-subtle':  '#121d2f',
         },
       },
       fontFamily: {

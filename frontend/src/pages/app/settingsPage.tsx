@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { clsx } from 'clsx'
 import {
   HiOutlineShieldCheck, HiOutlineBell, HiOutlinePaintBrush, HiOutlineGlobeAlt,
-  HiOutlineLockClosed, HiOutlineArrowRightOnRectangle,
-  HiOutlineExclamationTriangle,
+  HiOutlineLockClosed, HiOutlineArrowRightOnRectangle, HiOutlineExclamationTriangle,
 } from 'react-icons/hi2'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -16,21 +15,15 @@ const sections = [
   { key: 'security',      label: 'security',      icon: HiOutlineLockClosed },
 ] as const
 
-const inputCls = [
-  'w-full px-3 py-2 font-mono text-[11px] tracking-wide',
-  'bg-white dark:bg-[#0d1117]',
-  'border border-[#e2e4e8] dark:border-[#1e2228]',
-  'text-[#1f2328] dark:text-[#e6edf3]',
-  'placeholder-[#adb5bd] dark:placeholder-[#4a5568]',
-  'outline-none focus:border-[#e8490f] dark:focus:border-[#ff6b35]',
-  'transition-colors duration-150',
-].join(' ')
+const dot  = 'w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT shrink-0'
+const iCls = 'w-full px-3 py-2 font-mono text-[11px] bg-canvas-inset dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT transition-colors'
+const lCls = 'font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted mb-1 block'
 
 function SectionHeader({ label }: { label: string }) {
   return (
-    <div className="px-4 py-2 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center gap-1.5">
-      <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-      <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">{label}</span>
+    <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center gap-1.5">
+      <span className={dot} />
+      <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">{label}</span>
     </div>
   )
 }
@@ -41,7 +34,7 @@ function Toggle({ enabled, onChange }: { enabled: boolean; onChange: () => void 
       onClick={onChange}
       className={clsx(
         'relative w-8 h-4 transition-colors cursor-pointer shrink-0',
-        enabled ? 'bg-[#e8490f] dark:bg-[#ff6b35]' : 'bg-[#e2e4e8] dark:bg-[#1e2228]',
+        enabled ? 'bg-brand dark:bg-brand-dark-DEFAULT' : 'bg-canvas-inset dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default',
       )}
     >
       <span className={clsx(
@@ -54,10 +47,10 @@ function Toggle({ enabled, onChange }: { enabled: boolean; onChange: () => void 
 
 function Row({ label, description, children }: { label: string; description?: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-4 px-4 py-3 border-b border-[#e2e4e8] dark:border-[#1e2228] last:border-0">
+    <div className="flex items-center justify-between gap-4 px-4 py-3 border-b border-border-default dark:border-border-dark-default last:border-0">
       <div className="min-w-0">
-        <p className="font-mono text-[10px] font-medium text-[#1f2328] dark:text-[#e6edf3]">{label}</p>
-        {description && <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">{description}</p>}
+        <p className="font-mono text-[10px] font-medium text-fg-default dark:text-fg-dark-default">{label}</p>
+        {description && <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5">{description}</p>}
       </div>
       {children}
     </div>
@@ -66,8 +59,8 @@ function Row({ label, description, children }: { label: string; description?: st
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1 px-4 py-3 border-b border-[#e2e4e8] dark:border-[#1e2228] last:border-0">
-      <label className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">{label}</label>
+    <div className="flex flex-col gap-1 px-4 py-3 border-b border-border-default dark:border-border-dark-default last:border-0">
+      <label className={lCls}>{label}</label>
       {children}
     </div>
   )
@@ -79,9 +72,9 @@ export default function SettingsPage() {
   const { logout } = useAuth()
   const [showDanger, setShowDanger] = useState(false)
 
-  const [notifs, setNotifs] = useState({ email: true, push: true, messages: true, reviews: true, listings: false, marketing: false })
+  const [notifs, setNotifs]   = useState({ email: true, push: true, messages: true, reviews: true, listings: false, marketing: false })
   const [privacy, setPrivacy] = useState({ profilePublic: true, showEmail: false, showUniversity: true, activityVisible: true })
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
+  const [dark, setDark]       = useState(() => document.documentElement.classList.contains('dark'))
 
   const toggleTheme = () => {
     const next = !dark
@@ -91,18 +84,17 @@ export default function SettingsPage() {
   }
 
   const handleSignOut = () => { logout(); navigate('/login') }
-
   const activeSection = sections.find((s) => s.key === active)!
 
   return (
     <div className="flex gap-6">
 
-      {/* Left nav */}
+      {/* ── Left nav ── */}
       <div className="hidden md:flex flex-col w-[200px] shrink-0">
-        <div className="sticky top-20 border border-[#e2e4e8] dark:border-[#1e2228]">
-          <div className="px-3 py-2 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-            <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">settings</span>
+        <div className="sticky top-20 border border-border-default dark:border-border-dark-default">
+          <div className="px-3 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center gap-1.5">
+            <span className={dot} />
+            <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">settings</span>
           </div>
 
           {sections.map((s) => {
@@ -113,14 +105,13 @@ export default function SettingsPage() {
                 key={s.key}
                 onClick={() => setActive(s.key)}
                 className={clsx(
-                  'w-full flex items-center gap-2 px-3 py-2.5 font-mono text-[10px] tracking-wide border-b border-[#e2e4e8] dark:border-[#1e2228] last:border-0 border-l-2 transition-colors cursor-pointer text-left',
+                  'w-full flex items-center gap-2 px-3 py-2.5 font-mono text-[10px] tracking-wide border-b border-border-default dark:border-border-dark-default last:border-0 border-l-2 transition-colors cursor-pointer text-left',
                   isActive
-                    ? 'border-l-[#e8490f] dark:border-l-[#ff6b35] text-[#e8490f] dark:text-[#ff6b35] bg-[#e8490f0d] dark:bg-[#ff6b3510]'
-                    : 'border-l-transparent text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] hover:bg-[#f6f8fa] dark:hover:bg-[#0d1117]',
+                    ? 'border-l-brand dark:border-l-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT bg-brand-muted dark:bg-brand-dark-muted'
+                    : 'border-l-transparent text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:bg-canvas-inset dark:hover:bg-canvas-dark-inset',
                 )}
               >
                 <Icon className="w-3.5 h-3.5 shrink-0" />
-                {isActive && <span className="text-[#e8490f] dark:text-[#ff6b35] mr-0.5">&gt;</span>}
                 {s.label}
               </button>
             )
@@ -128,7 +119,7 @@ export default function SettingsPage() {
 
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-2 px-3 py-2.5 font-mono text-[10px] tracking-wide border-l-2 border-l-transparent text-[#d1242f] dark:text-[#f85149] hover:bg-[#fff0ee] dark:hover:bg-[#2d1216] hover:border-l-[#d1242f] transition-colors cursor-pointer"
+            className="w-full flex items-center gap-2 px-3 py-2.5 font-mono text-[10px] tracking-wide border-l-2 border-l-transparent text-danger-fg dark:text-danger-dark-fg hover:bg-canvas-inset dark:hover:bg-canvas-dark-inset hover:border-l-danger-fg dark:hover:border-l-danger-dark-fg transition-colors cursor-pointer"
           >
             <HiOutlineArrowRightOnRectangle className="w-3.5 h-3.5 shrink-0" />
             sign out
@@ -136,20 +127,20 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Content */}
+      {/* ── Content ── */}
       <div className="flex-1 min-w-0 max-w-2xl space-y-4">
 
         {/* Page header */}
-        <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
-          <div className="px-4 py-2.5 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-            <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">
+        <div className="border border-border-default dark:border-border-dark-default bg-canvas-default dark:bg-canvas-dark-default">
+          <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center gap-1.5">
+            <span className={dot} />
+            <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">
               settings / {activeSection.label}
             </span>
           </div>
           <div className="px-4 py-3">
-            <p className="font-mono text-[11px] font-medium text-[#1f2328] dark:text-[#e6edf3]">{activeSection.label}</p>
-            <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">
+            <p className="font-mono text-[11px] font-medium text-fg-default dark:text-fg-dark-default">{activeSection.label}</p>
+            <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
               {active === 'privacy'       && 'control who can see your information'}
               {active === 'notifications' && 'choose what you want to be notified about'}
               {active === 'appearance'    && 'customize how skillmate looks for you'}
@@ -159,9 +150,9 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Privacy */}
+        {/* ── Privacy ── */}
         {active === 'privacy' && (
-          <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+          <div className="border border-border-default dark:border-border-dark-default bg-canvas-default dark:bg-canvas-dark-default">
             <SectionHeader label="visibility" />
             <Row label="public profile" description="anyone can discover and view your profile">
               <Toggle enabled={privacy.profilePublic} onChange={() => setPrivacy((p) => ({ ...p, profilePublic: !p.profilePublic }))} />
@@ -178,9 +169,9 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* Notifications */}
+        {/* ── Notifications ── */}
         {active === 'notifications' && (
-          <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+          <div className="border border-border-default dark:border-border-dark-default bg-canvas-default dark:bg-canvas-dark-default">
             <SectionHeader label="channels" />
             <Row label="email notifications" description="receive updates via email">
               <Toggle enabled={notifs.email} onChange={() => setNotifs((n) => ({ ...n, email: !n.email }))} />
@@ -204,9 +195,9 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* Appearance */}
+        {/* ── Appearance ── */}
         {active === 'appearance' && (
-          <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+          <div className="border border-border-default dark:border-border-dark-default bg-canvas-default dark:bg-canvas-dark-default">
             <SectionHeader label="theme" />
             <Row label="dark mode" description="switch between light and dark theme">
               <Toggle enabled={dark} onChange={toggleTheme} />
@@ -214,8 +205,8 @@ export default function SettingsPage() {
             <SectionHeader label="preview" />
             <div className="px-4 py-4 flex gap-3">
               {[
-                { id: 'light', label: 'light', bg: 'bg-white border-[#e2e4e8]', text: 'text-[#1f2328]' },
-                { id: 'dark',  label: 'dark',  bg: 'bg-[#0d1117] border-[#1e2228]', text: 'text-[#e6edf3]' },
+                { id: 'light', label: 'light', bg: 'bg-white border-[#d0d7de]',   text: 'text-[#1f2328]' },
+                { id: 'dark',  label: 'dark',  bg: 'bg-[#0d1117] border-[#30363d]', text: 'text-[#e6edf3]' },
               ].map((t) => (
                 <button
                   key={t.id}
@@ -224,17 +215,17 @@ export default function SettingsPage() {
                     'flex-1 border p-3 transition-colors cursor-pointer',
                     t.bg,
                     (t.id === 'dark') === dark
-                      ? 'border-[#e8490f] dark:border-[#ff6b35]'
-                      : 'hover:border-[#636c76] dark:hover:border-[#848d97]',
+                      ? 'border-brand dark:border-brand-dark-DEFAULT'
+                      : 'hover:border-fg-muted dark:hover:border-fg-dark-muted',
                   )}
                 >
                   <div className={clsx('font-mono text-[9px] tracking-widest uppercase mb-2', t.text)}>{t.label}</div>
                   <div className="space-y-1">
-                    <div className={clsx('h-1.5 w-3/4', t.id === 'dark' ? 'bg-[#e6edf3]/20' : 'bg-[#1f2328]/10')} />
-                    <div className={clsx('h-1.5 w-1/2', t.id === 'dark' ? 'bg-[#e6edf3]/10' : 'bg-[#1f2328]/5')} />
+                    <div className={clsx('h-1.5 w-3/4', t.id === 'dark' ? 'bg-white/20' : 'bg-black/10')} />
+                    <div className={clsx('h-1.5 w-1/2', t.id === 'dark' ? 'bg-white/10' : 'bg-black/5')} />
                   </div>
                   {(t.id === 'dark') === dark && (
-                    <div className="mt-2 font-mono text-[8px] text-[#e8490f] dark:text-[#ff6b35]">› active</div>
+                    <div className="mt-2 font-mono text-[8px] text-brand dark:text-brand-dark-DEFAULT">› active</div>
                   )}
                 </button>
               ))}
@@ -242,12 +233,12 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* Language */}
+        {/* ── Language ── */}
         {active === 'language' && (
-          <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+          <div className="border border-border-default dark:border-border-dark-default bg-canvas-default dark:bg-canvas-dark-default">
             <SectionHeader label="locale" />
             <Field label="language">
-              <select defaultValue="en" className={clsx(inputCls, 'appearance-none cursor-pointer')}>
+              <select defaultValue="en" className={clsx(iCls, 'appearance-none cursor-pointer')}>
                 <option value="en">english</option>
                 <option value="pt">português</option>
                 <option value="fr">français</option>
@@ -256,7 +247,7 @@ export default function SettingsPage() {
               </select>
             </Field>
             <Field label="timezone">
-              <select defaultValue="sast" className={clsx(inputCls, 'appearance-none cursor-pointer')}>
+              <select defaultValue="sast" className={clsx(iCls, 'appearance-none cursor-pointer')}>
                 <option value="sast">south africa standard time (SAST) — UTC+2</option>
                 <option value="gmt">GMT — UTC+0</option>
                 <option value="eat">east africa time (EAT) — UTC+3</option>
@@ -265,32 +256,32 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* Security */}
+        {/* ── Security ── */}
         {active === 'security' && (
           <>
-            <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+            <div className="border border-border-default dark:border-border-dark-default bg-canvas-default dark:bg-canvas-dark-default">
               <SectionHeader label="change password" />
               <Field label="current password">
-                <input type="password" placeholder="••••••••" className={inputCls} />
+                <input type="password" placeholder="••••••••" className={iCls} />
               </Field>
               <Field label="new password">
-                <input type="password" placeholder="••••••••" className={inputCls} />
+                <input type="password" placeholder="••••••••" className={iCls} />
               </Field>
               <Field label="confirm new password">
-                <input type="password" placeholder="••••••••" className={inputCls} />
+                <input type="password" placeholder="••••••••" className={iCls} />
               </Field>
               <div className="px-4 py-3">
-                <button className="px-5 py-2 font-mono text-[10px] tracking-wide bg-[#e8490f] dark:bg-[#ff6b35] text-white hover:bg-[#d03d0a] dark:hover:bg-[#e85c20] transition-colors cursor-pointer">
+                <button className="px-4 py-2 bg-brand dark:bg-brand-dark-DEFAULT border border-brand dark:border-brand-dark-DEFAULT font-mono text-[10px] text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer">
                   update password
                 </button>
               </div>
             </div>
 
             {/* Danger zone */}
-            <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
+            <div className="border border-border-default dark:border-border-dark-default bg-canvas-default dark:bg-canvas-dark-default">
               <button
                 onClick={() => setShowDanger((v) => !v)}
-                className="w-full flex items-center gap-2 px-4 py-3 font-mono text-[10px] tracking-wide text-[#636c76] dark:text-[#848d97] hover:text-[#d1242f] dark:hover:text-[#f85149] transition-colors cursor-pointer"
+                className="w-full flex items-center gap-2 px-4 py-3 font-mono text-[10px] tracking-wide text-fg-muted dark:text-fg-dark-muted hover:text-danger-fg dark:hover:text-danger-dark-fg transition-colors cursor-pointer"
               >
                 <HiOutlineExclamationTriangle className="w-3.5 h-3.5 shrink-0" />
                 <span>{showDanger ? 'hide' : 'show'} danger zone</span>
@@ -298,15 +289,15 @@ export default function SettingsPage() {
               </button>
 
               {showDanger && (
-                <div className="border-t border-[#f8514926] bg-[#fff0ee] dark:bg-[#2d1216]">
-                  <div className="px-4 py-3 border-b border-[#f8514926]">
-                    <p className="font-mono text-[10px] font-medium text-[#d1242f] dark:text-[#f85149]">delete account</p>
-                    <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">
+                <div className="border-t border-danger-fg/20 dark:border-danger-dark-fg/20 bg-canvas-inset dark:bg-canvas-dark-inset">
+                  <div className="px-4 py-3 border-b border-danger-fg/20 dark:border-danger-dark-fg/20">
+                    <p className="font-mono text-[10px] font-medium text-danger-fg dark:text-danger-dark-fg">delete account</p>
+                    <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
                       permanent — all listings, reviews, and messages will be removed
                     </p>
                   </div>
                   <div className="px-4 py-3">
-                    <button className="px-4 py-2 font-mono text-[10px] tracking-wide border border-[#d1242f]/40 text-[#d1242f] dark:text-[#f85149] hover:bg-[#d1242f] hover:text-white transition-colors cursor-pointer">
+                    <button className="px-4 py-2 font-mono text-[10px] border border-danger-fg/40 dark:border-danger-dark-fg/40 text-danger-fg dark:text-danger-dark-fg hover:bg-danger-fg dark:hover:bg-danger-dark-fg hover:text-white transition-colors cursor-pointer">
                       delete my account
                     </button>
                   </div>

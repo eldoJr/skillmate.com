@@ -54,7 +54,18 @@ app.post('/generate', requireAuth, async c => {
   return c.json(formatRoadmap(roadmap), 201)
 })
 
-app.get('/:targetRole/latest', requireAuth, async c => {
+app.get('/', requireAuth, async c => {
+  const user = c.get('user')
+  const rows = await db.select().from(careerRoadmaps)
+    .where(eq(careerRoadmaps.userId, user.id))
+    .orderBy(desc(careerRoadmaps.updatedAt))
+  const seen = new Set<string>()
+  const latest = rows.filter(r => { if (seen.has(r.targetRole)) return false; seen.add(r.targetRole); return true })
+  return c.json(latest.map(formatRoadmap))
+})
+
+
+app.get('/:targetRole', requireAuth, async c => {
   const user = c.get('user')
   const [roadmap] = await db.select().from(careerRoadmaps)
     .where(and(eq(careerRoadmaps.userId, user.id), eq(careerRoadmaps.targetRole, c.req.param('targetRole'))))
@@ -82,8 +93,28 @@ app.get('/:targetRole/versions/:version', requireAuth, async c => {
   return c.json(formatRoadmap(roadmap))
 })
 
+app.delete('/:id', requireAuth, async c => {
+  const user = c.get('user')
+  const [row] = await db.select().from(careerRoadmaps)
+    .where(and(eq(careerRoadmaps.id, c.req.param('id')), eq(careerRoadmaps.userId, user.id))).limit(1)
+  if (!row) return c.json({ detail: 'Not found' }, 404)
+  await db.delete(careerRoadmaps).where(eq(careerRoadmaps.id, row.id))
+  return c.json({ ok: true })
+})
+
 function formatRoadmap(r: typeof careerRoadmaps.$inferSelect) {
-  return { ...r, milestones: JSON.parse(r.milestones), weeklyPlan: JSON.parse(r.weeklyPlan) }
+  return {
+    id:          r.id,
+    user_id:     r.userId,
+    target_role: r.targetRole,
+    version:     r.version,
+    milestones:  JSON.parse(r.milestones),
+    weekly_plan: JSON.parse(r.weeklyPlan),
+    summary:     r.summary,
+    total_weeks: r.totalWeeks,
+    created_at:  r.createdAt,
+    updated_at:  r.updatedAt,
+  }
 }
 
 export default app

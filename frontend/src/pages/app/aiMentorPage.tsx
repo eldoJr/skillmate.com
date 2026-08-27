@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import { motion } from 'framer-motion'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeHighlight from 'rehype-highlight'
+import 'highlight.js/styles/github-dark.css'
 import {
   HiOutlinePaperAirplane, HiOutlinePlus, HiOutlineTrash, HiOutlineArrowPath,
 } from 'react-icons/hi2'
@@ -18,19 +22,45 @@ function formatTime(iso: string) {
   return `${Math.floor(diffMins / 1440)}d`
 }
 
+const mdComponents: React.ComponentProps<typeof ReactMarkdown>['components'] = {
+  p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
+  ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-0.5">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-0.5">{children}</ol>,
+  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+  h1: ({ children }) => <p className="font-bold text-[13px] mb-1 mt-2">{children}</p>,
+  h2: ({ children }) => <p className="font-bold text-[12px] mb-1 mt-2">{children}</p>,
+  h3: ({ children }) => <p className="font-semibold mb-1 mt-1.5">{children}</p>,
+  strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+  code: ({ className, children, ...props }) => {
+    const isBlock = className?.includes('language-')
+    return isBlock
+      ? <code className={clsx(className, 'block text-[10px] leading-relaxed')} {...props}>{children}</code>
+      : <code className="bg-black/20 dark:bg-white/10 px-1 py-0.5 text-[10px] font-mono">{children}</code>
+  },
+  pre: ({ children }) => <pre className="mb-2 overflow-x-auto text-[10px] leading-relaxed border border-border-default dark:border-border-dark-default">{children}</pre>,
+  blockquote: ({ children }) => <blockquote className="border-l-2 border-brand dark:border-brand-dark-DEFAULT pl-3 text-fg-muted dark:text-fg-dark-muted mb-2">{children}</blockquote>,
+  a: ({ href, children }) => <a href={href} target="_blank" rel="noreferrer" className="text-brand dark:text-brand-dark-DEFAULT underline underline-offset-2">{children}</a>,
+  table: ({ children }) => <div className="overflow-x-auto mb-2"><table className="w-full text-[10px] border-collapse border border-border-default dark:border-border-dark-default">{children}</table></div>,
+  th: ({ children }) => <th className="border border-border-default dark:border-border-dark-default px-2 py-1 bg-canvas-inset dark:bg-canvas-dark-inset font-semibold text-left">{children}</th>,
+  td: ({ children }) => <td className="border border-border-default dark:border-border-dark-default px-2 py-1">{children}</td>,
+}
+
 function MessageBubble({ msg }: { msg: MentorMessage }) {
   const isUser = msg.role === 'user'
   return (
     <div className={clsx('flex', isUser ? 'justify-end' : 'justify-start')}>
       <div className={clsx(
-        'max-w-[70%] px-3 py-2 font-mono text-[11px] leading-relaxed',
+        'max-w-[75%] px-3 py-2 font-mono text-[11px] leading-relaxed',
         isUser
-          ? 'bg-[#e8490f] dark:bg-[#ff6b35] text-white'
-          : 'bg-white dark:bg-[#1e2228] text-[#1f2328] dark:text-[#e6edf3] border border-[#e2e4e8] dark:border-[#2a2f38]',
+          ? 'bg-brand dark:bg-brand-dark-DEFAULT text-white'
+          : 'bg-canvas-overlay dark:bg-canvas-dark-overlay text-fg-default dark:text-fg-dark-default border border-border-default dark:border-border-dark-default',
       )}>
-        <p className="whitespace-pre-wrap">{msg.content}</p>
+        {isUser
+          ? <p className="whitespace-pre-wrap">{msg.content}</p>
+          : <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]} components={mdComponents}>{msg.content}</ReactMarkdown>
+        }
         {msg.created_at && (
-          <p className={clsx('font-mono text-[8px] mt-1', isUser ? 'text-white/60' : 'text-[#636c76] dark:text-[#848d97]')}>
+          <p className={clsx('font-mono text-[8px] mt-1', isUser ? 'text-white/60' : 'text-fg-muted dark:text-fg-dark-muted')}>
             {formatTime(msg.created_at)}
           </p>
         )}
@@ -42,6 +72,7 @@ function MessageBubble({ msg }: { msg: MentorMessage }) {
 export default function AiMentorPage() {
   const [conversations, setConversations] = useState<ConversationBrief[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
+  const activeIdRef = useRef<string | null>(null)
   const [messages, setMessages] = useState<MentorMessage[]>([])
   const [suggestions, setSuggestions] = useState<ProactiveSuggestion[]>([])
   const [input, setInput] = useState('')
@@ -61,12 +92,14 @@ export default function AiMentorPage() {
 
   const loadConversation = async (id: string) => {
     setActiveId(id)
+    activeIdRef.current = id
     const conv = await aiService.getConversation(id)
     setMessages(conv.messages)
   }
 
   const newChat = () => {
     setActiveId(null)
+    activeIdRef.current = null
     setMessages([])
     setInput('')
   }
@@ -90,13 +123,14 @@ export default function AiMentorPage() {
     setStreamingContent('')
 
     const token = localStorage.getItem('skillmate_token')
+    const conversationId = activeIdRef.current
     let accumulated = ''
 
     try {
       const res = await fetch(`${BASE}/mentor/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ message: content, conversation_id: activeId }),
+        body: JSON.stringify({ message: content, conversation_id: conversationId }),
       })
 
       const reader = res.body?.getReader()
@@ -113,8 +147,9 @@ export default function AiMentorPage() {
             if (payload === '[DONE]') continue
             try {
               const parsed = JSON.parse(payload)
-              if (parsed.conversation_id && !activeId) {
+              if (parsed.conversation_id && !activeIdRef.current) {
                 setActiveId(parsed.conversation_id)
+                activeIdRef.current = parsed.conversation_id
                 aiService.getConversations().then(setConversations)
               }
               if (parsed.content) {
@@ -145,20 +180,19 @@ export default function AiMentorPage() {
   const activeConvo = conversations.find((c) => c.id === activeId)
 
   return (
-    <div className="flex h-[calc(100vh-112px)] overflow-hidden border border-[#e2e4e8] dark:border-[#1e2228]">
+    <div className="flex h-[calc(100vh-112px)] overflow-hidden border border-border-default dark:border-border-dark-default">
 
       {/* ── Sidebar ── */}
-      <div className="w-[240px] shrink-0 border-r border-[#e2e4e8] dark:border-[#1e2228] flex flex-col bg-white dark:bg-[#0d1117]">
+      <div className="w-[240px] shrink-0 border-r border-border-default dark:border-border-dark-default flex flex-col bg-canvas-overlay dark:bg-canvas-dark-inset">
 
-        {/* Header */}
-        <div className="px-3 py-2.5 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center justify-between">
+        <div className="px-3 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-            <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">ai mentor</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT" />
+            <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">ai mentor</span>
           </div>
           <button
             onClick={newChat}
-            className="flex items-center gap-1 px-2 py-1 font-mono text-[9px] tracking-wide border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] dark:hover:border-[#ff6b35] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2 py-1 font-mono text-[9px] tracking-wide border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer"
           >
             <HiOutlinePlus className="w-3 h-3" />
             new
@@ -168,7 +202,7 @@ export default function AiMentorPage() {
         {/* Conversation list */}
         <div className="flex-1 overflow-y-auto">
           {conversations.length === 0 ? (
-            <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] text-center py-8">
+            <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted text-center py-8">
               ~ no conversations yet
             </p>
           ) : (
@@ -177,23 +211,23 @@ export default function AiMentorPage() {
                 key={c.id}
                 onClick={() => loadConversation(c.id)}
                 className={clsx(
-                  'group w-full flex items-center gap-2.5 px-3 py-3 transition-colors cursor-pointer text-left border-b border-[#e2e4e8] dark:border-[#1e2228] last:border-0',
+                  'group w-full flex items-center gap-2.5 px-3 py-3 transition-colors cursor-pointer text-left border-b border-border-default dark:border-border-dark-default last:border-0 border-l-2',
                   activeId === c.id
-                    ? 'bg-[#f6f8fa] dark:bg-[#1e2228] border-l-2 border-l-[#e8490f] dark:border-l-[#ff6b35]'
-                    : 'hover:bg-[#f6f8fa] dark:hover:bg-[#0d1117]',
+                    ? 'bg-canvas-inset dark:bg-canvas-dark-overlay border-l-brand dark:border-l-brand-dark-DEFAULT'
+                    : 'border-l-transparent hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay',
                 )}
               >
                 <div className="flex-1 min-w-0">
-                  <p className="font-mono text-[10px] truncate text-[#1f2328] dark:text-[#e6edf3]">
+                  <p className="font-mono text-[10px] truncate text-fg-default dark:text-fg-dark-default">
                     {c.title}
                   </p>
-                  <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">
+                  <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
                     {formatTime(c.updated_at)}
                   </p>
                 </div>
                 <button
                   onClick={(e) => deleteConversation(c.id, e)}
-                  className="opacity-0 group-hover:opacity-100 p-1 text-[#636c76] dark:text-[#848d97] hover:text-[#d1242f] dark:hover:text-[#f85149] transition-all cursor-pointer"
+                  className="opacity-0 group-hover:opacity-100 p-1 text-fg-muted dark:text-fg-dark-muted hover:text-danger-fg dark:hover:text-danger-dark-fg transition-all cursor-pointer"
                 >
                   <HiOutlineTrash className="w-3 h-3" />
                 </button>
@@ -204,12 +238,12 @@ export default function AiMentorPage() {
       </div>
 
       {/* ── Chat area ── */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-0 bg-[#f6f8fa] dark:bg-[#0a0c0f]">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 bg-canvas-subtle dark:bg-canvas-dark-default">
 
         {/* Chat header */}
         {activeConvo && (
-          <div className="px-4 py-2.5 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-white dark:bg-[#0d1117] shrink-0">
-            <p className="font-mono text-[10px] font-medium text-[#1f2328] dark:text-[#e6edf3] truncate">
+          <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-overlay dark:bg-canvas-dark-inset shrink-0">
+            <p className="font-mono text-[10px] font-medium text-fg-default dark:text-fg-dark-default truncate">
               {activeConvo.title}
             </p>
           </div>
@@ -220,26 +254,26 @@ export default function AiMentorPage() {
           {messages.length === 0 && !streaming && (
             <div className="flex flex-col items-center justify-center h-full gap-5 text-center">
               <div>
-                <p className="font-mono text-[11px] font-medium text-[#1f2328] dark:text-[#e6edf3]">
+                <p className="font-mono text-[11px] font-medium text-fg-default dark:text-fg-dark-default">
                   career mentor
                 </p>
-                <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-1 max-w-xs leading-relaxed">
+                <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-1 max-w-xs leading-relaxed">
                   ask me anything about your career, skills, or opportunities
                 </p>
               </div>
 
               {suggestions.length > 0 && (
                 <div className="w-full max-w-sm space-y-1.5">
-                  <p className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase mb-2">
+                  <p className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase mb-2">
                     suggestions
                   </p>
                   {suggestions.map((s, i) => (
                     <button
                       key={i}
                       onClick={() => sendMessage(s.message)}
-                      className="w-full text-left px-3 py-2 font-mono text-[10px] text-[#636c76] dark:text-[#848d97] border border-[#e2e4e8] dark:border-[#1e2228] bg-white dark:bg-[#0d1117] hover:border-[#e8490f] dark:hover:border-[#ff6b35] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors cursor-pointer"
+                      className="w-full text-left px-3 py-2 font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted border border-border-default dark:border-border-dark-default bg-canvas-overlay dark:bg-canvas-dark-inset hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer"
                     >
-                      <span className="text-[#e8490f] dark:text-[#ff6b35] mr-1.5">›</span>
+                      <span className="text-brand dark:text-brand-dark-DEFAULT mr-1.5">›</span>
                       {s.message}
                     </button>
                   ))}
@@ -256,11 +290,11 @@ export default function AiMentorPage() {
 
           {streaming && !streamingContent && (
             <div className="flex justify-start">
-              <div className="px-3 py-2.5 bg-white dark:bg-[#1e2228] border border-[#e2e4e8] dark:border-[#2a2f38] flex items-center gap-1.5">
+              <div className="px-3 py-2.5 bg-canvas-overlay dark:bg-canvas-dark-overlay border border-border-default dark:border-border-dark-default flex items-center gap-1.5">
                 {[0, 1, 2].map((i) => (
                   <motion.div
                     key={i}
-                    className="w-1 h-1 bg-[#636c76] dark:bg-[#848d97]"
+                    className="w-1 h-1 bg-fg-muted dark:bg-fg-dark-muted"
                     animate={{ opacity: [0.3, 1, 0.3] }}
                     transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
                   />
@@ -273,10 +307,10 @@ export default function AiMentorPage() {
         </div>
 
         {/* Input */}
-        <div className="px-4 py-3 border-t border-[#e2e4e8] dark:border-[#1e2228] bg-white dark:bg-[#0d1117] shrink-0">
+        <div className="px-4 py-3 border-t border-border-default dark:border-border-dark-default bg-canvas-overlay dark:bg-canvas-dark-inset shrink-0">
           <div className="flex items-end gap-2">
             <div className="flex-1 relative">
-              <span className="absolute left-3 top-2.5 font-mono text-[9px] text-[#636c76] dark:text-[#848d97] pointer-events-none select-none">
+              <span className="absolute left-3 top-2.5 font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT pointer-events-none select-none">
                 {streaming ? <HiOutlineArrowPath className="w-3 h-3 animate-spin" /> : '>'}
               </span>
               <textarea
@@ -287,7 +321,7 @@ export default function AiMentorPage() {
                 onKeyDown={handleKey}
                 placeholder="ask your career mentor…"
                 disabled={streaming}
-                className="w-full pl-8 pr-3 py-2 font-mono text-[11px] tracking-wide bg-[#f6f8fa] dark:bg-[#0a0c0f] border border-[#e2e4e8] dark:border-[#1e2228] text-[#1f2328] dark:text-[#e6edf3] placeholder-[#adb5bd] dark:placeholder-[#4a5568] outline-none focus:border-[#e8490f] dark:focus:border-[#ff6b35] transition-colors resize-none max-h-32 overflow-y-auto disabled:opacity-50"
+                className="w-full pl-8 pr-3 py-2 font-mono text-[11px] tracking-wide bg-canvas-subtle dark:bg-canvas-dark-default border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT transition-colors resize-none max-h-32 overflow-y-auto disabled:opacity-50"
                 onInput={(e) => {
                   const t = e.currentTarget
                   t.style.height = 'auto'
@@ -301,14 +335,14 @@ export default function AiMentorPage() {
               className={clsx(
                 'p-2 mb-px transition-colors cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed',
                 input.trim() && !streaming
-                  ? 'bg-[#e8490f] dark:bg-[#ff6b35] text-white hover:bg-[#d03d0a] dark:hover:bg-[#e85c20]'
-                  : 'bg-[#f6f8fa] dark:bg-[#1e2228] text-[#636c76] dark:text-[#848d97] border border-[#e2e4e8] dark:border-[#1e2228]',
+                  ? 'bg-brand dark:bg-brand-dark-DEFAULT text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover'
+                  : 'bg-canvas-inset dark:bg-canvas-dark-overlay text-fg-muted dark:text-fg-dark-muted border border-border-default dark:border-border-dark-default',
               )}
             >
               <HiOutlinePaperAirplane className="w-4 h-4" />
             </button>
           </div>
-          <p className="font-mono text-[8px] text-[#636c76] dark:text-[#848d97] mt-2 text-center">
+          <p className="font-mono text-[8px] text-fg-muted dark:text-fg-dark-muted mt-2 text-center">
             ai can make mistakes — verify important information
           </p>
         </div>

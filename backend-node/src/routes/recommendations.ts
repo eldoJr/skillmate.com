@@ -33,9 +33,13 @@ async function getAggregate(userId: string) {
     pro:   sql<number>`avg(${reviews.professionalismScore})`,
     gro:   sql<number>`avg(${reviews.growthScore})`,
   }).from(reviews).where(eq(reviews.revieweeId, userId))
-  if (!Number(row.count)) return { totalReviews: 0, overallAvg: 0, avgReliability: 0, avgProfessionalism: 0, avgGrowth: 0 }
+  if (!Number(row.count)) return { total_reviews: 0, overall_avg: 0, avg_reliability: 0, avg_professionalism: 0, avg_growth: 0 }
   const rel = Number(row.rel), pro = Number(row.pro), gro = Number(row.gro)
-  return { totalReviews: Number(row.count), overallAvg: Math.round(((rel + pro + gro) / 3) * 100) / 100, avgReliability: rel, avgProfessionalism: pro, avgGrowth: gro }
+  return {
+    total_reviews: Number(row.count),
+    overall_avg: Math.round(((rel + pro + gro) / 3) * 100) / 100,
+    avg_reliability: rel, avg_professionalism: pro, avg_growth: gro,
+  }
 }
 
 async function cosineSearch(table: string, embedding: number[], limit: number, filter: string) {
@@ -68,6 +72,66 @@ async function ensureListingEmbedding(listingId: string): Promise<number[]> {
   return embedding
 }
 
+// ── helpers to bulk-join owner + skills onto listings ─────────────────────────
+
+async function attachListingDetails(listingRows: (typeof listings.$inferSelect)[]) {
+  if (!listingRows.length) return []
+  const ids = listingRows.map(l => l.id)
+  const ownerIds = [...new Set(listingRows.map(l => l.ownerId))]
+
+  const [ownerRows, skillRows] = await Promise.all([
+    db.select().from(users).where(sql`id = ANY(ARRAY[${sql.join(ownerIds.map(id => sql`${id}`), sql`, `)}])`),
+    db.select({ listingId: listingSkills.listingId, id: skills.id, name: skills.name, category: skills.category })
+      .from(listingSkills).innerJoin(skills, eq(listingSkills.skillId, skills.id))
+      .where(sql`${listingSkills.listingId} = ANY(ARRAY[${sql.join(ids.map(id => sql`${id}`), sql`, `)}])`),
+  ])
+
+  const ownerMap = Object.fromEntries(ownerRows.map(u => [u.id, u]))
+  const skillMap: Record<string, { id: string; name: string; category: string }[]> = {}
+  for (const s of skillRows) {
+    if (!skillMap[s.listingId]) skillMap[s.listingId] = []
+    skillMap[s.listingId].push({ id: s.id, name: s.name, category: s.category })
+  }
+
+  return listingRows.map(l => {
+    const o = ownerMap[l.ownerId]
+    return {
+      id: l.id, owner_id: l.ownerId, title: l.title, description: l.description,
+      category: l.category, listing_type: l.listingType,
+      price: l.price, price_min: l.priceMin, price_max: l.priceMax,
+      delivery_days: l.deliveryDays, cover_image: l.coverImage,
+      is_active: l.isActive, created_at: l.createdAt, updated_at: l.updatedAt,
+      skills: skillMap[l.id] ?? [],
+      owner: o ? {
+        id: o.id, first_name: o.firstName, last_name: o.lastName,
+        university: o.university, headline: o.headline,
+        avatar_url: o.avatarUrl, is_verified: o.isVerified,
+      } : null,
+    }
+  })
+}
+
+async function attachStudentDetails(userRows: (typeof users.$inferSelect)[]) {
+  if (!userRows.length) return []
+  const ids = userRows.map(u => u.id)
+  const skillRows = await db.select({ userId: userSkills.userId, id: skills.id, name: skills.name, category: skills.category })
+    .from(userSkills).innerJoin(skills, eq(userSkills.skillId, skills.id))
+    .where(sql`${userSkills.userId} = ANY(ARRAY[${sql.join(ids.map(id => sql`${id}`), sql`, `)}])`)
+  const skillMap: Record<string, { id: string; name: string; category: string }[]> = {}
+  for (const s of skillRows) {
+    if (!skillMap[s.userId]) skillMap[s.userId] = []
+    skillMap[s.userId].push({ id: s.id, name: s.name, category: s.category })
+  }
+  return userRows.map(u => ({
+    id: u.id, first_name: u.firstName, last_name: u.lastName,
+    university: u.university, headline: u.headline,
+    avatar_url: u.avatarUrl, is_verified: u.isVerified,
+    skills: skillMap[u.id] ?? [],
+  }))
+}
+
+// ── routes ────────────────────────────────────────────────────────────────────
+
 app.get('/listings', requireAuth, async c => {
   try { requireAI() } catch { return c.json({ detail: 'AI features not configured' }, 503) }
   const user = c.get('user')
@@ -78,19 +142,20 @@ app.get('/listings', requireAuth, async c => {
   if (!raw.length) return c.json([])
 
   const scoreMap = Object.fromEntries(raw.map(r => [r.id, r.score]))
-  const listingRows = await db.select().from(listings).where(sql`id = ANY(ARRAY[${sql.join(raw.map(r => sql`${r.id}`), sql`, `)}])`)
+  const listingRows = await db.select().from(listings)
+    .where(sql`id = ANY(ARRAY[${sql.join(raw.map(r => sql`${r.id}`), sql`, `)}])`)
+  const filtered = raw.map(r => listingRows.find(l => l.id === r.id)).filter(l => l && l.ownerId !== user.id) as typeof listingRows
 
-  const results = []
-  for (const r of raw) {
-    const listing = listingRows.find(l => l.id === r.id)
-    if (!listing || listing.ownerId === user.id) continue
-    const agg = await getAggregate(listing.ownerId)
-    const rep = reputationSignal(agg.overallAvg, agg.totalReviews)
-    const act = activitySignal(listing.createdAt, agg.totalReviews)
-    results.push({ listing, vectorScore: scoreMap[r.id], reputationScore: rep, activityScore: act, finalScore: finalScore(scoreMap[r.id], rep, act) })
-  }
+  const detailed = await attachListingDetails(filtered)
+  const results = await Promise.all(detailed.map(async (l) => {
+    const agg = await getAggregate(l.owner_id)
+    const rep = reputationSignal(agg.overall_avg, agg.total_reviews)
+    const act = activitySignal(new Date(l.created_at), agg.total_reviews)
+    const fs  = finalScore(scoreMap[l.id], rep, act)
+    return { listing: l, vector_score: scoreMap[l.id], reputation_score: rep, activity_score: act, final_score: fs }
+  }))
 
-  results.sort((a, b) => b.finalScore - a.finalScore)
+  results.sort((a, b) => b.final_score - a.final_score)
   return c.json(results.slice(0, limit))
 })
 
@@ -98,50 +163,50 @@ app.get('/students/:listingId', requireAuth, async c => {
   try { requireAI() } catch { return c.json({ detail: 'AI features not configured' }, 503) }
   const limit = Math.min(50, Number(c.req.query('limit') ?? 10))
 
-  const embedding = await ensureListingEmbedding(c.req.param('listingId'))
   const [listing] = await db.select().from(listings).where(eq(listings.id, c.req.param('listingId'))).limit(1)
   if (!listing) return c.json({ detail: 'Listing not found' }, 404)
 
+  const embedding = await ensureListingEmbedding(listing.id)
   const raw = await cosineSearch('users', embedding, limit * 3, 'is_active = true')
   if (!raw.length) return c.json([])
 
   const scoreMap = Object.fromEntries(raw.map(r => [r.id, r.score]))
-  const userRows = await db.select().from(users).where(sql`id = ANY(ARRAY[${sql.join(raw.map(r => sql`${r.id}`), sql`, `)}])`)
+  const userRows = await db.select().from(users)
+    .where(sql`id = ANY(ARRAY[${sql.join(raw.map(r => sql`${r.id}`), sql`, `)}])`)
+  const filtered = raw.map(r => userRows.find(u => u.id === r.id)).filter(u => u && u.id !== listing.ownerId) as typeof userRows
 
-  const results = []
-  for (const r of raw) {
-    const student = userRows.find(u => u.id === r.id)
-    if (!student || student.id === listing.ownerId) continue
-    const agg = await getAggregate(student.id)
-    const rep = reputationSignal(agg.overallAvg, agg.totalReviews)
-    const act = activitySignal(student.createdAt, agg.totalReviews)
-    const { hashedPassword, verificationToken, verificationTokenExpiresAt, resetToken, resetTokenExpiresAt, ...pub } = student
-    results.push({ student: pub, vectorScore: scoreMap[r.id], reputationScore: rep, activityScore: act, finalScore: finalScore(scoreMap[r.id], rep, act), scores: agg })
-  }
+  const detailed = await attachStudentDetails(filtered)
+  const results = await Promise.all(detailed.map(async (s) => {
+    const agg = await getAggregate(s.id)
+    const rep = reputationSignal(agg.overall_avg, agg.total_reviews)
+    const act = activitySignal(new Date(filtered.find(u => u.id === s.id)!.createdAt), agg.total_reviews)
+    const fs  = finalScore(scoreMap[s.id], rep, act)
+    return { student: s, vector_score: scoreMap[s.id], reputation_score: rep, activity_score: act, final_score: fs, scores: agg }
+  }))
 
-  results.sort((a, b) => b.finalScore - a.finalScore)
+  results.sort((a, b) => b.final_score - a.final_score)
   return c.json(results.slice(0, limit))
 })
 
 app.get('/feed', requireAuth, async c => {
   try { requireAI() } catch { return c.json({ detail: 'AI features not configured' }, 503) }
   const user = c.get('user')
+  const auth = c.req.header('Authorization') ?? ''
+  const base = `http://localhost:${process.env.PORT ?? 8000}/api/v1`
 
-  const [recListings, recStudents] = await Promise.all([
-    fetch(`http://localhost:${process.env.PORT ?? 8000}/api/v1/recommendations/listings?limit=6`, {
-      headers: { Authorization: c.req.header('Authorization') ?? '' },
-    }).then(r => r.json()).catch(() => []),
+  const [recommended_listings, recommended_students] = await Promise.all([
+    fetch(`${base}/recommendations/listings?limit=6`, { headers: { Authorization: auth } })
+      .then(r => r.json()).catch(() => []),
     (async () => {
-      const [latestListing] = await db.select().from(listings)
+      const [latest] = await db.select().from(listings)
         .where(eq(listings.ownerId, user.id)).orderBy(sql`created_at desc`).limit(1)
-      if (!latestListing || latestListing.isDeleted) return []
-      return fetch(`http://localhost:${process.env.PORT ?? 8000}/api/v1/recommendations/students/${latestListing.id}?limit=6`, {
-        headers: { Authorization: c.req.header('Authorization') ?? '' },
-      }).then(r => r.json()).catch(() => [])
+      if (!latest || latest.isDeleted) return []
+      return fetch(`${base}/recommendations/students/${latest.id}?limit=6`, { headers: { Authorization: auth } })
+        .then(r => r.json()).catch(() => [])
     })(),
   ])
 
-  return c.json({ recommendedListings: recListings, recommendedStudents: recStudents })
+  return c.json({ recommended_listings, recommended_students })
 })
 
 export default app

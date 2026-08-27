@@ -32,16 +32,18 @@ function formatPrice(l: Listing) {
 }
 
 /* ── shared input style ── */
-const iCls = 'w-full px-3 py-2 border border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22] font-mono text-[11px] text-[#1f2328] dark:text-[#e6edf3] placeholder-[#636c76] dark:placeholder-[#848d97] outline-none focus:border-[#e8490f] transition-colors'
-const lCls = 'font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] mb-1 block'
+const iCls = 'w-full px-3 py-2 border border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset font-mono text-[11px] text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT transition-colors'
+const lCls = 'font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted mb-1 block'
+const dot = 'w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT shrink-0'
+const sectionHeader = 'flex items-center justify-between px-5 py-3 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset'
 
 /* ── Section wrapper ── */
 function Section({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="border border-[#e2e4e8] dark:border-[#1e2228] bg-white dark:bg-[#0d1117]">
-      <div className="flex items-center justify-between px-5 py-3 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22]">
-        <span className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97]">
-          <span className="text-[#e8490f] mr-1">●</span>{title}
+    <div className="border border-border-default dark:border-border-dark-default bg-canvas-default dark:bg-canvas-dark-default">
+      <div className={sectionHeader}>
+        <span className="flex items-center gap-1.5 font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted">
+          <span className={dot} />{title}
         </span>
         {action}
       </div>
@@ -53,10 +55,10 @@ function Section({ title, action, children }: { title: string; action?: React.Re
 /* ── Stat pill ── */
 function StatPill({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | number }) {
   return (
-    <div className="flex items-center gap-2 px-3 py-2 border border-[#e2e4e8] dark:border-[#1e2228]">
-      <Icon className="w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97] shrink-0" />
-      <span className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">{label}</span>
-      <span className="font-mono text-[11px] font-bold text-[#1f2328] dark:text-[#e6edf3] ml-auto">{value}</span>
+    <div className="flex items-center gap-2 px-3 py-2 border border-border-default dark:border-border-dark-default">
+      <Icon className="w-3.5 h-3.5 text-fg-muted dark:text-fg-dark-muted shrink-0" />
+      <span className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">{label}</span>
+      <span className="font-mono text-[11px] font-bold text-fg-default dark:text-fg-dark-default ml-auto">{value}</span>
     </div>
   )
 }
@@ -79,21 +81,17 @@ function EditDrawer({ open, onClose, form, onChange, onSave, saving, saveMsg }: 
   if (!open) return null
   return (
     <>
-      {/* backdrop */}
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
-      {/* drawer */}
-      <div className="fixed top-0 right-0 h-full w-full max-w-sm bg-white dark:bg-[#0d1117] border-l border-[#e2e4e8] dark:border-[#1e2228] z-50 flex flex-col">
-        {/* header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22]">
-          <span className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97]">
-            <span className="text-[#e8490f] mr-1">●</span>edit profile
+      <div className="fixed top-0 right-0 h-full w-full max-w-sm bg-canvas-default dark:bg-canvas-dark-default border-l border-border-default dark:border-border-dark-default z-50 flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset">
+          <span className="flex items-center gap-1.5 font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted">
+            <span className={dot} />edit profile
           </span>
-          <button onClick={onClose} className="p-1 hover:text-[#e8490f] text-[#636c76] dark:text-[#848d97] transition-colors cursor-pointer">
+          <button onClick={onClose} className="p-1 text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
             <HiOutlineXMark className="w-4 h-4" />
           </button>
         </div>
 
-        {/* fields */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -128,12 +126,12 @@ function EditDrawer({ open, onClose, form, onChange, onSave, saving, saveMsg }: 
 
           <div>
             <label className={lCls}>github username</label>
-            <div className="flex items-center border border-[#e2e4e8] dark:border-[#1e2228] focus-within:border-[#e8490f] transition-colors">
-              <span className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] px-2 border-r border-[#e2e4e8] dark:border-[#1e2228] py-2 bg-[#f6f8fa] dark:bg-[#161b22] shrink-0">
+            <div className="flex items-center border border-border-default dark:border-border-dark-default focus-within:border-brand dark:focus-within:border-brand-dark-DEFAULT transition-colors">
+              <span className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted px-2 border-r border-border-default dark:border-border-dark-default py-2 bg-canvas-inset dark:bg-canvas-dark-inset shrink-0">
                 github.com/
               </span>
               <input
-                className="flex-1 px-3 py-2 bg-[#f6f8fa] dark:bg-[#161b22] font-mono text-[11px] text-[#1f2328] dark:text-[#e6edf3] placeholder-[#636c76] outline-none"
+                className="flex-1 px-3 py-2 bg-canvas-inset dark:bg-canvas-dark-inset font-mono text-[11px] text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none"
                 value={form.github_username}
                 onChange={(e) => onChange('github_username', e.target.value)}
                 placeholder="username"
@@ -152,20 +150,19 @@ function EditDrawer({ open, onClose, form, onChange, onSave, saving, saveMsg }: 
           </div>
         </div>
 
-        {/* footer */}
-        <div className="px-5 py-4 border-t border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22] flex items-center justify-between gap-3">
+        <div className="px-5 py-4 border-t border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-between gap-3">
           {saveMsg && (
-            <span className={`font-mono text-[10px] ${saveMsg.includes('saved') ? 'text-[#22c55e]' : 'text-[#d1242f]'}`}>
+            <span className={`font-mono text-[10px] ${saveMsg.includes('saved') ? 'text-success-fg dark:text-success-dark-fg' : 'text-danger-fg dark:text-danger-dark-fg'}`}>
               {saveMsg.includes('saved') ? '✓' : '!'} {saveMsg}
             </span>
           )}
           <div className="flex items-center gap-2 ml-auto">
             <button onClick={onClose}
-              className="px-3 py-1.5 border border-[#e2e4e8] dark:border-[#1e2228] font-mono text-[10px] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors cursor-pointer">
+              className="px-3 py-1.5 border border-border-default dark:border-border-dark-default font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
               cancel
             </button>
             <button onClick={onSave} disabled={saving}
-              className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e8490f] bg-[#e8490f] font-mono text-[10px] text-white hover:bg-[#ff6b35] hover:border-[#ff6b35] transition-colors cursor-pointer disabled:opacity-50">
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-brand dark:bg-brand-dark-DEFAULT border border-brand dark:border-brand-dark-DEFAULT font-mono text-[10px] text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50">
               <HiOutlineCheck className="w-3.5 h-3.5" />
               {saving ? 'saving...' : 'save'}
             </button>
@@ -202,7 +199,7 @@ function AboutSection({ user, onUpdate }: { user: AuthUser | null; onUpdate: (u:
       action={
         !editing ? (
           <button onClick={() => setEditing(true)}
-            className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] transition-colors cursor-pointer">
+            className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
             edit
           </button>
         ) : null
@@ -220,16 +217,16 @@ function AboutSection({ user, onUpdate }: { user: AuthUser | null; onUpdate: (u:
             autoFocus
           />
           <div className="flex items-center justify-between">
-            <span className={`font-mono text-[9px] ${bio.length > 900 ? 'text-[#d1242f]' : 'text-[#636c76] dark:text-[#848d97]'}`}>
+            <span className={`font-mono text-[9px] ${bio.length > 900 ? 'text-danger-fg dark:text-danger-dark-fg' : 'text-fg-muted dark:text-fg-dark-muted'}`}>
               {bio.length}/1000
             </span>
             <div className="flex items-center gap-2">
               <button onClick={() => { setBio(user?.bio ?? ''); setEditing(false) }}
-                className="px-3 py-1.5 border border-[#e2e4e8] dark:border-[#1e2228] font-mono text-[10px] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors cursor-pointer">
+                className="px-3 py-1.5 border border-border-default dark:border-border-dark-default font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
                 cancel
               </button>
               <button onClick={handleSave} disabled={saving}
-                className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e8490f] bg-[#e8490f] font-mono text-[10px] text-white hover:bg-[#ff6b35] transition-colors cursor-pointer disabled:opacity-50">
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand dark:bg-brand-dark-DEFAULT border border-brand dark:border-brand-dark-DEFAULT font-mono text-[10px] text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50">
                 <HiOutlineCheck className="w-3.5 h-3.5" />
                 {saving ? 'saving...' : 'save'}
               </button>
@@ -237,12 +234,12 @@ function AboutSection({ user, onUpdate }: { user: AuthUser | null; onUpdate: (u:
           </div>
         </div>
       ) : user?.bio ? (
-        <p className="font-mono text-[12px] text-[#1f2328] dark:text-[#e6edf3] leading-relaxed whitespace-pre-wrap">{user.bio}</p>
+        <p className="font-mono text-[12px] text-fg-default dark:text-fg-dark-default leading-relaxed whitespace-pre-wrap">{user.bio}</p>
       ) : (
         <div className="flex items-center justify-between">
-          <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97]">~ no bio yet</p>
+          <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted">~ no bio yet</p>
           <button onClick={() => setEditing(true)}
-            className="font-mono text-[10px] text-[#e8490f] hover:underline cursor-pointer">+ add bio</button>
+            className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT hover:underline cursor-pointer">+ add bio</button>
         </div>
       )}
     </Section>
@@ -305,7 +302,7 @@ function SkillsSection({
       title="skills"
       action={
         <button onClick={() => setManaging((v) => !v)}
-          className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] transition-colors cursor-pointer">
+          className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
           {managing ? 'done' : 'manage'}
         </button>
       }
@@ -314,26 +311,26 @@ function SkillsSection({
       {!managing && (
         (user?.skills?.length ?? 0) === 0 ? (
           <div className="flex items-center justify-between">
-            <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97]">~ no skills added yet</p>
+            <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted">~ no skills added yet</p>
             <button onClick={() => setManaging(true)}
-              className="font-mono text-[10px] text-[#e8490f] hover:underline cursor-pointer">+ add skills</button>
+              className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT hover:underline cursor-pointer">+ add skills</button>
           </div>
         ) : (
           <div className="space-y-4">
             {Object.entries(grouped).map(([cat, skills]) => (
               <div key={cat}>
-                <p className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] mb-2">{cat}</p>
+                <p className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted mb-2">{cat}</p>
                 <div className="flex flex-wrap gap-2">
                   {skills.map((s) => (
                     <span key={s.id}
-                      className="font-mono text-[10px] px-2.5 py-1 border border-[#e2e4e8] dark:border-[#1e2228] text-[#1f2328] dark:text-[#e6edf3] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors">
+                      className="font-mono text-[10px] px-2.5 py-1 border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors">
                       {s.name}
                     </span>
                   ))}
                 </div>
               </div>
             ))}
-            <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] pt-1">
+            <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted pt-1">
               {user?.skills?.length} skill{(user?.skills?.length ?? 0) !== 1 ? 's' : ''} total
             </p>
           </div>
@@ -345,11 +342,11 @@ function SkillsSection({
         <div className="space-y-4">
           {(user?.skills?.length ?? 0) > 0 && (
             <div>
-              <p className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] mb-2">your skills</p>
+              <p className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted mb-2">your skills</p>
               <div className="flex flex-wrap gap-2">
                 {user?.skills?.map((s) => (
                   <button key={s.id} onClick={() => handleToggle(s)} disabled={toggling === s.id}
-                    className="flex items-center gap-1.5 font-mono text-[10px] px-2.5 py-1 border border-[#e8490f] text-[#e8490f] hover:bg-[#e8490f] hover:text-white transition-colors cursor-pointer disabled:opacity-50">
+                    className="flex items-center gap-1.5 font-mono text-[10px] px-2.5 py-1 border border-brand dark:border-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT hover:bg-brand dark:hover:bg-brand-dark-DEFAULT hover:text-white transition-colors cursor-pointer disabled:opacity-50">
                     {s.name} <HiOutlineXMark className="w-3 h-3" />
                   </button>
                 ))}
@@ -357,22 +354,22 @@ function SkillsSection({
             </div>
           )}
           <div>
-            <p className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] mb-2">browse & add</p>
+            <p className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted mb-2">browse & add</p>
             <input className={`${iCls} mb-2`} placeholder="search skills..." value={search} onChange={(e) => setSearch(e.target.value)} />
             <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
               {filtered.filter((s) => !userSkillIds.has(s.id)).map((s) => (
                 <button key={s.id} onClick={() => handleToggle(s)} disabled={toggling === s.id}
-                  className="font-mono text-[10px] px-2.5 py-1 border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors cursor-pointer disabled:opacity-50">
+                  className="font-mono text-[10px] px-2.5 py-1 border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer disabled:opacity-50">
                   + {s.name}
                 </button>
               ))}
               {filtered.filter((s) => !userSkillIds.has(s.id)).length === 0 && (
-                <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">~ no results</p>
+                <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">~ no results</p>
               )}
             </div>
           </div>
           <div>
-            <p className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] mb-2">create custom skill</p>
+            <p className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted mb-2">create custom skill</p>
             <div className="flex gap-2">
               <input className={`${iCls} flex-1`} placeholder="e.g. Rust, Blender..." value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
@@ -383,7 +380,7 @@ function SkillsSection({
                 ))}
               </select>
               <button onClick={handleCreate} disabled={creating || !customName.trim()}
-                className="px-3 py-1.5 border border-[#e8490f] bg-[#e8490f] font-mono text-[10px] text-white hover:bg-[#ff6b35] transition-colors cursor-pointer disabled:opacity-50 shrink-0">
+                className="px-3 py-1.5 bg-brand dark:bg-brand-dark-DEFAULT border border-brand dark:border-brand-dark-DEFAULT font-mono text-[10px] text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50 shrink-0">
                 {creating ? '...' : 'add'}
               </button>
             </div>
@@ -401,47 +398,47 @@ function PortfolioSection({ portfolio }: { portfolio: PortfolioEntry[] }) {
       title="portfolio"
       action={
         <Link to="/app/portfolio"
-          className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] transition-colors">
+          className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors">
           manage
         </Link>
       }
     >
       {portfolio.length === 0 ? (
         <div className="flex items-center justify-between">
-          <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97]">~ no projects yet</p>
-          <Link to="/app/portfolio" className="font-mono text-[10px] text-[#e8490f] hover:underline">+ add project</Link>
+          <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted">~ no projects yet</p>
+          <Link to="/app/portfolio" className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT hover:underline">+ add project</Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {portfolio.map((p) => (
-            <div key={p.id} className="border border-[#e2e4e8] dark:border-[#1e2228] hover:border-[#e8490f] transition-colors group">
+            <div key={p.id} className="border border-border-default dark:border-border-dark-default hover:border-brand dark:hover:border-brand-dark-DEFAULT transition-colors group">
               {p.imageUrl ? (
-                <div className="h-32 overflow-hidden border-b border-[#e2e4e8] dark:border-[#1e2228]">
+                <div className="h-32 overflow-hidden border-b border-border-default dark:border-border-dark-default">
                   <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                 </div>
               ) : (
-                <div className="h-32 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22] flex items-center justify-center">
-                  <span className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] opacity-40">no image</span>
+                <div className="h-32 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-center">
+                  <span className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted opacity-40">no image</span>
                 </div>
               )}
               <div className="p-3">
-                <p className="font-mono text-[12px] font-bold text-[#1f2328] dark:text-[#e6edf3] truncate">{p.title}</p>
+                <p className="font-mono text-[12px] font-bold text-fg-default dark:text-fg-dark-default truncate">{p.title}</p>
                 {p.summary && (
-                  <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] mt-1 line-clamp-2 leading-relaxed">{p.summary}</p>
+                  <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted mt-1 line-clamp-2 leading-relaxed">{p.summary}</p>
                 )}
                 {p.technologies && p.technologies.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {p.technologies.slice(0, 3).map((t) => (
-                      <span key={t} className="font-mono text-[9px] px-1.5 py-0.5 border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97]">{t}</span>
+                      <span key={t} className="font-mono text-[9px] px-1.5 py-0.5 border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted">{t}</span>
                     ))}
                     {p.technologies.length > 3 && (
-                      <span className="font-mono text-[9px] px-1.5 py-0.5 text-[#636c76] dark:text-[#848d97]">+{p.technologies.length - 3}</span>
+                      <span className="font-mono text-[9px] px-1.5 py-0.5 text-fg-muted dark:text-fg-dark-muted">+{p.technologies.length - 3}</span>
                     )}
                   </div>
                 )}
                 {p.projectUrl && (
                   <a href={p.projectUrl} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 mt-2 font-mono text-[9px] text-[#e8490f] hover:underline">
+                    className="inline-flex items-center gap-1 mt-2 font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT hover:underline">
                     view project <HiOutlineArrowUpRight className="w-3 h-3" />
                   </a>
                 )}
@@ -461,45 +458,45 @@ function ListingsSection({ listings }: { listings: Listing[] }) {
       title="listings"
       action={
         <Link to="/app/listings"
-          className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] transition-colors">
+          className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors">
           manage
         </Link>
       }
     >
       {listings.length === 0 ? (
         <div className="flex items-center justify-between">
-          <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97]">~ no listings yet</p>
-          <Link to="/app/listings/new" className="font-mono text-[10px] text-[#e8490f] hover:underline">+ create listing</Link>
+          <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted">~ no listings yet</p>
+          <Link to="/app/listings/new" className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT hover:underline">+ create listing</Link>
         </div>
       ) : (
-        <div className="divide-y divide-[#e2e4e8] dark:divide-[#1e2228]">
+        <div className="divide-y divide-border-default dark:divide-border-dark-default">
           {listings.map((l) => (
             <Link key={l.id} to={`/app/listings/${l.id}`}
-              className="flex items-center justify-between gap-4 py-3 group hover:bg-[#f6f8fa] dark:hover:bg-[#161b22] -mx-5 px-5 transition-colors">
+              className="flex items-center justify-between gap-4 py-3 group hover:bg-canvas-inset dark:hover:bg-canvas-dark-inset -mx-5 px-5 transition-colors">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[11px] font-bold text-[#1f2328] dark:text-[#e6edf3] group-hover:text-[#e8490f] transition-colors truncate">
+                  <span className="font-mono text-[11px] font-bold text-fg-default dark:text-fg-dark-default group-hover:text-brand dark:group-hover:text-brand-dark-DEFAULT transition-colors truncate">
                     {l.title}
                   </span>
                   <span className={`font-mono text-[9px] px-1.5 py-0.5 border shrink-0 ${
                     l.is_active
-                      ? 'border-[#22c55e] text-[#22c55e]'
-                      : 'border-[#636c76] text-[#636c76] dark:border-[#848d97] dark:text-[#848d97]'
+                      ? 'border-success-fg dark:border-success-dark-fg text-success-fg dark:text-success-dark-fg'
+                      : 'border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted'
                   }`}>
                     {l.is_active ? 'active' : 'paused'}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 mt-0.5">
-                  <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">{l.category}</span>
-                  <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">·</span>
-                  <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">{formatPrice(l)}</span>
+                  <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">{l.category}</span>
+                  <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">·</span>
+                  <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">{formatPrice(l)}</span>
                 </div>
               </div>
               <div className="flex items-center gap-3 shrink-0">
-                <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">
+                <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">
                   {l.created_at ? new Date(l.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
                 </span>
-                <HiOutlineArrowUpRight className="w-3 h-3 text-[#636c76] dark:text-[#848d97] opacity-0 group-hover:opacity-100 transition-opacity" />
+                <HiOutlineArrowUpRight className="w-3 h-3 text-fg-muted dark:text-fg-dark-muted opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             </Link>
           ))}
@@ -581,50 +578,49 @@ function CertificatesSection({
       action={
         !showForm ? (
           <button onClick={openAdd}
-            className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] transition-colors cursor-pointer">
+            className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
             + add
           </button>
         ) : null
       }
     >
       <div className="space-y-4">
-        {/* list */}
         {certificates.length === 0 && !showForm && (
           <div className="flex items-center justify-between">
-            <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97]">~ no certificates yet</p>
-            <button onClick={openAdd} className="font-mono text-[10px] text-[#e8490f] hover:underline cursor-pointer">+ add certificate</button>
+            <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted">~ no certificates yet</p>
+            <button onClick={openAdd} className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT hover:underline cursor-pointer">+ add certificate</button>
           </div>
         )}
         {certificates.length > 0 && (
-          <div className="divide-y divide-[#e2e4e8] dark:divide-[#1e2228]">
+          <div className="divide-y divide-border-default dark:divide-border-dark-default">
             {certificates.map((cert) => (
               <div key={cert.id} className="flex items-start gap-4 py-4 first:pt-0">
-                <div className="w-10 h-10 shrink-0 border border-[#e2e4e8] dark:border-[#1e2228] flex items-center justify-center bg-[#f6f8fa] dark:bg-[#161b22]">
-                  <HiOutlineShieldCheck className="w-5 h-5 text-[#e8490f]" />
+                <div className="w-10 h-10 shrink-0 border border-border-default dark:border-border-dark-default flex items-center justify-center bg-canvas-inset dark:bg-canvas-dark-inset">
+                  <HiOutlineShieldCheck className="w-5 h-5 text-brand dark:text-brand-dark-DEFAULT" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-mono text-[12px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{cert.title}</p>
-                  <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] mt-0.5">{cert.issuer}</p>
-                  <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">
+                  <p className="font-mono text-[12px] font-bold text-fg-default dark:text-fg-dark-default">{cert.title}</p>
+                  <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted mt-0.5">{cert.issuer}</p>
+                  <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
                     issued {new Date(cert.issue_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                     {cert.expiry_date ? ` · expires ${new Date(cert.expiry_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}` : ' · no expiration'}
                   </p>
-                  {cert.credential_id && <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">id: {cert.credential_id}</p>}
-                  {cert.description && <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] mt-1 line-clamp-2 leading-relaxed">{cert.description}</p>}
+                  {cert.credential_id && <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5">id: {cert.credential_id}</p>}
+                  {cert.description && <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted mt-1 line-clamp-2 leading-relaxed">{cert.description}</p>}
                   {cert.credential_url && (
                     <a href={cert.credential_url} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 mt-1.5 font-mono text-[9px] text-[#e8490f] hover:underline">
+                      className="inline-flex items-center gap-1 mt-1.5 font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT hover:underline">
                       show credential <HiOutlineArrowUpRight className="w-3 h-3" />
                     </a>
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button onClick={() => openEdit(cert)}
-                    className="p-1.5 border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors cursor-pointer">
+                    className="p-1.5 border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
                     <HiOutlinePencilSquare className="w-3.5 h-3.5" />
                   </button>
                   <button onClick={() => handleDelete(cert.id)} disabled={deleting === cert.id}
-                    className="p-1.5 border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:border-[#d1242f] hover:text-[#d1242f] transition-colors cursor-pointer disabled:opacity-50">
+                    className="p-1.5 border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-danger-fg dark:hover:border-danger-dark-fg hover:text-danger-fg dark:hover:text-danger-dark-fg transition-colors cursor-pointer disabled:opacity-50">
                     <HiOutlineTrash className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -633,10 +629,9 @@ function CertificatesSection({
           </div>
         )}
 
-        {/* inline form */}
         {showForm && (
-          <div className="border border-[#e2e4e8] dark:border-[#1e2228] p-4 space-y-3">
-            <p className="font-mono text-[9px] tracking-widest uppercase text-[#636c76] dark:text-[#848d97]">
+          <div className="border border-border-default dark:border-border-dark-default p-4 space-y-3">
+            <p className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted">
               {editingId ? 'edit certificate' : 'new certificate'}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -671,11 +666,11 @@ function CertificatesSection({
             </div>
             <div className="flex items-center gap-2 pt-1">
               <button onClick={cancel}
-                className="px-3 py-1.5 border border-[#e2e4e8] dark:border-[#1e2228] font-mono text-[10px] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors cursor-pointer">
+                className="px-3 py-1.5 border border-border-default dark:border-border-dark-default font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
                 cancel
               </button>
               <button onClick={handleSave} disabled={saving || !form.title.trim() || !form.issuer.trim() || !form.issue_date}
-                className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e8490f] bg-[#e8490f] font-mono text-[10px] text-white hover:bg-[#ff6b35] transition-colors cursor-pointer disabled:opacity-50">
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand dark:bg-brand-dark-DEFAULT border border-brand dark:border-brand-dark-DEFAULT font-mono text-[10px] text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50">
                 <HiOutlineCheck className="w-3.5 h-3.5" />
                 {saving ? 'saving...' : editingId ? 'update' : 'add certificate'}
               </button>
@@ -692,38 +687,36 @@ function ReviewsSection({ reviews, avgRating }: { reviews: Review[]; avgRating: 
   return (
     <Section title="reviews received">
       {reviews.length === 0 ? (
-        <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97]">~ no reviews yet — complete projects to receive reviews</p>
+        <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted">~ no reviews yet — complete projects to receive reviews</p>
       ) : (
         <div className="space-y-1">
-          {/* aggregate */}
-          <div className="flex items-center gap-4 pb-4 mb-2 border-b border-[#e2e4e8] dark:border-[#1e2228]">
+          <div className="flex items-center gap-4 pb-4 mb-2 border-b border-border-default dark:border-border-dark-default">
             <div className="text-center shrink-0">
-              <p className="font-mono text-[32px] font-bold text-[#1f2328] dark:text-[#e6edf3] leading-none">{avgRating.toFixed(1)}</p>
+              <p className="font-mono text-[32px] font-bold text-fg-default dark:text-fg-dark-default leading-none">{avgRating.toFixed(1)}</p>
               <div className="flex items-center gap-0.5 mt-1 justify-center">
                 {[1,2,3,4,5].map((s) => s <= Math.round(avgRating)
-                  ? <HiStar key={s} className="w-3 h-3 text-[#e8490f]" />
-                  : <HiOutlineStarLine key={s} className="w-3 h-3 text-[#636c76] dark:text-[#848d97]" />
+                  ? <HiStar key={s} className="w-3 h-3 text-brand dark:text-brand-dark-DEFAULT" />
+                  : <HiOutlineStarLine key={s} className="w-3 h-3 text-fg-muted dark:text-fg-dark-muted" />
                 )}
               </div>
-              <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-1">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</p>
+              <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-1">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</p>
             </div>
             <div className="flex-1 space-y-1.5">
               {(['reliability', 'professionalism', 'growth'] as const).map((key) => {
                 const avg = reviews.reduce((s, r) => s + r[`${key}_score`], 0) / reviews.length
                 return (
                   <div key={key} className="flex items-center gap-2">
-                    <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] w-24 shrink-0">{key}</span>
-                    <div className="flex-1 h-1 bg-[#f6f8fa] dark:bg-[#1e2228]">
-                      <div className="h-full bg-[#e8490f] transition-all" style={{ width: `${(avg / 5) * 100}%` }} />
+                    <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted w-24 shrink-0">{key}</span>
+                    <div className="flex-1 h-1 bg-canvas-inset dark:bg-canvas-dark-inset">
+                      <div className="h-full bg-brand dark:bg-brand-dark-DEFAULT transition-all" style={{ width: `${(avg / 5) * 100}%` }} />
                     </div>
-                    <span className="font-mono text-[9px] text-[#1f2328] dark:text-[#e6edf3] w-6 text-right">{avg.toFixed(1)}</span>
+                    <span className="font-mono text-[9px] text-fg-default dark:text-fg-dark-default w-6 text-right">{avg.toFixed(1)}</span>
                   </div>
                 )
               })}
             </div>
           </div>
-          {/* list */}
-          <div className="divide-y divide-[#e2e4e8] dark:divide-[#1e2228]">
+          <div className="divide-y divide-border-default dark:divide-border-dark-default">
             {reviews.map((r) => {
               const avg = (r.reliability_score + r.professionalism_score + r.growth_score) / 3
               const name = `${r.reviewer.first_name} ${r.reviewer.last_name}`
@@ -732,19 +725,19 @@ function ReviewsSection({ reviews, avgRating }: { reviews: Review[]; avgRating: 
                   <Avatar name={name} src={r.reviewer.avatar_url ?? undefined} size="sm" className="shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-mono text-[11px] font-bold text-[#1f2328] dark:text-[#e6edf3]">{name}</p>
-                      <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] shrink-0">
+                      <p className="font-mono text-[11px] font-bold text-fg-default dark:text-fg-dark-default">{name}</p>
+                      <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted shrink-0">
                         {new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                       </span>
                     </div>
                     <div className="flex items-center gap-1 my-1">
                       {[1,2,3,4,5].map((s) => s <= Math.round(avg)
-                        ? <HiStar key={s} className="w-3 h-3 text-[#e8490f]" />
-                        : <HiOutlineStarLine key={s} className="w-3 h-3 text-[#636c76] dark:text-[#848d97]" />
+                        ? <HiStar key={s} className="w-3 h-3 text-brand dark:text-brand-dark-DEFAULT" />
+                        : <HiOutlineStarLine key={s} className="w-3 h-3 text-fg-muted dark:text-fg-dark-muted" />
                       )}
-                      <span className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] ml-1">{avg.toFixed(1)}</span>
+                      <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted ml-1">{avg.toFixed(1)}</span>
                     </div>
-                    {r.comment && <p className="font-mono text-[11px] text-[#636c76] dark:text-[#848d97] leading-relaxed">{r.comment}</p>}
+                    {r.comment && <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted leading-relaxed">{r.comment}</p>}
                   </div>
                 </div>
               )
@@ -759,6 +752,7 @@ function ReviewsSection({ reviews, avgRating }: { reviews: Review[]; avgRating: 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth()
   const fileRef = useRef<HTMLInputElement>(null)
+  const coverRef = useRef<HTMLInputElement>(null)
 
   const [listings, setListings] = useState<Listing[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
@@ -768,6 +762,7 @@ export default function ProfilePage() {
   const [allSkills, setAllSkills] = useState<Skill[]>([])
   const [copied, setCopied] = useState(false)
   const [avatarUploading, setAvatarUploading] = useState(false)
+  const [coverUploading, setCoverUploading] = useState(false)
 
   /* drawer state */
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -836,6 +831,20 @@ export default function ProfilePage() {
     }
   }
 
+  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCoverUploading(true)
+    try {
+      const url = await usersService.uploadCover(file)
+      const fresh = await usersService.getMe()
+      updateUser({ ...fresh, cover_url: url })
+    } catch { /* ignore */ } finally {
+      setCoverUploading(false)
+      if (coverRef.current) coverRef.current.value = ''
+    }
+  }
+
   const publicProfileUrl = user ? `${window.location.origin}/app/profile/${user.id}` : ''
   const fullName = user ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() : ''
   const joinedDate = user?.created_at
@@ -875,7 +884,6 @@ export default function ProfilePage() {
   return (
     <div className="space-y-4">
 
-      {/* ── EDIT DRAWER ── */}
       <EditDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
@@ -887,34 +895,55 @@ export default function ProfilePage() {
       />
 
       {/* ── HERO CARD ── */}
-      <div className="border border-[#e2e4e8] dark:border-[#1e2228] bg-white dark:bg-[#0d1117] overflow-hidden">
+      <div className="border border-border-default dark:border-border-dark-default bg-canvas-default dark:bg-canvas-dark-default overflow-hidden">
 
         {/* Cover banner */}
-        <div className="relative h-36 bg-[#f6f8fa] dark:bg-[#161b22] border-b border-[#e2e4e8] dark:border-[#1e2228]">
-          <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08]"
-            style={{ backgroundImage: 'repeating-linear-gradient(0deg,#000 0,#000 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,#000 0,#000 1px,transparent 1px,transparent 32px)' }} />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-mono text-[11px] tracking-widest text-[#636c76] dark:text-[#848d97] opacity-40 select-none">
-              {user?.university ?? 'skillmate.com'}
+        <div className="relative h-36 border-b border-border-default dark:border-border-dark-default group overflow-hidden">
+          {user?.cover_url ? (
+            <img
+              src={mediaUrl(user.cover_url)}
+              alt="cover"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-canvas-inset dark:bg-canvas-dark-inset">
+              <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08]"
+                style={{ backgroundImage: 'repeating-linear-gradient(0deg,#000 0,#000 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,#000 0,#000 1px,transparent 1px,transparent 32px)' }} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="font-mono text-[11px] tracking-widest text-fg-muted dark:text-fg-dark-muted opacity-40 select-none">
+                  {user?.university ?? 'skillmate.com'}
+                </span>
+              </div>
+            </div>
+          )}
+          {/* hover overlay */}
+          <button
+            onClick={() => coverRef.current?.click()}
+            disabled={coverUploading}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-wait"
+          >
+            <HiOutlineCamera className="w-5 h-5 text-white" />
+            <span className="font-mono text-[9px] tracking-widest uppercase text-white">
+              {coverUploading ? 'uploading...' : 'change cover'}
             </span>
-          </div>
+          </button>
+          <input ref={coverRef} type="file" accept="image/*" className="hidden" onChange={handleCoverChange} />
         </div>
 
         {/* Avatar + actions row */}
         <div className="px-6 pb-5">
           <div className="flex items-end justify-between -mt-10 mb-4">
 
-            {/* Avatar with upload overlay */}
+            {/* Avatar */}
             <div className="relative shrink-0 group">
               {user?.avatar_url ? (
                 <img src={mediaUrl(user.avatar_url)} alt={fullName}
-                  className="w-20 h-20 object-cover border-2 border-white dark:border-[#0d1117] ring-2 ring-[#e2e4e8] dark:ring-[#1e2228]" />
+                  className="w-20 h-20 object-cover border-2 border-canvas-default dark:border-canvas-dark-default ring-2 ring-border-default dark:ring-border-dark-default" />
               ) : (
-                <div className="w-20 h-20 flex items-center justify-center text-2xl font-bold font-mono border-2 border-white dark:border-[#0d1117] ring-2 ring-[#e2e4e8] dark:ring-[#1e2228] bg-[#f6f8fa] dark:bg-[#161b22] text-[#e8490f]">
+                <div className="w-20 h-20 flex items-center justify-center text-2xl font-bold font-mono border-2 border-canvas-default dark:border-canvas-dark-default ring-2 ring-border-default dark:ring-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset text-brand dark:text-brand-dark-DEFAULT">
                   {fullName ? fullName.charAt(0).toUpperCase() : 'S'}
                 </div>
               )}
-              {/* hover overlay */}
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={avatarUploading}
@@ -927,7 +956,7 @@ export default function ProfilePage() {
               </button>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
               {user?.is_verified && (
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#22c55e] flex items-center justify-center border border-white dark:border-[#0d1117]">
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-success-fg dark:bg-success-dark-fg flex items-center justify-center border-2 border-canvas-default dark:border-canvas-dark-default">
                   <HiOutlineShieldCheck className="w-3 h-3 text-white" />
                 </div>
               )}
@@ -936,20 +965,20 @@ export default function ProfilePage() {
             {/* Action buttons */}
             <div className="flex items-center gap-2 flex-wrap justify-end">
               <button onClick={openDrawer}
-                className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e8490f] font-mono text-[10px] tracking-wide text-[#e8490f] hover:bg-[#e8490f] hover:text-white transition-colors cursor-pointer">
+                className="flex items-center gap-1.5 px-3 py-1.5 border border-brand dark:border-brand-dark-DEFAULT font-mono text-[10px] tracking-wide text-brand dark:text-brand-dark-DEFAULT hover:bg-brand dark:hover:bg-brand-dark-DEFAULT hover:text-white transition-colors cursor-pointer">
                 <HiOutlinePencilSquare className="w-3.5 h-3.5" /> edit profile
               </button>
               <button onClick={handleShare}
-                className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e2e4e8] dark:border-[#1e2228] font-mono text-[10px] tracking-wide text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors cursor-pointer">
+                className="flex items-center gap-1.5 px-3 py-1.5 border border-border-default dark:border-border-dark-default font-mono text-[10px] tracking-wide text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
                 <HiOutlineSquare2Stack className="w-3.5 h-3.5" />
-                {copied ? <span className="text-[#22c55e]">copied!</span> : 'copy link'}
+                {copied ? <span className="text-success-fg dark:text-success-dark-fg">copied!</span> : 'copy link'}
               </button>
               <button onClick={handleDownloadResume}
-                className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e2e4e8] dark:border-[#1e2228] font-mono text-[10px] tracking-wide text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors cursor-pointer">
+                className="flex items-center gap-1.5 px-3 py-1.5 border border-border-default dark:border-border-dark-default font-mono text-[10px] tracking-wide text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
                 <HiOutlineDocumentArrowDown className="w-3.5 h-3.5" /> resume
               </button>
               <a href={publicProfileUrl} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 border border-[#e2e4e8] dark:border-[#1e2228] font-mono text-[10px] tracking-wide text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] hover:text-[#e8490f] transition-colors">
+                className="flex items-center gap-1.5 px-3 py-1.5 border border-border-default dark:border-border-dark-default font-mono text-[10px] tracking-wide text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors">
                 <HiOutlineGlobeAlt className="w-3.5 h-3.5" /> public view
                 <HiOutlineArrowUpRight className="w-3 h-3 opacity-50" />
               </a>
@@ -959,43 +988,42 @@ export default function ProfilePage() {
           {/* Name + headline */}
           <div className="mb-4">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="font-mono text-[18px] font-bold text-[#1f2328] dark:text-[#e6edf3]">
+              <h1 className="font-mono text-[18px] font-bold text-fg-default dark:text-fg-dark-default">
                 {fullName || 'Your Name'}
               </h1>
               {user?.is_verified && (
-                <span className="font-mono text-[9px] tracking-widest uppercase px-2 py-0.5 border border-[#22c55e] text-[#22c55e]">
+                <span className="font-mono text-[9px] tracking-widest uppercase px-2 py-0.5 border border-success-fg dark:border-success-dark-fg text-success-fg dark:text-success-dark-fg">
                   verified
                 </span>
               )}
             </div>
             {user?.headline && (
-              <p className="font-mono text-[12px] text-[#636c76] dark:text-[#848d97] mt-1">{user.headline}</p>
+              <p className="font-mono text-[12px] text-fg-muted dark:text-fg-dark-muted mt-1">{user.headline}</p>
             )}
-            {/* Meta row */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
               {user?.university && (
-                <span className="flex items-center gap-1 font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">
+                <span className="flex items-center gap-1 font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">
                   <HiOutlineAcademicCap className="w-3 h-3" /> {user.university}
                 </span>
               )}
               {user?.location && (
-                <span className="flex items-center gap-1 font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">
+                <span className="flex items-center gap-1 font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">
                   <HiOutlineMapPin className="w-3 h-3" /> {user.location}
                 </span>
               )}
               {user?.email && (
-                <span className="flex items-center gap-1 font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">
+                <span className="flex items-center gap-1 font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">
                   <HiOutlineEnvelope className="w-3 h-3" /> {user.email}
                 </span>
               )}
               {joinedDate && (
-                <span className="flex items-center gap-1 font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">
+                <span className="flex items-center gap-1 font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">
                   <HiOutlineCalendar className="w-3 h-3" /> joined {joinedDate}
                 </span>
               )}
               {user?.portfolio_url && (
                 <a href={user.portfolio_url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 font-mono text-[10px] text-[#e8490f] hover:underline">
+                  className="flex items-center gap-1 font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT hover:underline">
                   <HiOutlineLink className="w-3 h-3" />
                   {user.portfolio_url.replace(/^https?:\/\//, '')}
                 </a>
@@ -1004,7 +1032,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Stats bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border-t border-[#e2e4e8] dark:border-[#1e2228] pt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border-t border-border-default dark:border-border-dark-default pt-4">
             <StatPill icon={HiOutlineEye} label="profile views" value={stats?.profile_views ?? 0} />
             <StatPill icon={HiOutlineBriefcase} label="listings" value={listings.length} />
             <StatPill icon={HiOutlineStar} label="avg rating" value={avgRating > 0 ? avgRating.toFixed(1) : '—'} />
@@ -1013,16 +1041,11 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* ── ABOUT ── */}
       <AboutSection user={user} onUpdate={updateUser} />
-
-      {/* ── SKILLS ── */}
       <SkillsSection user={user} onUpdate={updateUser} allSkills={allSkills} setAllSkills={setAllSkills} />
       <PortfolioSection portfolio={portfolio} />
-
       <ListingsSection listings={listings} />
       <CertificatesSection certificates={certificates} setCertificates={setCertificates} />
-
       <ReviewsSection reviews={reviews} avgRating={avgRating} />
 
     </div>

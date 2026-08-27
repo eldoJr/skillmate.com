@@ -20,7 +20,11 @@ export interface WeekPlan { week: number; focus: string; tasks: string[]; resour
 export interface RoadmapReport {
   id: string; user_id: string; target_role: string; version: number
   milestones: Milestone[]; weekly_plan: WeekPlan[]
-  summary: string; total_weeks: number; created_at: string
+  summary: string; total_weeks: number; created_at: string; updated_at?: string
+}
+export interface RoadmapBrief {
+  id: string; target_role: string; version: number; total_weeks: number
+  created_at: string; updated_at: string
 }
 
 // ── Mentor ─────────────────────────────────────────────────────────────────
@@ -66,15 +70,25 @@ export const aiService = {
     const { data } = await api.get<SkillGapReport[]>('/skill-gap/')
     return data
   },
+  async deleteSkillGapReport(id: string): Promise<void> {
+    await api.delete(`/skill-gap/${id}`)
+  },
 
   // Roadmap
   async generateRoadmap(target_role: string): Promise<RoadmapReport> {
     const { data } = await api.post<RoadmapReport>('/roadmap/generate', { target_role })
     return data
   },
-  async getLatestRoadmap(target_role: string): Promise<RoadmapReport> {
-    const { data } = await api.get<RoadmapReport>(`/roadmap/${encodeURIComponent(target_role)}/latest`)
+  async getRoadmaps(): Promise<RoadmapReport[]> {
+    const { data } = await api.get<RoadmapReport[]>('/roadmap/')
     return data
+  },
+  async getLatestRoadmap(target_role: string): Promise<RoadmapReport> {
+    const { data } = await api.get<RoadmapReport>(`/roadmap/${encodeURIComponent(target_role)}`)
+    return data
+  },
+  async deleteRoadmap(id: string): Promise<void> {
+    await api.delete(`/roadmap/${id}`)
   },
 
   // Mentor

@@ -7,6 +7,7 @@
 @layer base {
   html {
     overflow-x: hidden;
+    font-size: 17px;
   }
 }
 
@@ -27,7 +28,7 @@
 
 @layer utilities {
   .auth-input {
-    @apply w-full px-5 py-3.5 rounded-xl bg-[#f6f8fa] dark:bg-[#161b22] text-[#1f2328] dark:text-[#e6edf3] text-sm placeholder-[#6e7781] dark:placeholder-[#6e7681] border border-[#d0d7de] dark:border-[#30363d] outline-none focus:border-[#0969da] dark:focus:border-[#2f81f7] focus:bg-white dark:focus:bg-[#0d1117] transition-all;
+    @apply w-full px-3 py-2.5 bg-canvas-inset dark:bg-canvas-dark-inset text-fg-default dark:text-fg-dark-default font-mono text-[11px] placeholder-fg-subtle dark:placeholder-fg-dark-subtle border border-border-default dark:border-border-dark-default outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT transition-colors;
   }
 
   .pause-on-hover:hover .scroll-animated {
