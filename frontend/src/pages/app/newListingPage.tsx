@@ -33,7 +33,7 @@ export default function NewListingPage() {
       navigate('/app/listings')
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      setError(msg ?? 'failed to create listing')
+      setError(msg ?? 'Failed to create listing')
     } finally {
       setLoading(false)
     }
@@ -42,25 +42,23 @@ export default function NewListingPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-4">
 
-      {/* Page header */}
-      <div className="border border-border-default dark:border-border-dark-default">
-        <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT" />
-          <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">new listing</span>
+      <div className="border border-border-default dark:border-border-dark-default rounded-xl overflow-hidden">
+        <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset">
+          <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">New listing</span>
         </div>
         <div className="px-4 py-3 flex items-center justify-between gap-4">
           <div>
-            <p className="font-mono text-[11px] text-fg-default dark:text-fg-dark-default font-medium">create a listing</p>
-            <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
-              describe the skill or service you're offering to other students
+            <p className="text-[13px] font-semibold text-fg-default dark:text-fg-dark-default">Create a listing</p>
+            <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
+              Describe the skill or service you're offering to other students
             </p>
           </div>
           <Link
             to="/app/listings"
-            className="flex items-center gap-1.5 font-mono text-[9px] tracking-wide text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors"
+            className="flex items-center gap-1.5 text-[12px] font-medium text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors shrink-0"
           >
             <HiOutlineArrowLeft className="w-3.5 h-3.5" />
-            back
+            Back
           </Link>
         </div>
       </div>
@@ -70,7 +68,7 @@ export default function NewListingPage() {
         selectedTags={selectedTags}
         loading={loading}
         error={error}
-        submitLabel="publish listing"
+        submitLabel="Publish listing"
         onChange={(k, v) => setForm((f) => ({ ...f, [k]: v }))}
         onTagToggle={(tag) => setSelectedTags((prev) =>
           prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]

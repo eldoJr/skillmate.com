@@ -4,6 +4,7 @@ import { clsx } from 'clsx'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   HiOutlinePaperAirplane, HiOutlineLockClosed, HiOutlineArrowPath,
+  HiOutlineMagnifyingGlass,
 } from 'react-icons/hi2'
 import Avatar from '../../components/atoms/avatar'
 import { messagesService, type ConversationSummary, type Message } from '../../services/messages'
@@ -42,8 +43,8 @@ function groupByDate(msgs: Message[]) {
     const today = new Date()
     const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1)
     let label = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
-    if (d.toDateString() === today.toDateString()) label = 'today'
-    else if (d.toDateString() === yesterday.toDateString()) label = 'yesterday'
+    if (d.toDateString() === today.toDateString()) label = 'Today'
+    else if (d.toDateString() === yesterday.toDateString()) label = 'Yesterday'
     if (label !== lastLabel) { groups.push({ label, messages: [] }); lastLabel = label }
     groups[groups.length - 1].messages.push(msg)
   }
@@ -152,18 +153,15 @@ export default function MessagesPage() {
   const totalUnread = conversations.reduce((s, c) => s + c.unread_count, 0)
 
   return (
-    <div className="flex h-[calc(100vh-112px)] overflow-hidden border border-border-default dark:border-border-dark-default">
+    <div className="flex h-[calc(100vh-112px)] overflow-hidden border border-border-default dark:border-border-dark-default rounded-xl">
 
-      {/* ── Sidebar ── */}
+      {/* Sidebar */}
       <div className="w-[260px] shrink-0 border-r border-border-default dark:border-border-dark-default flex flex-col bg-canvas-overlay dark:bg-canvas-dark-inset">
 
-        <div className="px-3 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT" />
-            <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">messages</span>
-          </div>
+        <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-between">
+          <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">Messages</span>
           {totalUnread > 0 && (
-            <span className="px-1.5 py-0.5 font-mono text-[9px] bg-brand dark:bg-brand-dark-DEFAULT text-white">
+            <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-brand dark:bg-brand-dark-DEFAULT text-white">
               {totalUnread > 99 ? '99+' : totalUnread}
             </span>
           )}
@@ -171,14 +169,14 @@ export default function MessagesPage() {
 
         {/* Search */}
         <div className="px-3 py-2 border-b border-border-default dark:border-border-dark-default">
-          <div className="relative">
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT pointer-events-none">$</span>
+          <div className="flex items-center gap-2 border border-border-default dark:border-border-dark-default rounded-lg px-2.5 py-1.5 focus-within:ring-2 focus-within:ring-brand/30 bg-canvas-overlay dark:bg-canvas-dark-default">
+            <HiOutlineMagnifyingGlass className="w-3.5 h-3.5 text-fg-muted dark:text-fg-dark-muted shrink-0" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="search…"
-              className="w-full pl-7 pr-3 py-1.5 font-mono text-[10px] tracking-wide bg-canvas-overlay dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT transition-colors"
+              placeholder="Search…"
+              className="flex-1 text-[12px] bg-transparent text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none"
             />
           </div>
         </div>
@@ -189,22 +187,22 @@ export default function MessagesPage() {
             <div>
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="flex items-center gap-2.5 px-3 py-3 border-b border-border-default dark:border-border-dark-default">
-                  <div className="w-8 h-8 bg-canvas-inset dark:bg-border-dark-default animate-pulse shrink-0" />
+                  <div className="w-8 h-8 rounded-full bg-canvas-inset dark:bg-border-dark-default animate-pulse shrink-0" />
                   <div className="flex-1 space-y-1.5">
-                    <div className="h-2 w-20 bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
-                    <div className="h-2 w-28 bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
+                    <div className="h-2.5 w-20 rounded bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
+                    <div className="h-2 w-28 rounded bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
                   </div>
                 </div>
               ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-2 py-12 px-4 text-center">
-              <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">
-                {search ? '~ no results' : '~ no conversations yet'}
+              <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted">
+                {search ? 'No results' : 'No conversations yet'}
               </p>
               {!search && (
-                <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted leading-relaxed">
-                  visit a student's profile to start a conversation
+                <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted leading-relaxed">
+                  Visit a student's profile to start a conversation
                 </p>
               )}
             </div>
@@ -226,7 +224,7 @@ export default function MessagesPage() {
                   <div className="relative shrink-0">
                     <Avatar name={name} src={convo.partner.avatar_url ?? undefined} size="md" />
                     {convo.unread_count > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-brand dark:bg-brand-dark-DEFAULT text-white font-mono text-[7px] font-bold flex items-center justify-center">
+                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-brand dark:bg-brand-dark-DEFAULT text-white text-[9px] font-bold flex items-center justify-center">
                         {convo.unread_count > 9 ? '9+' : convo.unread_count}
                       </span>
                     )}
@@ -234,24 +232,20 @@ export default function MessagesPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1">
                       <p className={clsx(
-                        'font-mono text-[10px] truncate',
-                        convo.unread_count > 0
-                          ? 'font-bold text-fg-default dark:text-fg-dark-default'
-                          : 'font-medium text-fg-default dark:text-fg-dark-default',
+                        'text-[12px] truncate',
+                        convo.unread_count > 0 ? 'font-semibold text-fg-default dark:text-fg-dark-default' : 'font-medium text-fg-default dark:text-fg-dark-default',
                       )}>
                         {name}
                       </p>
-                      <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted shrink-0">
+                      <span className="text-[10px] text-fg-muted dark:text-fg-dark-muted shrink-0">
                         {formatTime(convo.last_message_at)}
                       </span>
                     </div>
                     <p className={clsx(
-                      'font-mono text-[9px] truncate mt-0.5',
-                      convo.unread_count > 0
-                        ? 'text-fg-default dark:text-fg-dark-default font-medium'
-                        : 'text-fg-muted dark:text-fg-dark-muted',
+                      'text-[11px] truncate mt-0.5',
+                      convo.unread_count > 0 ? 'text-fg-default dark:text-fg-dark-default font-medium' : 'text-fg-muted dark:text-fg-dark-muted',
                     )}>
-                      {convo.last_message || 'start a conversation'}
+                      {convo.last_message || 'Start a conversation'}
                     </p>
                   </div>
                 </button>
@@ -261,7 +255,7 @@ export default function MessagesPage() {
         </div>
       </div>
 
-      {/* ── Chat area ── */}
+      {/* Chat area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0 bg-canvas-subtle dark:bg-canvas-dark-default">
         <AnimatePresence mode="wait">
           {!activePartnerId ? (
@@ -273,21 +267,21 @@ export default function MessagesPage() {
               transition={{ duration: 0.15 }}
               className="flex-1 flex flex-col items-center justify-center gap-4 px-8 text-center"
             >
-              <p className="font-mono text-[11px] text-fg-default dark:text-fg-dark-default">
-                select a conversation
+              <p className="text-[13px] font-medium text-fg-default dark:text-fg-dark-default">
+                Select a conversation
               </p>
-              <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted max-w-[240px] leading-relaxed">
-                or visit a student's profile to start a new one
+              <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted max-w-[240px] leading-relaxed">
+                Or visit a student's profile to start a new one
               </p>
-              <div className="flex items-center gap-1.5 px-3 py-2 border border-border-default dark:border-border-dark-default bg-canvas-overlay dark:bg-canvas-dark-inset">
-                <HiOutlineLockClosed className="w-3 h-3 text-fg-muted dark:text-fg-dark-muted shrink-0" />
-                <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">
-                  messages are private between you and the recipient
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border-default dark:border-border-dark-default bg-canvas-overlay dark:bg-canvas-dark-inset">
+                <HiOutlineLockClosed className="w-3.5 h-3.5 text-fg-muted dark:text-fg-dark-muted shrink-0" />
+                <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted">
+                  Messages are private between you and the recipient
                 </p>
               </div>
               {conversations.length > 0 && (
-                <p className="font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT">
-                  › {conversations.length} conversation{conversations.length !== 1 ? 's' : ''} in sidebar
+                <p className="text-[11px] text-brand dark:text-brand-dark-DEFAULT">
+                  {conversations.length} conversation{conversations.length !== 1 ? 's' : ''} in sidebar
                 </p>
               )}
             </motion.div>
@@ -312,25 +306,25 @@ export default function MessagesPage() {
                     <div className="flex-1 min-w-0">
                       <Link
                         to={`/app/profile/${displayPartner.id}`}
-                        className="font-mono text-[11px] font-medium text-fg-default dark:text-fg-dark-default hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors block truncate"
+                        className="text-[13px] font-semibold text-fg-default dark:text-fg-dark-default hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors block truncate"
                       >
                         {`${displayPartner.first_name} ${displayPartner.last_name}`.trim()}
                       </Link>
-                      <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">skillmate student</p>
+                      <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted">Skillmate student</p>
                     </div>
                     <Link
                       to={`/app/profile/${displayPartner.id}`}
-                      className="shrink-0 px-3 py-1.5 font-mono text-[9px] tracking-wide border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors"
+                      className="shrink-0 px-3 py-1.5 text-[11px] font-medium rounded-lg border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors"
                     >
-                      view profile
+                      View profile
                     </Link>
                   </>
                 ) : (
                   <>
-                    <div className="w-8 h-8 bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
+                    <div className="w-8 h-8 rounded-full bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-2.5 w-24 bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
-                      <div className="h-2 w-16 bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
+                      <div className="h-3 w-24 rounded bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
+                      <div className="h-2.5 w-16 rounded bg-canvas-inset dark:bg-border-dark-default animate-pulse" />
                     </div>
                   </>
                 )}
@@ -351,11 +345,11 @@ export default function MessagesPage() {
                         size="lg"
                       />
                     )}
-                    <p className="font-mono text-[10px] font-medium text-fg-default dark:text-fg-dark-default mt-1">
+                    <p className="text-[13px] font-medium text-fg-default dark:text-fg-dark-default mt-1">
                       {displayPartner ? `${displayPartner.first_name} ${displayPartner.last_name}`.trim() : ''}
                     </p>
-                    <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">
-                      no messages yet — say hello
+                    <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted">
+                      No messages yet — say hello
                     </p>
                   </div>
                 ) : (
@@ -364,7 +358,7 @@ export default function MessagesPage() {
                       <div key={group.label}>
                         <div className="flex items-center gap-3 my-4">
                           <div className="flex-1 h-px bg-border-default dark:bg-border-dark-default" />
-                          <span className="font-mono text-[9px] tracking-wide text-fg-muted dark:text-fg-dark-muted px-2 py-0.5 border border-border-default dark:border-border-dark-default bg-canvas-subtle dark:bg-canvas-dark-default">
+                          <span className="text-[10px] font-medium text-fg-muted dark:text-fg-dark-muted px-2 py-0.5 rounded-full border border-border-default dark:border-border-dark-default bg-canvas-subtle dark:bg-canvas-dark-default">
                             {group.label}
                           </span>
                           <div className="flex-1 h-px bg-border-default dark:bg-border-dark-default" />
@@ -400,19 +394,19 @@ export default function MessagesPage() {
 
                                 <div className={clsx('group flex flex-col max-w-[60%]', isMe ? 'items-end' : 'items-start')}>
                                   <div className={clsx(
-                                    'px-3 py-2 font-mono text-[11px] leading-relaxed break-words',
+                                    'px-3 py-2 text-[12px] leading-relaxed break-words rounded-2xl',
                                     isMe
-                                      ? 'bg-brand dark:bg-brand-dark-DEFAULT text-white'
-                                      : 'bg-canvas-overlay dark:bg-canvas-dark-overlay text-fg-default dark:text-fg-dark-default border border-border-default dark:border-border-dark-default',
+                                      ? 'bg-brand dark:bg-brand-dark-DEFAULT text-white rounded-br-sm'
+                                      : 'bg-canvas-overlay dark:bg-canvas-dark-overlay text-fg-default dark:text-fg-dark-default border border-border-default dark:border-border-dark-default rounded-bl-sm',
                                   )}>
                                     {msg.content}
                                   </div>
                                   {isLastInBlock && (
-                                    <span className="font-mono text-[8px] text-fg-muted dark:text-fg-dark-muted mt-1 px-0.5 opacity-0 group-hover:opacity-100 transition-opacity select-none">
+                                    <span className="text-[10px] text-fg-muted dark:text-fg-dark-muted mt-1 px-0.5 opacity-0 group-hover:opacity-100 transition-opacity select-none">
                                       {formatMsgTime(msg.createdAt)}
                                       {isMe && (
                                         <span className="ml-1">
-                                          {msg.isRead ? '· read' : '· sent'}
+                                          {msg.isRead ? '· Read' : '· Sent'}
                                         </span>
                                       )}
                                     </span>
@@ -437,15 +431,15 @@ export default function MessagesPage() {
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder={displayPartner ? `message ${displayPartner.first_name.toLowerCase()}…` : 'type a message…'}
-                    className="flex-1 px-3 py-2 font-mono text-[11px] tracking-wide bg-canvas-subtle dark:bg-canvas-dark-default border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT transition-colors"
+                    placeholder={displayPartner ? `Message ${displayPartner.first_name}…` : 'Type a message…'}
+                    className="flex-1 px-3 py-2 text-[12px] rounded-lg bg-canvas-subtle dark:bg-canvas-dark-default border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand dark:focus:border-brand-dark-DEFAULT transition-colors"
                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
                   />
                   <button
                     onClick={sendMessage}
                     disabled={!newMessage.trim() || sending}
                     className={clsx(
-                      'p-2 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
+                      'p-2 rounded-lg transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
                       newMessage.trim()
                         ? 'bg-brand dark:bg-brand-dark-DEFAULT text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover'
                         : 'bg-canvas-inset dark:bg-canvas-dark-overlay text-fg-muted dark:text-fg-dark-muted border border-border-default dark:border-border-dark-default',

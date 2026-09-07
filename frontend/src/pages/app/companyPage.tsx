@@ -11,31 +11,22 @@ import { aiService, type RequirementResponse, type CandidateResult, type Require
 import Avatar from '../../components/atoms/avatar'
 
 const inputCls = [
-  'w-full px-3 py-2 font-mono text-[11px] tracking-wide',
-  'bg-white dark:bg-[#0d1117]',
-  'border border-[#e2e4e8] dark:border-[#1e2228]',
-  'text-[#1f2328] dark:text-[#e6edf3]',
-  'placeholder-[#adb5bd] dark:placeholder-[#4a5568]',
-  'outline-none focus:border-[#e8490f] dark:focus:border-[#ff6b35]',
+  'w-full px-3 py-2 rounded-lg text-[12px]',
+  'bg-canvas-overlay dark:bg-canvas-dark-inset',
+  'border border-border-default dark:border-border-dark-default',
+  'text-fg-default dark:text-fg-dark-default',
+  'placeholder-fg-subtle dark:placeholder-fg-dark-subtle',
+  'outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand dark:focus:border-brand-dark-DEFAULT',
   'transition-colors duration-150',
 ].join(' ')
 
 const emptyForm: RequirementCreate = { company_name: '', role_title: '', description: '', required_skills: [], preferred_university: '' }
 
-function SectionHeader({ label }: { label: string }) {
-  return (
-    <div className="px-4 py-2 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center gap-1.5">
-      <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-      <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">{label}</span>
-    </div>
-  )
-}
-
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1 px-4 py-3 border-b border-[#e2e4e8] dark:border-[#1e2228] last:border-0">
-      <label className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase flex items-center gap-1">
-        {label}{required && <span className="text-[#e8490f] dark:text-[#ff6b35]">*</span>}
+    <div className="flex flex-col gap-1 px-4 py-3 border-b border-border-default dark:border-border-dark-default last:border-0">
+      <label className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted flex items-center gap-1">
+        {label}{required && <span className="text-danger-fg dark:text-danger-dark-fg">*</span>}
       </label>
       {children}
     </div>
@@ -48,35 +39,35 @@ function CandidateRow({ c, index }: { c: CandidateResult; index: number }) {
   return (
     <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.04 }}
       onClick={() => navigate(`/app/profile/${c.student.id}`)}
-      className="flex items-start gap-3 px-4 py-3 border-b border-[#e2e4e8] dark:border-[#1e2228] last:border-0 hover:bg-[#f6f8fa] dark:hover:bg-[#0d1117] cursor-pointer transition-colors group"
+      className="flex items-start gap-3 px-4 py-3 border-b border-border-default dark:border-border-dark-default last:border-0 hover:bg-canvas-inset dark:hover:bg-canvas-dark-inset cursor-pointer transition-colors group"
     >
       <div className="relative shrink-0">
         <Avatar name={name} src={c.student.avatar_url ?? undefined} size="sm" />
-        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#e8490f] dark:bg-[#ff6b35] flex items-center justify-center font-mono text-[7px] font-bold text-white">{index + 1}</span>
+        <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-brand dark:bg-brand-dark-DEFAULT flex items-center justify-center text-[9px] font-bold text-white">{index + 1}</span>
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <p className="font-mono text-[10px] font-medium text-[#1f2328] dark:text-[#e6edf3] group-hover:text-[#e8490f] dark:group-hover:text-[#ff6b35] transition-colors">{name}</p>
-          {c.student.is_verified && <HiOutlineCheckBadge className="w-3 h-3 text-[#22c55e] shrink-0" />}
+          <p className="text-[12px] font-semibold text-fg-default dark:text-fg-dark-default group-hover:text-brand dark:group-hover:text-brand-dark-DEFAULT transition-colors">{name}</p>
+          {c.student.is_verified && <HiOutlineCheckBadge className="w-3.5 h-3.5 text-success-fg dark:text-success-dark-fg shrink-0" />}
         </div>
-        {c.student.headline && <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] truncate">{c.student.headline}</p>}
+        {c.student.headline && <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted truncate">{c.student.headline}</p>}
         {c.student.skills.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1">
             {c.student.skills.slice(0, 4).map((s) => (
-              <span key={s.id} className="px-1.5 py-0.5 font-mono text-[8px] border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97]">{s.name}</span>
+              <span key={s.id} className="px-1.5 py-0.5 text-[10px] font-medium rounded-md border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted">{s.name}</span>
             ))}
           </div>
         )}
-        {c.summary && <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-1 leading-relaxed"><span className="text-[#e8490f] dark:text-[#ff6b35] mr-1">›</span>{c.summary}</p>}
+        {c.summary && <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted mt-1 leading-relaxed">{c.summary}</p>}
       </div>
       <div className="shrink-0 text-right space-y-1">
-        <div className="flex items-center gap-1 justify-end px-2 py-0.5 border border-[#e8490f]/40 dark:border-[#ff6b35]/40">
-          <span className="font-mono text-[9px] font-bold text-[#e8490f] dark:text-[#ff6b35]">{Math.round(c.final_score * 100)}%</span>
+        <div className="flex items-center gap-1 justify-end px-2 py-0.5 rounded-md border border-brand/40 dark:border-brand-dark-DEFAULT/40">
+          <span className="text-[11px] font-bold text-brand dark:text-brand-dark-DEFAULT">{Math.round(c.final_score * 100)}%</span>
         </div>
         {c.scores.total_reviews > 0 && (
           <div className="flex items-center gap-1 justify-end">
-            <HiOutlineStar className="w-3 h-3 text-[#d29922]" />
-            <span className="font-mono text-[10px] font-semibold text-[#1f2328] dark:text-[#e6edf3]">{c.scores.overall_avg.toFixed(1)}</span>
+            <HiOutlineStar className="w-3.5 h-3.5 text-yellow-500" />
+            <span className="text-[12px] font-semibold text-fg-default dark:text-fg-dark-default">{c.scores.overall_avg.toFixed(1)}</span>
           </div>
         )}
       </div>
@@ -129,31 +120,31 @@ export default function CompanyPage() {
       const r = await aiService.postRequirement({ ...form, preferred_university: form.preferred_university || undefined })
       setRequirements((prev) => [r, ...prev])
       setShowForm(false); setForm(emptyForm); setSkillInput('')
-    } catch { setError('failed to post requirement — please try again') }
+    } catch { setError('Failed to post requirement — please try again') }
     finally { setSaving(false) }
   }
+
+  const sectionCls = 'border border-border-default dark:border-border-dark-default rounded-xl overflow-hidden'
+  const headCls = 'px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset'
 
   return (
     <div className="space-y-4">
 
       {/* Header */}
-      <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
-        <div className="px-4 py-2.5 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-            <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">company matching</span>
-          </div>
+      <div className={sectionCls}>
+        <div className={clsx(headCls, 'flex items-center justify-between')}>
+          <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">Company Matching</span>
           <button onClick={() => setShowForm((v) => !v)}
-            className="flex items-center gap-1 px-2.5 py-1 font-mono text-[9px] tracking-wide border border-[#e8490f] dark:border-[#ff6b35] text-[#e8490f] dark:text-[#ff6b35] hover:bg-[#e8490f] dark:hover:bg-[#ff6b35] hover:text-white transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-lg border border-brand dark:border-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT hover:bg-brand dark:hover:bg-brand-dark-DEFAULT hover:text-white transition-colors cursor-pointer"
           >
-            <HiOutlinePlusCircle className="w-3 h-3" />post requirement
+            <HiOutlinePlusCircle className="w-3.5 h-3.5" />Post requirement
           </button>
         </div>
         <div className="px-4 py-3">
-          <p className="font-mono text-[11px] font-medium text-[#1f2328] dark:text-[#e6edf3]">
-            {requirements.length > 0 ? `${requirements.length} requirement${requirements.length !== 1 ? 's' : ''}` : 'role requirements'}
+          <p className="text-[13px] font-semibold text-fg-default dark:text-fg-dark-default">
+            {requirements.length > 0 ? `${requirements.length} requirement${requirements.length !== 1 ? 's' : ''}` : 'Role requirements'}
           </p>
-          <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">post role requirements and find matching student candidates</p>
+          <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted mt-0.5">Post role requirements and find matching student candidates</p>
         </div>
       </div>
 
@@ -161,67 +152,66 @@ export default function CompanyPage() {
       <AnimatePresence>
         {showForm && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-            <div className="border border-[#e8490f]/40 dark:border-[#ff6b35]/40">
-              <div className="px-4 py-2.5 border-b border-[#e8490f]/40 dark:border-[#ff6b35]/40 bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-                  <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">new requirement</span>
-                </div>
-                <button onClick={() => setShowForm(false)} className="text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors cursor-pointer">
-                  <HiOutlineXMark className="w-3.5 h-3.5" />
+            <div className="border border-brand/30 dark:border-brand-dark-DEFAULT/30 rounded-xl overflow-hidden">
+              <div className={clsx(headCls, 'flex items-center justify-between border-brand/30 dark:border-brand-dark-DEFAULT/30')}>
+                <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">New requirement</span>
+                <button onClick={() => setShowForm(false)} className="text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
+                  <HiOutlineXMark className="w-4 h-4" />
                 </button>
               </div>
-              <form onSubmit={handleSubmit}>
-                <SectionHeader label="role details" />
+              <form onSubmit={handleSubmit} className="bg-canvas-default dark:bg-canvas-dark-default">
+                <div className={headCls}>
+                  <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">Role details</span>
+                </div>
                 <div className="grid grid-cols-2">
-                  <Field label="company name" required>
-                    <input required value={form.company_name} onChange={(e) => setForm((f) => ({ ...f, company_name: e.target.value }))} className={inputCls} placeholder="acme corp" />
+                  <Field label="Company name" required>
+                    <input required value={form.company_name} onChange={(e) => setForm((f) => ({ ...f, company_name: e.target.value }))} className={inputCls} placeholder="Acme Corp" />
                   </Field>
-                  <Field label="role title" required>
-                    <input required value={form.role_title} onChange={(e) => setForm((f) => ({ ...f, role_title: e.target.value }))} className={inputCls} placeholder="frontend intern" />
+                  <Field label="Role title" required>
+                    <input required value={form.role_title} onChange={(e) => setForm((f) => ({ ...f, role_title: e.target.value }))} className={inputCls} placeholder="Frontend Intern" />
                   </Field>
                 </div>
-                <Field label="description" required>
-                  <textarea required rows={3} value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} className={clsx(inputCls, 'resize-none')} placeholder="describe the role and what you're looking for…" />
+                <Field label="Description" required>
+                  <textarea required rows={3} value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} className={clsx(inputCls, 'resize-none')} placeholder="Describe the role and what you're looking for…" />
                 </Field>
-                <SectionHeader label="requirements" />
-                <Field label="required skills" required>
+                <div className={headCls}>
+                  <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">Requirements</span>
+                </div>
+                <Field label="Required skills" required>
                   <div className="flex gap-2">
                     <input value={skillInput} onChange={(e) => setSkillInput(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill() } }}
-                      className={inputCls} placeholder="type and press enter…" />
+                      className={inputCls} placeholder="Type and press enter…" />
                     <button type="button" onClick={addSkill}
-                      className="px-3 py-2 font-mono text-[9px] tracking-wide border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:border-[#e8490f] dark:hover:border-[#ff6b35] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors cursor-pointer shrink-0"
-                    >add</button>
+                      className="px-3 py-2 text-[12px] font-medium rounded-lg border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer shrink-0"
+                    >Add</button>
                   </div>
                   {form.required_skills.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {form.required_skills.map((s) => (
-                        <span key={s} className="flex items-center gap-1 px-2 py-0.5 font-mono text-[9px] bg-[#e8490f] dark:bg-[#ff6b35] text-white">
+                        <span key={s} className="flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded-md bg-brand dark:bg-brand-dark-DEFAULT text-white">
                           {s}
-                          <button type="button" onClick={() => removeSkill(s)} className="cursor-pointer hover:opacity-70 transition-opacity"><HiOutlineXMark className="w-2.5 h-2.5" /></button>
+                          <button type="button" onClick={() => removeSkill(s)} className="cursor-pointer hover:opacity-70 transition-opacity"><HiOutlineXMark className="w-3 h-3" /></button>
                         </span>
                       ))}
                     </div>
                   )}
                 </Field>
-                <Field label="preferred university">
-                  <input value={form.preferred_university} onChange={(e) => setForm((f) => ({ ...f, preferred_university: e.target.value }))} className={inputCls} placeholder="optional" />
+                <Field label="Preferred university">
+                  <input value={form.preferred_university} onChange={(e) => setForm((f) => ({ ...f, preferred_university: e.target.value }))} className={inputCls} placeholder="Optional" />
                 </Field>
                 {error && (
-                  <div className="mx-4 my-2 px-3 py-2 border border-[#f8514926] bg-[#fff0ee] dark:bg-[#2d1216] font-mono text-[10px] text-[#d1242f] dark:text-[#f85149]">
-                    ! {error}
-                  </div>
+                  <div className="mx-4 my-2 px-3 py-2 rounded-lg border border-danger-muted dark:border-danger-dark-muted bg-danger-subtle dark:bg-danger-dark-subtle text-[12px] text-danger-fg dark:text-danger-dark-fg">{error}</div>
                 )}
-                <div className="flex items-center gap-2 justify-end px-4 py-3 border-t border-[#e2e4e8] dark:border-[#1e2228]">
+                <div className="flex items-center gap-2 justify-end px-4 py-3 border-t border-border-default dark:border-border-dark-default">
                   <button type="button" onClick={() => setShowForm(false)}
-                    className="px-4 py-2 font-mono text-[10px] tracking-wide border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:text-[#1f2328] dark:hover:text-[#e6edf3] transition-colors cursor-pointer"
-                  >cancel</button>
+                    className="px-4 py-2 text-[12px] font-medium rounded-lg border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default transition-colors cursor-pointer"
+                  >Cancel</button>
                   <button type="submit" disabled={saving || form.required_skills.length === 0}
-                    className="px-5 py-2 font-mono text-[10px] tracking-wide bg-[#e8490f] dark:bg-[#ff6b35] text-white hover:bg-[#d03d0a] dark:hover:bg-[#e85c20] transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                    className="px-5 py-2 text-[12px] font-medium rounded-lg bg-brand dark:bg-brand-dark-DEFAULT text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                   >
-                    {saving && <HiOutlineArrowPath className="w-3 h-3 animate-spin" />}
-                    {saving ? 'posting…' : 'post requirement'}
+                    {saving && <HiOutlineArrowPath className="w-3.5 h-3.5 animate-spin" />}
+                    {saving ? 'Posting…' : 'Post requirement'}
                   </button>
                 </div>
               </form>
@@ -232,60 +222,62 @@ export default function CompanyPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <HiOutlineArrowPath className="w-4 h-4 text-[#636c76] dark:text-[#848d97] animate-spin" />
+          <HiOutlineArrowPath className="w-4 h-4 text-fg-muted dark:text-fg-dark-muted animate-spin" />
         </div>
       ) : requirements.length === 0 ? (
-        <div className="border border-[#e2e4e8] dark:border-[#1e2228] p-12 text-center">
-          <HiOutlineBuildingOffice2 className="w-6 h-6 text-[#e2e4e8] dark:text-[#1e2228] mx-auto mb-3" />
-          <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">~ no requirements posted yet — post one to find matching student candidates</p>
+        <div className={clsx(sectionCls, 'p-12 text-center')}>
+          <HiOutlineBuildingOffice2 className="w-6 h-6 text-border-default dark:text-border-dark-default mx-auto mb-3" />
+          <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted">No requirements posted yet — post one to find matching student candidates</p>
         </div>
       ) : (
         <div className="space-y-2">
           {requirements.map((r) => (
-            <div key={r.id} className="border border-[#e2e4e8] dark:border-[#1e2228]">
+            <div key={r.id} className={sectionCls}>
               <button onClick={() => toggleExpand(r.id)}
-                className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-[#f6f8fa] dark:hover:bg-[#0d1117] transition-colors cursor-pointer text-left"
+                className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-canvas-inset dark:hover:bg-canvas-dark-inset transition-colors cursor-pointer text-left"
               >
                 <div className="flex items-start gap-3 min-w-0 flex-1">
-                  <HiOutlineBuildingOffice2 className="w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97] shrink-0 mt-0.5" />
+                  <HiOutlineBuildingOffice2 className="w-4 h-4 text-fg-muted dark:text-fg-dark-muted shrink-0 mt-0.5" />
                   <div className="min-w-0">
-                    <p className="font-mono text-[10px] font-medium text-[#1f2328] dark:text-[#e6edf3]">{r.role_title}</p>
-                    <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97]">{r.company_name}{r.preferred_university ? ` · ${r.preferred_university}` : ''}</p>
+                    <p className="text-[13px] font-semibold text-fg-default dark:text-fg-dark-default">{r.role_title}</p>
+                    <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted">{r.company_name}{r.preferred_university ? ` · ${r.preferred_university}` : ''}</p>
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {r.required_skills.slice(0, 4).map((s) => (
-                        <span key={s} className="px-1.5 py-0.5 font-mono text-[8px] border border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97]">{s}</span>
+                        <span key={s} className="px-1.5 py-0.5 text-[10px] font-medium rounded-md border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted">{s}</span>
                       ))}
-                      {r.required_skills.length > 4 && <span className="font-mono text-[8px] text-[#636c76] dark:text-[#848d97] self-center">+{r.required_skills.length - 4}</span>}
+                      {r.required_skills.length > 4 && <span className="text-[10px] text-fg-muted dark:text-fg-dark-muted self-center">+{r.required_skills.length - 4}</span>}
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5 shrink-0">
                   <button onClick={(e) => handleToggle(r.id, e)}
                     className={clsx(
-                      'px-2 py-0.5 font-mono text-[8px] tracking-wide border transition-colors cursor-pointer',
+                      'px-2 py-0.5 text-[10px] font-medium rounded-md border transition-colors cursor-pointer',
                       r.is_active
-                        ? 'border-[#22c55e]/40 text-[#22c55e] hover:bg-[#22c55e] hover:text-white'
-                        : 'border-[#e2e4e8] dark:border-[#1e2228] text-[#636c76] dark:text-[#848d97] hover:border-[#636c76]',
+                        ? 'border-success-fg/40 dark:border-success-dark-fg/40 text-success-fg dark:text-success-dark-fg hover:bg-success-fg dark:hover:bg-success-dark-fg hover:text-white'
+                        : 'border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-fg-muted dark:hover:border-fg-dark-muted',
                     )}
-                  >{r.is_active ? 'active' : 'inactive'}</button>
-                  <HiOutlineChevronDown className={clsx('w-3.5 h-3.5 text-[#636c76] dark:text-[#848d97] transition-transform', expanded === r.id && 'rotate-180')} />
+                  >{r.is_active ? 'Active' : 'Inactive'}</button>
+                  <HiOutlineChevronDown className={clsx('w-3.5 h-3.5 text-fg-muted dark:text-fg-dark-muted transition-transform', expanded === r.id && 'rotate-180')} />
                 </div>
               </button>
 
               <AnimatePresence>
                 {expanded === r.id && (
                   <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                    <div className="border-t border-[#e2e4e8] dark:border-[#1e2228]">
-                      <div className="px-4 py-3 border-b border-[#e2e4e8] dark:border-[#1e2228]">
-                        <p className="font-mono text-[10px] text-[#636c76] dark:text-[#848d97] leading-relaxed">{r.description}</p>
+                    <div className="border-t border-border-default dark:border-border-dark-default">
+                      <div className="px-4 py-3 border-b border-border-default dark:border-border-dark-default">
+                        <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted leading-relaxed">{r.description}</p>
                       </div>
-                      <SectionHeader label="top candidates" />
+                      <div className={headCls}>
+                        <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">Top candidates</span>
+                      </div>
                       {loadingCandidates === r.id ? (
                         <div className="flex items-center justify-center py-8">
-                          <HiOutlineArrowPath className="w-4 h-4 text-[#636c76] dark:text-[#848d97] animate-spin" />
+                          <HiOutlineArrowPath className="w-4 h-4 text-fg-muted dark:text-fg-dark-muted animate-spin" />
                         </div>
                       ) : candidates[r.id]?.length === 0 ? (
-                        <p className="px-4 py-3 font-mono text-[10px] text-[#636c76] dark:text-[#848d97]">~ no candidates found yet</p>
+                        <p className="px-4 py-3 text-[12px] text-fg-muted dark:text-fg-dark-muted">No candidates found yet</p>
                       ) : (
                         <div>
                           {(candidates[r.id] ?? []).map((c, i) => <CandidateRow key={c.student.id} c={c} index={i} />)}

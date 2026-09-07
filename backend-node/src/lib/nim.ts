@@ -1,17 +1,12 @@
 import 'dotenv/config'
 import OpenAI from 'openai'
 
-let _client: OpenAI | null = null
-
 function getClient(): OpenAI {
   if (!process.env.NVIDIA_API_KEY) throw new Error('NVIDIA_API_KEY is not configured. AI features are unavailable.')
-  if (!_client) {
-    _client = new OpenAI({
-      apiKey:  process.env.NVIDIA_API_KEY,
-      baseURL: process.env.NVIDIA_BASE_URL ?? 'https://integrate.api.nvidia.com/v1',
-    })
-  }
-  return _client
+  return new OpenAI({
+    apiKey:  process.env.NVIDIA_API_KEY,
+    baseURL: process.env.NVIDIA_BASE_URL ?? 'https://integrate.api.nvidia.com/v1',
+  })
 }
 
 export function requireAI() {
@@ -36,7 +31,7 @@ export async function chatCompletion(
   return withRetry(async () => {
     const client = getClient()
     const res = await client.chat.completions.create({
-      model:       model ?? process.env.NIM_LLM_MODEL ?? 'meta/llama-3.1-70b-instruct',
+      model:       model ?? process.env.NIM_LLM_MODEL ?? 'nvidia/llama-3.1-nemotron-70b-instruct',
       messages:    messages as OpenAI.ChatCompletionMessageParam[],
       temperature,
       max_tokens:  maxTokens,
@@ -51,7 +46,7 @@ export async function* streamChatCompletion(
 ): AsyncGenerator<string> {
   const client = getClient()
   const stream = await client.chat.completions.create({
-    model:       process.env.NIM_LLM_MODEL ?? 'meta/llama-3.1-70b-instruct',
+    model:       process.env.NIM_LLM_MODEL ?? 'nvidia/llama-3.1-nemotron-70b-instruct',
     messages:    messages as OpenAI.ChatCompletionMessageParam[],
     temperature,
     max_tokens:  maxTokens,
@@ -67,7 +62,7 @@ export async function embedText(text: string): Promise<number[]> {
   return withRetry(async () => {
     const client = getClient()
     const res = await client.embeddings.create({
-      model:           process.env.NIM_EMBEDDING_MODEL ?? 'nvidia/nv-embedqa-e5-v5',
+      model:           process.env.NIM_EMBEDDING_MODEL ?? 'nvidia/llama-3.2-nv-embedqa-1b-v1',
       input:           text,
       encoding_format: 'float',
     })
@@ -79,7 +74,7 @@ export async function embedBatch(texts: string[]): Promise<number[][]> {
   return withRetry(async () => {
     const client = getClient()
     const res = await client.embeddings.create({
-      model:           process.env.NIM_EMBEDDING_MODEL ?? 'nvidia/nv-embedqa-e5-v5',
+      model:           process.env.NIM_EMBEDDING_MODEL ?? 'nvidia/llama-3.2-nv-embedqa-1b-v1',
       input:           texts,
       encoding_format: 'float',
     })

@@ -31,20 +31,14 @@ function formatPrice(l: Listing) {
   return 'Negotiable'
 }
 
-/* ── shared input style ── */
-const iCls = 'w-full px-3 py-2 border border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset font-mono text-[11px] text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT transition-colors'
-const lCls = 'font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted mb-1 block'
-const dot = 'w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT shrink-0'
-const sectionHeader = 'flex items-center justify-between px-5 py-3 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset'
+const iCls = 'w-full px-3 py-2 rounded-lg border border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset text-[12px] text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand dark:focus:border-brand-dark-DEFAULT transition-colors'
+const lCls = 'text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-1 block'
 
-/* ── Section wrapper ── */
 function Section({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="border border-border-default dark:border-border-dark-default bg-canvas-default dark:bg-canvas-dark-default">
-      <div className={sectionHeader}>
-        <span className="flex items-center gap-1.5 font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted">
-          <span className={dot} />{title}
-        </span>
+    <div className="border border-border-default dark:border-border-dark-default rounded-xl overflow-hidden bg-canvas-default dark:bg-canvas-dark-default">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset">
+        <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">{title}</span>
         {action}
       </div>
       <div className="p-5">{children}</div>
@@ -52,21 +46,16 @@ function Section({ title, action, children }: { title: string; action?: React.Re
   )
 }
 
-/* ── Stat pill ── */
 function StatPill({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | number }) {
   return (
-    <div className="flex items-center gap-2 px-3 py-2 border border-border-default dark:border-border-dark-default">
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border-default dark:border-border-dark-default">
       <Icon className="w-3.5 h-3.5 text-fg-muted dark:text-fg-dark-muted shrink-0" />
-      <span className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">{label}</span>
-      <span className="font-mono text-[11px] font-bold text-fg-default dark:text-fg-dark-default ml-auto">{value}</span>
+      <span className="text-[11px] text-fg-muted dark:text-fg-dark-muted">{label}</span>
+      <span className="text-[12px] font-semibold text-fg-default dark:text-fg-dark-default ml-auto">{value}</span>
     </div>
   )
 }
 
-/* ══════════════════════════════════════════
-   INLINE EDIT DRAWER
-   slides in from the right over the hero
-══════════════════════════════════════════ */
 interface DrawerProps {
   open: boolean
   onClose: () => void
@@ -84,9 +73,7 @@ function EditDrawer({ open, onClose, form, onChange, onSave, saving, saveMsg }: 
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
       <div className="fixed top-0 right-0 h-full w-full max-w-sm bg-canvas-default dark:bg-canvas-dark-default border-l border-border-default dark:border-border-dark-default z-50 flex flex-col">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset">
-          <span className="flex items-center gap-1.5 font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted">
-            <span className={dot} />edit profile
-          </span>
+          <span className="text-[13px] font-semibold text-fg-default dark:text-fg-dark-default">Edit profile</span>
           <button onClick={onClose} className="p-1 text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
             <HiOutlineXMark className="w-4 h-4" />
           </button>
@@ -95,54 +82,48 @@ function EditDrawer({ open, onClose, form, onChange, onSave, saving, saveMsg }: 
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={lCls}>first name</label>
+              <label className={lCls}>First name</label>
               <input className={iCls} value={form.first_name} onChange={(e) => onChange('first_name', e.target.value)} placeholder="John" />
             </div>
             <div>
-              <label className={lCls}>last name</label>
+              <label className={lCls}>Last name</label>
               <input className={iCls} value={form.last_name} onChange={(e) => onChange('last_name', e.target.value)} placeholder="Doe" />
             </div>
           </div>
-
           <div>
-            <label className={lCls}>headline</label>
+            <label className={lCls}>Headline</label>
             <input className={iCls} value={form.headline} onChange={(e) => onChange('headline', e.target.value)} placeholder="e.g. Full-Stack Developer & Designer" />
           </div>
-
           <div>
-            <label className={lCls}>university</label>
+            <label className={lCls}>University</label>
             <input className={iCls} value={form.university} onChange={(e) => onChange('university', e.target.value)} placeholder="e.g. University of Cape Town" />
           </div>
-
           <div>
-            <label className={lCls}>location</label>
+            <label className={lCls}>Location</label>
             <input className={iCls} value={form.location} onChange={(e) => onChange('location', e.target.value)} placeholder="e.g. Cape Town, South Africa" />
           </div>
-
           <div>
-            <label className={lCls}>portfolio / website</label>
+            <label className={lCls}>Portfolio / website</label>
             <input className={iCls} value={form.portfolio_url} onChange={(e) => onChange('portfolio_url', e.target.value)} placeholder="https://yoursite.com" />
           </div>
-
           <div>
-            <label className={lCls}>github username</label>
-            <div className="flex items-center border border-border-default dark:border-border-dark-default focus-within:border-brand dark:focus-within:border-brand-dark-DEFAULT transition-colors">
-              <span className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted px-2 border-r border-border-default dark:border-border-dark-default py-2 bg-canvas-inset dark:bg-canvas-dark-inset shrink-0">
+            <label className={lCls}>GitHub username</label>
+            <div className="flex items-center rounded-lg border border-border-default dark:border-border-dark-default focus-within:ring-2 focus-within:ring-brand/30 focus-within:border-brand dark:focus-within:border-brand-dark-DEFAULT overflow-hidden transition-colors">
+              <span className="text-[11px] text-fg-muted dark:text-fg-dark-muted px-2.5 border-r border-border-default dark:border-border-dark-default py-2 bg-canvas-inset dark:bg-canvas-dark-inset shrink-0">
                 github.com/
               </span>
               <input
-                className="flex-1 px-3 py-2 bg-canvas-inset dark:bg-canvas-dark-inset font-mono text-[11px] text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none"
+                className="flex-1 px-3 py-2 bg-canvas-inset dark:bg-canvas-dark-inset text-[12px] text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none"
                 value={form.github_username}
                 onChange={(e) => onChange('github_username', e.target.value)}
                 placeholder="username"
               />
             </div>
           </div>
-
           <div>
-            <label className={lCls}>role</label>
+            <label className={lCls}>Role</label>
             <select className={iCls} value={form.role} onChange={(e) => onChange('role', e.target.value)}>
-              <option value="">select role...</option>
+              <option value="">Select role…</option>
               {['developer','designer','tutor','writer','marketer','video_editor','photographer','data_scientist','other'].map((r) => (
                 <option key={r} value={r}>{r.replace('_', ' ')}</option>
               ))}
@@ -152,19 +133,19 @@ function EditDrawer({ open, onClose, form, onChange, onSave, saving, saveMsg }: 
 
         <div className="px-5 py-4 border-t border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-between gap-3">
           {saveMsg && (
-            <span className={`font-mono text-[10px] ${saveMsg.includes('saved') ? 'text-success-fg dark:text-success-dark-fg' : 'text-danger-fg dark:text-danger-dark-fg'}`}>
-              {saveMsg.includes('saved') ? '✓' : '!'} {saveMsg}
+            <span className={`text-[11px] font-medium ${saveMsg.includes('saved') ? 'text-success-fg dark:text-success-dark-fg' : 'text-danger-fg dark:text-danger-dark-fg'}`}>
+              {saveMsg}
             </span>
           )}
           <div className="flex items-center gap-2 ml-auto">
             <button onClick={onClose}
-              className="px-3 py-1.5 border border-border-default dark:border-border-dark-default font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
-              cancel
+              className="px-3 py-1.5 rounded-lg border border-border-default dark:border-border-dark-default text-[12px] font-medium text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
+              Cancel
             </button>
             <button onClick={onSave} disabled={saving}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-brand dark:bg-brand-dark-DEFAULT border border-brand dark:border-brand-dark-DEFAULT font-mono text-[10px] text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50">
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand dark:bg-brand-dark-DEFAULT text-[12px] font-medium text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50">
               <HiOutlineCheck className="w-3.5 h-3.5" />
-              {saving ? 'saving...' : 'save'}
+              {saving ? 'Saving…' : 'Save'}
             </button>
           </div>
         </div>
@@ -173,10 +154,6 @@ function EditDrawer({ open, onClose, form, onChange, onSave, saving, saveMsg }: 
   )
 }
 
-/* ══════════════════════════════════════════
-   MAIN PAGE
-══════════════════════════════════════════ */
-/* ── ABOUT SECTION ── */
 function AboutSection({ user, onUpdate }: { user: AuthUser | null; onUpdate: (u: AuthUser) => void }) {
   const [editing, setEditing] = useState(false)
   const [bio, setBio] = useState(user?.bio ?? '')
@@ -195,12 +172,12 @@ function AboutSection({ user, onUpdate }: { user: AuthUser | null; onUpdate: (u:
 
   return (
     <Section
-      title="about"
+      title="About"
       action={
         !editing ? (
           <button onClick={() => setEditing(true)}
-            className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
-            edit
+            className="text-[11px] font-medium text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
+            Edit
           </button>
         ) : null
       }
@@ -212,41 +189,40 @@ function AboutSection({ user, onUpdate }: { user: AuthUser | null; onUpdate: (u:
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             maxLength={1000}
-            placeholder="share your background, experience, and what drives you..."
+            placeholder="Share your background, experience, and what drives you…"
             className={`${iCls} resize-none`}
             autoFocus
           />
           <div className="flex items-center justify-between">
-            <span className={`font-mono text-[9px] ${bio.length > 900 ? 'text-danger-fg dark:text-danger-dark-fg' : 'text-fg-muted dark:text-fg-dark-muted'}`}>
+            <span className={`text-[11px] ${bio.length > 900 ? 'text-danger-fg dark:text-danger-dark-fg' : 'text-fg-muted dark:text-fg-dark-muted'}`}>
               {bio.length}/1000
             </span>
             <div className="flex items-center gap-2">
               <button onClick={() => { setBio(user?.bio ?? ''); setEditing(false) }}
-                className="px-3 py-1.5 border border-border-default dark:border-border-dark-default font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
-                cancel
+                className="px-3 py-1.5 rounded-lg border border-border-default dark:border-border-dark-default text-[12px] font-medium text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
+                Cancel
               </button>
               <button onClick={handleSave} disabled={saving}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand dark:bg-brand-dark-DEFAULT border border-brand dark:border-brand-dark-DEFAULT font-mono text-[10px] text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50">
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand dark:bg-brand-dark-DEFAULT text-[12px] font-medium text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50">
                 <HiOutlineCheck className="w-3.5 h-3.5" />
-                {saving ? 'saving...' : 'save'}
+                {saving ? 'Saving…' : 'Save'}
               </button>
             </div>
           </div>
         </div>
       ) : user?.bio ? (
-        <p className="font-mono text-[12px] text-fg-default dark:text-fg-dark-default leading-relaxed whitespace-pre-wrap">{user.bio}</p>
+        <p className="text-[12px] text-fg-default dark:text-fg-dark-default leading-relaxed whitespace-pre-wrap">{user.bio}</p>
       ) : (
         <div className="flex items-center justify-between">
-          <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted">~ no bio yet</p>
+          <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted">No bio yet</p>
           <button onClick={() => setEditing(true)}
-            className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT hover:underline cursor-pointer">+ add bio</button>
+            className="text-[12px] font-medium text-brand dark:text-brand-dark-DEFAULT hover:underline cursor-pointer">+ Add bio</button>
         </div>
       )}
     </Section>
   )
 }
 
-/* ── SKILLS SECTION ── */
 function SkillsSection({
   user, onUpdate, allSkills, setAllSkills,
 }: {
@@ -299,54 +275,52 @@ function SkillsSection({
 
   return (
     <Section
-      title="skills"
+      title="Skills"
       action={
         <button onClick={() => setManaging((v) => !v)}
-          className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
-          {managing ? 'done' : 'manage'}
+          className="text-[11px] font-medium text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
+          {managing ? 'Done' : 'Manage'}
         </button>
       }
     >
-      {/* display view */}
       {!managing && (
         (user?.skills?.length ?? 0) === 0 ? (
           <div className="flex items-center justify-between">
-            <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted">~ no skills added yet</p>
+            <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted">No skills added yet</p>
             <button onClick={() => setManaging(true)}
-              className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT hover:underline cursor-pointer">+ add skills</button>
+              className="text-[12px] font-medium text-brand dark:text-brand-dark-DEFAULT hover:underline cursor-pointer">+ Add skills</button>
           </div>
         ) : (
           <div className="space-y-4">
             {Object.entries(grouped).map(([cat, skills]) => (
               <div key={cat}>
-                <p className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted mb-2">{cat}</p>
+                <p className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-2">{cat}</p>
                 <div className="flex flex-wrap gap-2">
                   {skills.map((s) => (
                     <span key={s.id}
-                      className="font-mono text-[10px] px-2.5 py-1 border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors">
+                      className="text-[11px] font-medium px-2.5 py-1 rounded-md border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors">
                       {s.name}
                     </span>
                   ))}
                 </div>
               </div>
             ))}
-            <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted pt-1">
+            <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted pt-1">
               {user?.skills?.length} skill{(user?.skills?.length ?? 0) !== 1 ? 's' : ''} total
             </p>
           </div>
         )
       )}
 
-      {/* manage panel */}
       {managing && (
         <div className="space-y-4">
           {(user?.skills?.length ?? 0) > 0 && (
             <div>
-              <p className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted mb-2">your skills</p>
+              <p className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-2">Your skills</p>
               <div className="flex flex-wrap gap-2">
                 {user?.skills?.map((s) => (
                   <button key={s.id} onClick={() => handleToggle(s)} disabled={toggling === s.id}
-                    className="flex items-center gap-1.5 font-mono text-[10px] px-2.5 py-1 border border-brand dark:border-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT hover:bg-brand dark:hover:bg-brand-dark-DEFAULT hover:text-white transition-colors cursor-pointer disabled:opacity-50">
+                    className="flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md border border-brand dark:border-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT hover:bg-brand dark:hover:bg-brand-dark-DEFAULT hover:text-white transition-colors cursor-pointer disabled:opacity-50">
                     {s.name} <HiOutlineXMark className="w-3 h-3" />
                   </button>
                 ))}
@@ -354,24 +328,24 @@ function SkillsSection({
             </div>
           )}
           <div>
-            <p className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted mb-2">browse & add</p>
-            <input className={`${iCls} mb-2`} placeholder="search skills..." value={search} onChange={(e) => setSearch(e.target.value)} />
+            <p className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-2">Browse & add</p>
+            <input className={`${iCls} mb-2`} placeholder="Search skills…" value={search} onChange={(e) => setSearch(e.target.value)} />
             <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
               {filtered.filter((s) => !userSkillIds.has(s.id)).map((s) => (
                 <button key={s.id} onClick={() => handleToggle(s)} disabled={toggling === s.id}
-                  className="font-mono text-[10px] px-2.5 py-1 border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer disabled:opacity-50">
+                  className="text-[11px] font-medium px-2.5 py-1 rounded-md border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer disabled:opacity-50">
                   + {s.name}
                 </button>
               ))}
               {filtered.filter((s) => !userSkillIds.has(s.id)).length === 0 && (
-                <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">~ no results</p>
+                <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted">No results</p>
               )}
             </div>
           </div>
           <div>
-            <p className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted mb-2">create custom skill</p>
+            <p className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-2">Create custom skill</p>
             <div className="flex gap-2">
-              <input className={`${iCls} flex-1`} placeholder="e.g. Rust, Blender..." value={customName}
+              <input className={`${iCls} flex-1`} placeholder="e.g. Rust, Blender…" value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreate() } }} />
               <select className={`${iCls} w-28 shrink-0`} value={customCat} onChange={(e) => setCustomCat(e.target.value)}>
@@ -380,8 +354,8 @@ function SkillsSection({
                 ))}
               </select>
               <button onClick={handleCreate} disabled={creating || !customName.trim()}
-                className="px-3 py-1.5 bg-brand dark:bg-brand-dark-DEFAULT border border-brand dark:border-brand-dark-DEFAULT font-mono text-[10px] text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50 shrink-0">
-                {creating ? '...' : 'add'}
+                className="px-3 py-1.5 rounded-lg bg-brand dark:bg-brand-dark-DEFAULT text-[12px] font-medium text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50 shrink-0">
+                {creating ? '…' : 'Add'}
               </button>
             </div>
           </div>
@@ -391,55 +365,54 @@ function SkillsSection({
   )
 }
 
-/* ── PORTFOLIO SECTION ── */
 function PortfolioSection({ portfolio }: { portfolio: PortfolioEntry[] }) {
   return (
     <Section
-      title="portfolio"
+      title="Portfolio"
       action={
         <Link to="/app/portfolio"
-          className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors">
-          manage
+          className="text-[11px] font-medium text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors">
+          Manage
         </Link>
       }
     >
       {portfolio.length === 0 ? (
         <div className="flex items-center justify-between">
-          <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted">~ no projects yet</p>
-          <Link to="/app/portfolio" className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT hover:underline">+ add project</Link>
+          <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted">No projects yet</p>
+          <Link to="/app/portfolio" className="text-[12px] font-medium text-brand dark:text-brand-dark-DEFAULT hover:underline">+ Add project</Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {portfolio.map((p) => (
-            <div key={p.id} className="border border-border-default dark:border-border-dark-default hover:border-brand dark:hover:border-brand-dark-DEFAULT transition-colors group">
+            <div key={p.id} className="border border-border-default dark:border-border-dark-default rounded-xl overflow-hidden hover:border-brand dark:hover:border-brand-dark-DEFAULT transition-colors group">
               {p.imageUrl ? (
-                <div className="h-32 overflow-hidden border-b border-border-default dark:border-border-dark-default">
+                <div className="h-32 overflow-hidden">
                   <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                 </div>
               ) : (
-                <div className="h-32 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-center">
-                  <span className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted opacity-40">no image</span>
+                <div className="h-32 bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-center">
+                  <span className="text-[11px] text-fg-muted dark:text-fg-dark-muted opacity-40">No image</span>
                 </div>
               )}
               <div className="p-3">
-                <p className="font-mono text-[12px] font-bold text-fg-default dark:text-fg-dark-default truncate">{p.title}</p>
+                <p className="text-[12px] font-semibold text-fg-default dark:text-fg-dark-default truncate">{p.title}</p>
                 {p.summary && (
-                  <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted mt-1 line-clamp-2 leading-relaxed">{p.summary}</p>
+                  <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted mt-1 line-clamp-2 leading-relaxed">{p.summary}</p>
                 )}
                 {p.technologies && p.technologies.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {p.technologies.slice(0, 3).map((t) => (
-                      <span key={t} className="font-mono text-[9px] px-1.5 py-0.5 border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted">{t}</span>
+                      <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-md border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted">{t}</span>
                     ))}
                     {p.technologies.length > 3 && (
-                      <span className="font-mono text-[9px] px-1.5 py-0.5 text-fg-muted dark:text-fg-dark-muted">+{p.technologies.length - 3}</span>
+                      <span className="text-[10px] text-fg-muted dark:text-fg-dark-muted">+{p.technologies.length - 3}</span>
                     )}
                   </div>
                 )}
                 {p.projectUrl && (
                   <a href={p.projectUrl} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 mt-2 font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT hover:underline">
-                    view project <HiOutlineArrowUpRight className="w-3 h-3" />
+                    className="inline-flex items-center gap-1 mt-2 text-[11px] font-medium text-brand dark:text-brand-dark-DEFAULT hover:underline">
+                    View project <HiOutlineArrowUpRight className="w-3 h-3" />
                   </a>
                 )}
               </div>
@@ -451,22 +424,21 @@ function PortfolioSection({ portfolio }: { portfolio: PortfolioEntry[] }) {
   )
 }
 
-/* ── LISTINGS SECTION ── */
 function ListingsSection({ listings }: { listings: Listing[] }) {
   return (
     <Section
-      title="listings"
+      title="Listings"
       action={
         <Link to="/app/listings"
-          className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors">
-          manage
+          className="text-[11px] font-medium text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors">
+          Manage
         </Link>
       }
     >
       {listings.length === 0 ? (
         <div className="flex items-center justify-between">
-          <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted">~ no listings yet</p>
-          <Link to="/app/listings/new" className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT hover:underline">+ create listing</Link>
+          <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted">No listings yet</p>
+          <Link to="/app/listings/new" className="text-[12px] font-medium text-brand dark:text-brand-dark-DEFAULT hover:underline">+ Create listing</Link>
         </div>
       ) : (
         <div className="divide-y divide-border-default dark:divide-border-dark-default">
@@ -475,28 +447,28 @@ function ListingsSection({ listings }: { listings: Listing[] }) {
               className="flex items-center justify-between gap-4 py-3 group hover:bg-canvas-inset dark:hover:bg-canvas-dark-inset -mx-5 px-5 transition-colors">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[11px] font-bold text-fg-default dark:text-fg-dark-default group-hover:text-brand dark:group-hover:text-brand-dark-DEFAULT transition-colors truncate">
+                  <span className="text-[12px] font-semibold text-fg-default dark:text-fg-dark-default group-hover:text-brand dark:group-hover:text-brand-dark-DEFAULT transition-colors truncate">
                     {l.title}
                   </span>
-                  <span className={`font-mono text-[9px] px-1.5 py-0.5 border shrink-0 ${
+                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full border shrink-0 ${
                     l.is_active
                       ? 'border-success-fg dark:border-success-dark-fg text-success-fg dark:text-success-dark-fg'
                       : 'border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted'
                   }`}>
-                    {l.is_active ? 'active' : 'paused'}
+                    {l.is_active ? 'Active' : 'Paused'}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 mt-0.5">
-                  <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">{l.category}</span>
-                  <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">·</span>
-                  <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">{formatPrice(l)}</span>
+                  <span className="text-[11px] text-fg-muted dark:text-fg-dark-muted">{l.category}</span>
+                  <span className="text-[11px] text-fg-muted dark:text-fg-dark-muted">·</span>
+                  <span className="text-[11px] text-fg-muted dark:text-fg-dark-muted">{formatPrice(l)}</span>
                 </div>
               </div>
               <div className="flex items-center gap-3 shrink-0">
-                <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">
+                <span className="text-[11px] text-fg-muted dark:text-fg-dark-muted">
                   {l.created_at ? new Date(l.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
                 </span>
-                <HiOutlineArrowUpRight className="w-3 h-3 text-fg-muted dark:text-fg-dark-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                <HiOutlineArrowUpRight className="w-3.5 h-3.5 text-fg-muted dark:text-fg-dark-muted opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             </Link>
           ))}
@@ -506,7 +478,6 @@ function ListingsSection({ listings }: { listings: Listing[] }) {
   )
 }
 
-/* ── CERTIFICATES SECTION ── */
 type CertForm = {
   title: string; issuer: string; issue_date: string
   expiry_date: string; credential_id: string; credential_url: string; description: string
@@ -574,12 +545,12 @@ function CertificatesSection({
 
   return (
     <Section
-      title="licenses & certifications"
+      title="Licenses & Certifications"
       action={
         !showForm ? (
           <button onClick={openAdd}
-            className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
-            + add
+            className="text-[11px] font-medium text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
+            + Add
           </button>
         ) : null
       }
@@ -587,40 +558,40 @@ function CertificatesSection({
       <div className="space-y-4">
         {certificates.length === 0 && !showForm && (
           <div className="flex items-center justify-between">
-            <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted">~ no certificates yet</p>
-            <button onClick={openAdd} className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT hover:underline cursor-pointer">+ add certificate</button>
+            <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted">No certificates yet</p>
+            <button onClick={openAdd} className="text-[12px] font-medium text-brand dark:text-brand-dark-DEFAULT hover:underline cursor-pointer">+ Add certificate</button>
           </div>
         )}
         {certificates.length > 0 && (
           <div className="divide-y divide-border-default dark:divide-border-dark-default">
             {certificates.map((cert) => (
               <div key={cert.id} className="flex items-start gap-4 py-4 first:pt-0">
-                <div className="w-10 h-10 shrink-0 border border-border-default dark:border-border-dark-default flex items-center justify-center bg-canvas-inset dark:bg-canvas-dark-inset">
+                <div className="w-10 h-10 shrink-0 rounded-lg border border-border-default dark:border-border-dark-default flex items-center justify-center bg-canvas-inset dark:bg-canvas-dark-inset">
                   <HiOutlineShieldCheck className="w-5 h-5 text-brand dark:text-brand-dark-DEFAULT" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-mono text-[12px] font-bold text-fg-default dark:text-fg-dark-default">{cert.title}</p>
-                  <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted mt-0.5">{cert.issuer}</p>
-                  <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
-                    issued {new Date(cert.issue_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                    {cert.expiry_date ? ` · expires ${new Date(cert.expiry_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}` : ' · no expiration'}
+                  <p className="text-[13px] font-semibold text-fg-default dark:text-fg-dark-default">{cert.title}</p>
+                  <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted mt-0.5">{cert.issuer}</p>
+                  <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
+                    Issued {new Date(cert.issue_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                    {cert.expiry_date ? ` · Expires ${new Date(cert.expiry_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}` : ' · No expiration'}
                   </p>
-                  {cert.credential_id && <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5">id: {cert.credential_id}</p>}
-                  {cert.description && <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted mt-1 line-clamp-2 leading-relaxed">{cert.description}</p>}
+                  {cert.credential_id && <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted mt-0.5">ID: {cert.credential_id}</p>}
+                  {cert.description && <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted mt-1 line-clamp-2 leading-relaxed">{cert.description}</p>}
                   {cert.credential_url && (
                     <a href={cert.credential_url} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 mt-1.5 font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT hover:underline">
-                      show credential <HiOutlineArrowUpRight className="w-3 h-3" />
+                      className="inline-flex items-center gap-1 mt-1.5 text-[11px] font-medium text-brand dark:text-brand-dark-DEFAULT hover:underline">
+                      Show credential <HiOutlineArrowUpRight className="w-3 h-3" />
                     </a>
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button onClick={() => openEdit(cert)}
-                    className="p-1.5 border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
+                    className="p-1.5 rounded-lg border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
                     <HiOutlinePencilSquare className="w-3.5 h-3.5" />
                   </button>
                   <button onClick={() => handleDelete(cert.id)} disabled={deleting === cert.id}
-                    className="p-1.5 border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-danger-fg dark:hover:border-danger-dark-fg hover:text-danger-fg dark:hover:text-danger-dark-fg transition-colors cursor-pointer disabled:opacity-50">
+                    className="p-1.5 rounded-lg border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-danger-fg dark:hover:border-danger-dark-fg hover:text-danger-fg dark:hover:text-danger-dark-fg transition-colors cursor-pointer disabled:opacity-50">
                     <HiOutlineTrash className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -628,51 +599,50 @@ function CertificatesSection({
             ))}
           </div>
         )}
-
         {showForm && (
-          <div className="border border-border-default dark:border-border-dark-default p-4 space-y-3">
-            <p className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted">
-              {editingId ? 'edit certificate' : 'new certificate'}
+          <div className="border border-border-default dark:border-border-dark-default rounded-xl p-4 space-y-3">
+            <p className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">
+              {editingId ? 'Edit certificate' : 'New certificate'}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="sm:col-span-2">
-                <label className={lCls}>title *</label>
+                <label className={lCls}>Title *</label>
                 <input className={iCls} value={form.title} onChange={set('title')} placeholder="e.g. AWS Solutions Architect" />
               </div>
               <div className="sm:col-span-2">
-                <label className={lCls}>issuing organization *</label>
+                <label className={lCls}>Issuing organization *</label>
                 <input className={iCls} value={form.issuer} onChange={set('issuer')} placeholder="e.g. Amazon Web Services" />
               </div>
               <div>
-                <label className={lCls}>issue date *</label>
+                <label className={lCls}>Issue date *</label>
                 <input type="date" className={iCls} value={form.issue_date} onChange={set('issue_date')} />
               </div>
               <div>
-                <label className={lCls}>expiry date</label>
+                <label className={lCls}>Expiry date</label>
                 <input type="date" className={iCls} value={form.expiry_date} onChange={set('expiry_date')} />
               </div>
               <div>
-                <label className={lCls}>credential id</label>
+                <label className={lCls}>Credential ID</label>
                 <input className={iCls} value={form.credential_id} onChange={set('credential_id')} placeholder="e.g. ABC123" />
               </div>
               <div>
-                <label className={lCls}>credential url</label>
-                <input className={iCls} value={form.credential_url} onChange={set('credential_url')} placeholder="https://..." />
+                <label className={lCls}>Credential URL</label>
+                <input className={iCls} value={form.credential_url} onChange={set('credential_url')} placeholder="https://…" />
               </div>
               <div className="sm:col-span-2">
-                <label className={lCls}>description</label>
-                <textarea rows={2} className={`${iCls} resize-none`} value={form.description} onChange={set('description')} placeholder="brief description..." />
+                <label className={lCls}>Description</label>
+                <textarea rows={2} className={`${iCls} resize-none`} value={form.description} onChange={set('description')} placeholder="Brief description…" />
               </div>
             </div>
             <div className="flex items-center gap-2 pt-1">
               <button onClick={cancel}
-                className="px-3 py-1.5 border border-border-default dark:border-border-dark-default font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
-                cancel
+                className="px-3 py-1.5 rounded-lg border border-border-default dark:border-border-dark-default text-[12px] font-medium text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
+                Cancel
               </button>
               <button onClick={handleSave} disabled={saving || !form.title.trim() || !form.issuer.trim() || !form.issue_date}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand dark:bg-brand-dark-DEFAULT border border-brand dark:border-brand-dark-DEFAULT font-mono text-[10px] text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50">
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand dark:bg-brand-dark-DEFAULT text-[12px] font-medium text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50">
                 <HiOutlineCheck className="w-3.5 h-3.5" />
-                {saving ? 'saving...' : editingId ? 'update' : 'add certificate'}
+                {saving ? 'Saving…' : editingId ? 'Update' : 'Add certificate'}
               </button>
             </div>
           </div>
@@ -682,35 +652,34 @@ function CertificatesSection({
   )
 }
 
-/* ── REVIEWS SECTION ── */
 function ReviewsSection({ reviews, avgRating }: { reviews: Review[]; avgRating: number }) {
   return (
-    <Section title="reviews received">
+    <Section title="Reviews received">
       {reviews.length === 0 ? (
-        <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted">~ no reviews yet — complete projects to receive reviews</p>
+        <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted">No reviews yet — complete projects to receive reviews</p>
       ) : (
         <div className="space-y-1">
           <div className="flex items-center gap-4 pb-4 mb-2 border-b border-border-default dark:border-border-dark-default">
             <div className="text-center shrink-0">
-              <p className="font-mono text-[32px] font-bold text-fg-default dark:text-fg-dark-default leading-none">{avgRating.toFixed(1)}</p>
+              <p className="text-[32px] font-bold text-fg-default dark:text-fg-dark-default leading-none">{avgRating.toFixed(1)}</p>
               <div className="flex items-center gap-0.5 mt-1 justify-center">
                 {[1,2,3,4,5].map((s) => s <= Math.round(avgRating)
-                  ? <HiStar key={s} className="w-3 h-3 text-brand dark:text-brand-dark-DEFAULT" />
-                  : <HiOutlineStarLine key={s} className="w-3 h-3 text-fg-muted dark:text-fg-dark-muted" />
+                  ? <HiStar key={s} className="w-3.5 h-3.5 text-brand dark:text-brand-dark-DEFAULT" />
+                  : <HiOutlineStarLine key={s} className="w-3.5 h-3.5 text-fg-muted dark:text-fg-dark-muted" />
                 )}
               </div>
-              <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-1">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</p>
+              <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted mt-1">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</p>
             </div>
             <div className="flex-1 space-y-1.5">
               {(['reliability', 'professionalism', 'growth'] as const).map((key) => {
                 const avg = reviews.reduce((s, r) => s + r[`${key}_score`], 0) / reviews.length
                 return (
                   <div key={key} className="flex items-center gap-2">
-                    <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted w-24 shrink-0">{key}</span>
-                    <div className="flex-1 h-1 bg-canvas-inset dark:bg-canvas-dark-inset">
-                      <div className="h-full bg-brand dark:bg-brand-dark-DEFAULT transition-all" style={{ width: `${(avg / 5) * 100}%` }} />
+                    <span className="text-[11px] text-fg-muted dark:text-fg-dark-muted w-24 shrink-0 capitalize">{key}</span>
+                    <div className="flex-1 h-1.5 rounded-full bg-canvas-inset dark:bg-canvas-dark-inset overflow-hidden">
+                      <div className="h-full rounded-full bg-brand dark:bg-brand-dark-DEFAULT transition-all" style={{ width: `${(avg / 5) * 100}%` }} />
                     </div>
-                    <span className="font-mono text-[9px] text-fg-default dark:text-fg-dark-default w-6 text-right">{avg.toFixed(1)}</span>
+                    <span className="text-[11px] text-fg-default dark:text-fg-dark-default w-6 text-right tabular-nums">{avg.toFixed(1)}</span>
                   </div>
                 )
               })}
@@ -725,19 +694,19 @@ function ReviewsSection({ reviews, avgRating }: { reviews: Review[]; avgRating: 
                   <Avatar name={name} src={r.reviewer.avatar_url ?? undefined} size="sm" className="shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-mono text-[11px] font-bold text-fg-default dark:text-fg-dark-default">{name}</p>
-                      <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted shrink-0">
+                      <p className="text-[12px] font-semibold text-fg-default dark:text-fg-dark-default">{name}</p>
+                      <span className="text-[11px] text-fg-muted dark:text-fg-dark-muted shrink-0">
                         {new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                       </span>
                     </div>
                     <div className="flex items-center gap-1 my-1">
                       {[1,2,3,4,5].map((s) => s <= Math.round(avg)
-                        ? <HiStar key={s} className="w-3 h-3 text-brand dark:text-brand-dark-DEFAULT" />
-                        : <HiOutlineStarLine key={s} className="w-3 h-3 text-fg-muted dark:text-fg-dark-muted" />
+                        ? <HiStar key={s} className="w-3.5 h-3.5 text-brand dark:text-brand-dark-DEFAULT" />
+                        : <HiOutlineStarLine key={s} className="w-3.5 h-3.5 text-fg-muted dark:text-fg-dark-muted" />
                       )}
-                      <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted ml-1">{avg.toFixed(1)}</span>
+                      <span className="text-[11px] text-fg-muted dark:text-fg-dark-muted ml-1">{avg.toFixed(1)}</span>
                     </div>
-                    {r.comment && <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted leading-relaxed">{r.comment}</p>}
+                    {r.comment && <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted leading-relaxed">{r.comment}</p>}
                   </div>
                 </div>
               )
@@ -764,7 +733,6 @@ export default function ProfilePage() {
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [coverUploading, setCoverUploading] = useState(false)
 
-  /* drawer state */
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [drawerSaving, setDrawerSaving] = useState(false)
   const [drawerMsg, setDrawerMsg] = useState('')
@@ -786,7 +754,6 @@ export default function ProfilePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  /* sync form when user loads */
   useEffect(() => {
     if (!user) return
     setForm({
@@ -801,17 +768,15 @@ export default function ProfilePage() {
     })
   }, [user])
 
-  const openDrawer = () => { setDrawerMsg(''); setDrawerOpen(true) }
-
   const handleDrawerSave = async () => {
     setDrawerSaving(true); setDrawerMsg('')
     try {
       const updated = await usersService.updateMe(form)
       updateUser(updated)
-      setDrawerMsg('changes saved')
+      setDrawerMsg('Changes saved')
       setTimeout(() => { setDrawerOpen(false); setDrawerMsg('') }, 800)
     } catch {
-      setDrawerMsg('failed to save')
+      setDrawerMsg('Failed to save')
     } finally {
       setDrawerSaving(false)
     }
@@ -883,7 +848,6 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-4">
-
       <EditDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
@@ -894,136 +858,122 @@ export default function ProfilePage() {
         saveMsg={drawerMsg}
       />
 
-      {/* ── HERO CARD ── */}
-      <div className="border border-border-default dark:border-border-dark-default bg-canvas-default dark:bg-canvas-dark-default overflow-hidden">
+      {/* Hero card */}
+      <div className="border border-border-default dark:border-border-dark-default rounded-xl overflow-hidden bg-canvas-default dark:bg-canvas-dark-default">
 
-        {/* Cover banner */}
+        {/* Cover */}
         <div className="relative h-36 border-b border-border-default dark:border-border-dark-default group overflow-hidden">
           {user?.cover_url ? (
-            <img
-              src={mediaUrl(user.cover_url)}
-              alt="cover"
-              className="w-full h-full object-cover"
-            />
+            <img src={mediaUrl(user.cover_url)} alt="cover" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-canvas-inset dark:bg-canvas-dark-inset">
-              <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08]"
-                style={{ backgroundImage: 'repeating-linear-gradient(0deg,#000 0,#000 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,#000 0,#000 1px,transparent 1px,transparent 32px)' }} />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="font-mono text-[11px] tracking-widest text-fg-muted dark:text-fg-dark-muted opacity-40 select-none">
-                  {user?.university ?? 'skillmate.com'}
-                </span>
-              </div>
+            <div className="w-full h-full bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-center">
+              <span className="text-[12px] text-fg-muted dark:text-fg-dark-muted opacity-30 select-none">
+                {user?.university ?? 'skillmate.com'}
+              </span>
             </div>
           )}
-          {/* hover overlay */}
           <button
             onClick={() => coverRef.current?.click()}
             disabled={coverUploading}
             className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-wait"
           >
             <HiOutlineCamera className="w-5 h-5 text-white" />
-            <span className="font-mono text-[9px] tracking-widest uppercase text-white">
-              {coverUploading ? 'uploading...' : 'change cover'}
+            <span className="text-[11px] font-medium text-white">
+              {coverUploading ? 'Uploading…' : 'Change cover'}
             </span>
           </button>
           <input ref={coverRef} type="file" accept="image/*" className="hidden" onChange={handleCoverChange} />
         </div>
 
-        {/* Avatar + actions row */}
+        {/* Avatar + actions */}
         <div className="px-6 pb-5">
           <div className="flex items-end justify-between -mt-10 mb-4">
-
-            {/* Avatar */}
             <div className="relative shrink-0 group">
               {user?.avatar_url ? (
                 <img src={mediaUrl(user.avatar_url)} alt={fullName}
-                  className="w-20 h-20 object-cover border-2 border-canvas-default dark:border-canvas-dark-default ring-2 ring-border-default dark:ring-border-dark-default" />
+                  className="w-20 h-20 rounded-xl object-cover border-2 border-canvas-default dark:border-canvas-dark-default ring-2 ring-border-default dark:ring-border-dark-default" />
               ) : (
-                <div className="w-20 h-20 flex items-center justify-center text-2xl font-bold font-mono border-2 border-canvas-default dark:border-canvas-dark-default ring-2 ring-border-default dark:ring-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset text-brand dark:text-brand-dark-DEFAULT">
+                <div className="w-20 h-20 rounded-xl flex items-center justify-center text-2xl font-bold border-2 border-canvas-default dark:border-canvas-dark-default ring-2 ring-border-default dark:ring-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset text-brand dark:text-brand-dark-DEFAULT">
                   {fullName ? fullName.charAt(0).toUpperCase() : 'S'}
                 </div>
               )}
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={avatarUploading}
-                className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-wait"
+                className="absolute inset-0 rounded-xl flex flex-col items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-wait"
               >
                 <HiOutlineCamera className="w-5 h-5 text-white" />
-                <span className="font-mono text-[8px] text-white mt-0.5">
-                  {avatarUploading ? 'uploading...' : 'change'}
-                </span>
+                <span className="text-[10px] text-white mt-0.5">{avatarUploading ? 'Uploading…' : 'Change'}</span>
               </button>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
               {user?.is_verified && (
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-success-fg dark:bg-success-dark-fg flex items-center justify-center border-2 border-canvas-default dark:border-canvas-dark-default">
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-success-fg dark:bg-success-dark-fg flex items-center justify-center border-2 border-canvas-default dark:border-canvas-dark-default">
                   <HiOutlineShieldCheck className="w-3 h-3 text-white" />
                 </div>
               )}
             </div>
 
-            {/* Action buttons */}
             <div className="flex items-center gap-2 flex-wrap justify-end">
-              <button onClick={openDrawer}
-                className="flex items-center gap-1.5 px-3 py-1.5 border border-brand dark:border-brand-dark-DEFAULT font-mono text-[10px] tracking-wide text-brand dark:text-brand-dark-DEFAULT hover:bg-brand dark:hover:bg-brand-dark-DEFAULT hover:text-white transition-colors cursor-pointer">
-                <HiOutlinePencilSquare className="w-3.5 h-3.5" /> edit profile
+              <button onClick={() => { setDrawerMsg(''); setDrawerOpen(true) }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand dark:border-brand-dark-DEFAULT text-[12px] font-medium text-brand dark:text-brand-dark-DEFAULT hover:bg-brand dark:hover:bg-brand-dark-DEFAULT hover:text-white transition-colors cursor-pointer">
+                <HiOutlinePencilSquare className="w-3.5 h-3.5" /> Edit profile
               </button>
               <button onClick={handleShare}
-                className="flex items-center gap-1.5 px-3 py-1.5 border border-border-default dark:border-border-dark-default font-mono text-[10px] tracking-wide text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-default dark:border-border-dark-default text-[12px] font-medium text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
                 <HiOutlineSquare2Stack className="w-3.5 h-3.5" />
-                {copied ? <span className="text-success-fg dark:text-success-dark-fg">copied!</span> : 'copy link'}
+                {copied ? <span className="text-success-fg dark:text-success-dark-fg">Copied!</span> : 'Copy link'}
               </button>
               <button onClick={handleDownloadResume}
-                className="flex items-center gap-1.5 px-3 py-1.5 border border-border-default dark:border-border-dark-default font-mono text-[10px] tracking-wide text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
-                <HiOutlineDocumentArrowDown className="w-3.5 h-3.5" /> resume
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-default dark:border-border-dark-default text-[12px] font-medium text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
+                <HiOutlineDocumentArrowDown className="w-3.5 h-3.5" /> Resume
               </button>
               <a href={publicProfileUrl} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 border border-border-default dark:border-border-dark-default font-mono text-[10px] tracking-wide text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors">
-                <HiOutlineGlobeAlt className="w-3.5 h-3.5" /> public view
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-default dark:border-border-dark-default text-[12px] font-medium text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors">
+                <HiOutlineGlobeAlt className="w-3.5 h-3.5" /> Public view
                 <HiOutlineArrowUpRight className="w-3 h-3 opacity-50" />
               </a>
             </div>
           </div>
 
-          {/* Name + headline */}
+          {/* Name + meta */}
           <div className="mb-4">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="font-mono text-[18px] font-bold text-fg-default dark:text-fg-dark-default">
+              <h1 className="text-[18px] font-bold text-fg-default dark:text-fg-dark-default">
                 {fullName || 'Your Name'}
               </h1>
               {user?.is_verified && (
-                <span className="font-mono text-[9px] tracking-widest uppercase px-2 py-0.5 border border-success-fg dark:border-success-dark-fg text-success-fg dark:text-success-dark-fg">
-                  verified
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border border-success-fg dark:border-success-dark-fg text-success-fg dark:text-success-dark-fg">
+                  Verified
                 </span>
               )}
             </div>
             {user?.headline && (
-              <p className="font-mono text-[12px] text-fg-muted dark:text-fg-dark-muted mt-1">{user.headline}</p>
+              <p className="text-[13px] text-fg-muted dark:text-fg-dark-muted mt-1">{user.headline}</p>
             )}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
               {user?.university && (
-                <span className="flex items-center gap-1 font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">
+                <span className="flex items-center gap-1 text-[11px] text-fg-muted dark:text-fg-dark-muted">
                   <HiOutlineAcademicCap className="w-3 h-3" /> {user.university}
                 </span>
               )}
               {user?.location && (
-                <span className="flex items-center gap-1 font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">
+                <span className="flex items-center gap-1 text-[11px] text-fg-muted dark:text-fg-dark-muted">
                   <HiOutlineMapPin className="w-3 h-3" /> {user.location}
                 </span>
               )}
               {user?.email && (
-                <span className="flex items-center gap-1 font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">
+                <span className="flex items-center gap-1 text-[11px] text-fg-muted dark:text-fg-dark-muted">
                   <HiOutlineEnvelope className="w-3 h-3" /> {user.email}
                 </span>
               )}
               {joinedDate && (
-                <span className="flex items-center gap-1 font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">
-                  <HiOutlineCalendar className="w-3 h-3" /> joined {joinedDate}
+                <span className="flex items-center gap-1 text-[11px] text-fg-muted dark:text-fg-dark-muted">
+                  <HiOutlineCalendar className="w-3 h-3" /> Joined {joinedDate}
                 </span>
               )}
               {user?.portfolio_url && (
                 <a href={user.portfolio_url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT hover:underline">
+                  className="flex items-center gap-1 text-[11px] font-medium text-brand dark:text-brand-dark-DEFAULT hover:underline">
                   <HiOutlineLink className="w-3 h-3" />
                   {user.portfolio_url.replace(/^https?:\/\//, '')}
                 </a>
@@ -1031,12 +981,12 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Stats bar */}
+          {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border-t border-border-default dark:border-border-dark-default pt-4">
-            <StatPill icon={HiOutlineEye} label="profile views" value={stats?.profile_views ?? 0} />
-            <StatPill icon={HiOutlineBriefcase} label="listings" value={listings.length} />
-            <StatPill icon={HiOutlineStar} label="avg rating" value={avgRating > 0 ? avgRating.toFixed(1) : '—'} />
-            <StatPill icon={HiOutlineTrophy} label="projects" value={portfolio.length} />
+            <StatPill icon={HiOutlineEye} label="Profile views" value={stats?.profile_views ?? 0} />
+            <StatPill icon={HiOutlineBriefcase} label="Listings" value={listings.length} />
+            <StatPill icon={HiOutlineStar} label="Avg rating" value={avgRating > 0 ? avgRating.toFixed(1) : '—'} />
+            <StatPill icon={HiOutlineTrophy} label="Projects" value={portfolio.length} />
           </div>
         </div>
       </div>
@@ -1047,7 +997,6 @@ export default function ProfilePage() {
       <ListingsSection listings={listings} />
       <CertificatesSection certificates={certificates} setCertificates={setCertificates} />
       <ReviewsSection reviews={reviews} avgRating={avgRating} />
-
     </div>
   )
 }

@@ -34,13 +34,13 @@ const mdComponents: React.ComponentProps<typeof ReactMarkdown>['components'] = {
   code: ({ className, children, ...props }) => {
     const isBlock = className?.includes('language-')
     return isBlock
-      ? <code className={clsx(className, 'block text-[10px] leading-relaxed')} {...props}>{children}</code>
-      : <code className="bg-black/20 dark:bg-white/10 px-1 py-0.5 text-[10px] font-mono">{children}</code>
+      ? <code className={clsx(className, 'block text-[11px] leading-relaxed')} {...props}>{children}</code>
+      : <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 text-[11px] rounded font-mono">{children}</code>
   },
-  pre: ({ children }) => <pre className="mb-2 overflow-x-auto text-[10px] leading-relaxed border border-border-default dark:border-border-dark-default">{children}</pre>,
+  pre: ({ children }) => <pre className="mb-2 overflow-x-auto text-[11px] leading-relaxed rounded-lg border border-border-default dark:border-border-dark-default">{children}</pre>,
   blockquote: ({ children }) => <blockquote className="border-l-2 border-brand dark:border-brand-dark-DEFAULT pl-3 text-fg-muted dark:text-fg-dark-muted mb-2">{children}</blockquote>,
   a: ({ href, children }) => <a href={href} target="_blank" rel="noreferrer" className="text-brand dark:text-brand-dark-DEFAULT underline underline-offset-2">{children}</a>,
-  table: ({ children }) => <div className="overflow-x-auto mb-2"><table className="w-full text-[10px] border-collapse border border-border-default dark:border-border-dark-default">{children}</table></div>,
+  table: ({ children }) => <div className="overflow-x-auto mb-2"><table className="w-full text-[11px] border-collapse border border-border-default dark:border-border-dark-default">{children}</table></div>,
   th: ({ children }) => <th className="border border-border-default dark:border-border-dark-default px-2 py-1 bg-canvas-inset dark:bg-canvas-dark-inset font-semibold text-left">{children}</th>,
   td: ({ children }) => <td className="border border-border-default dark:border-border-dark-default px-2 py-1">{children}</td>,
 }
@@ -50,17 +50,17 @@ function MessageBubble({ msg }: { msg: MentorMessage }) {
   return (
     <div className={clsx('flex', isUser ? 'justify-end' : 'justify-start')}>
       <div className={clsx(
-        'max-w-[75%] px-3 py-2 font-mono text-[11px] leading-relaxed',
+        'max-w-[75%] px-3 py-2.5 text-[12px] leading-relaxed rounded-2xl',
         isUser
-          ? 'bg-brand dark:bg-brand-dark-DEFAULT text-white'
-          : 'bg-canvas-overlay dark:bg-canvas-dark-overlay text-fg-default dark:text-fg-dark-default border border-border-default dark:border-border-dark-default',
+          ? 'bg-brand dark:bg-brand-dark-DEFAULT text-white rounded-br-sm'
+          : 'bg-canvas-overlay dark:bg-canvas-dark-overlay text-fg-default dark:text-fg-dark-default border border-border-default dark:border-border-dark-default rounded-bl-sm',
       )}>
         {isUser
           ? <p className="whitespace-pre-wrap">{msg.content}</p>
           : <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]} components={mdComponents}>{msg.content}</ReactMarkdown>
         }
         {msg.created_at && (
-          <p className={clsx('font-mono text-[8px] mt-1', isUser ? 'text-white/60' : 'text-fg-muted dark:text-fg-dark-muted')}>
+          <p className={clsx('text-[10px] mt-1', isUser ? 'text-white/60' : 'text-fg-muted dark:text-fg-dark-muted')}>
             {formatTime(msg.created_at)}
           </p>
         )}
@@ -180,30 +180,26 @@ export default function AiMentorPage() {
   const activeConvo = conversations.find((c) => c.id === activeId)
 
   return (
-    <div className="flex h-[calc(100vh-112px)] overflow-hidden border border-border-default dark:border-border-dark-default">
+    <div className="flex h-[calc(100vh-112px)] overflow-hidden border border-border-default dark:border-border-dark-default rounded-xl">
 
-      {/* ── Sidebar ── */}
+      {/* Sidebar */}
       <div className="w-[240px] shrink-0 border-r border-border-default dark:border-border-dark-default flex flex-col bg-canvas-overlay dark:bg-canvas-dark-inset">
 
-        <div className="px-3 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT" />
-            <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">ai mentor</span>
-          </div>
+        <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-between">
+          <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">AI Mentor</span>
           <button
             onClick={newChat}
-            className="flex items-center gap-1 px-2 py-1 font-mono text-[9px] tracking-wide border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-lg border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer"
           >
             <HiOutlinePlus className="w-3 h-3" />
-            new
+            New
           </button>
         </div>
 
-        {/* Conversation list */}
         <div className="flex-1 overflow-y-auto">
           {conversations.length === 0 ? (
-            <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted text-center py-8">
-              ~ no conversations yet
+            <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted text-center py-8">
+              No conversations yet
             </p>
           ) : (
             conversations.map((c) => (
@@ -218,18 +214,18 @@ export default function AiMentorPage() {
                 )}
               >
                 <div className="flex-1 min-w-0">
-                  <p className="font-mono text-[10px] truncate text-fg-default dark:text-fg-dark-default">
+                  <p className="text-[12px] font-medium truncate text-fg-default dark:text-fg-dark-default">
                     {c.title}
                   </p>
-                  <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
+                  <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
                     {formatTime(c.updated_at)}
                   </p>
                 </div>
                 <button
                   onClick={(e) => deleteConversation(c.id, e)}
-                  className="opacity-0 group-hover:opacity-100 p-1 text-fg-muted dark:text-fg-dark-muted hover:text-danger-fg dark:hover:text-danger-dark-fg transition-all cursor-pointer"
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded text-fg-muted dark:text-fg-dark-muted hover:text-danger-fg dark:hover:text-danger-dark-fg transition-all cursor-pointer"
                 >
-                  <HiOutlineTrash className="w-3 h-3" />
+                  <HiOutlineTrash className="w-3.5 h-3.5" />
                 </button>
               </button>
             ))
@@ -237,13 +233,12 @@ export default function AiMentorPage() {
         </div>
       </div>
 
-      {/* ── Chat area ── */}
+      {/* Chat area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0 bg-canvas-subtle dark:bg-canvas-dark-default">
 
-        {/* Chat header */}
         {activeConvo && (
           <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-overlay dark:bg-canvas-dark-inset shrink-0">
-            <p className="font-mono text-[10px] font-medium text-fg-default dark:text-fg-dark-default truncate">
+            <p className="text-[12px] font-semibold text-fg-default dark:text-fg-dark-default truncate">
               {activeConvo.title}
             </p>
           </div>
@@ -254,26 +249,25 @@ export default function AiMentorPage() {
           {messages.length === 0 && !streaming && (
             <div className="flex flex-col items-center justify-center h-full gap-5 text-center">
               <div>
-                <p className="font-mono text-[11px] font-medium text-fg-default dark:text-fg-dark-default">
-                  career mentor
+                <p className="text-[14px] font-semibold text-fg-default dark:text-fg-dark-default">
+                  Career Mentor
                 </p>
-                <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-1 max-w-xs leading-relaxed">
-                  ask me anything about your career, skills, or opportunities
+                <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted mt-1 max-w-xs leading-relaxed">
+                  Ask me anything about your career, skills, or opportunities
                 </p>
               </div>
 
               {suggestions.length > 0 && (
                 <div className="w-full max-w-sm space-y-1.5">
-                  <p className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase mb-2">
-                    suggestions
+                  <p className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-2">
+                    Suggestions
                   </p>
                   {suggestions.map((s, i) => (
                     <button
                       key={i}
                       onClick={() => sendMessage(s.message)}
-                      className="w-full text-left px-3 py-2 font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted border border-border-default dark:border-border-dark-default bg-canvas-overlay dark:bg-canvas-dark-inset hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer"
+                      className="w-full text-left px-3 py-2 text-[12px] text-fg-muted dark:text-fg-dark-muted rounded-lg border border-border-default dark:border-border-dark-default bg-canvas-overlay dark:bg-canvas-dark-inset hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer"
                     >
-                      <span className="text-brand dark:text-brand-dark-DEFAULT mr-1.5">›</span>
                       {s.message}
                     </button>
                   ))}
@@ -290,11 +284,11 @@ export default function AiMentorPage() {
 
           {streaming && !streamingContent && (
             <div className="flex justify-start">
-              <div className="px-3 py-2.5 bg-canvas-overlay dark:bg-canvas-dark-overlay border border-border-default dark:border-border-dark-default flex items-center gap-1.5">
+              <div className="px-3 py-2.5 rounded-2xl rounded-bl-sm bg-canvas-overlay dark:bg-canvas-dark-overlay border border-border-default dark:border-border-dark-default flex items-center gap-1.5">
                 {[0, 1, 2].map((i) => (
                   <motion.div
                     key={i}
-                    className="w-1 h-1 bg-fg-muted dark:bg-fg-dark-muted"
+                    className="w-1.5 h-1.5 rounded-full bg-fg-muted dark:bg-fg-dark-muted"
                     animate={{ opacity: [0.3, 1, 0.3] }}
                     transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
                   />
@@ -310,8 +304,8 @@ export default function AiMentorPage() {
         <div className="px-4 py-3 border-t border-border-default dark:border-border-dark-default bg-canvas-overlay dark:bg-canvas-dark-inset shrink-0">
           <div className="flex items-end gap-2">
             <div className="flex-1 relative">
-              <span className="absolute left-3 top-2.5 font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT pointer-events-none select-none">
-                {streaming ? <HiOutlineArrowPath className="w-3 h-3 animate-spin" /> : '>'}
+              <span className="absolute left-3 top-2.5 text-[11px] text-brand dark:text-brand-dark-DEFAULT pointer-events-none select-none font-mono">
+                {streaming ? <HiOutlineArrowPath className="w-3.5 h-3.5 animate-spin" /> : '>'}
               </span>
               <textarea
                 ref={textareaRef}
@@ -319,9 +313,9 @@ export default function AiMentorPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKey}
-                placeholder="ask your career mentor…"
+                placeholder="Ask your career mentor…"
                 disabled={streaming}
-                className="w-full pl-8 pr-3 py-2 font-mono text-[11px] tracking-wide bg-canvas-subtle dark:bg-canvas-dark-default border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT transition-colors resize-none max-h-32 overflow-y-auto disabled:opacity-50"
+                className="w-full pl-8 pr-3 py-2 font-mono text-[12px] rounded-lg bg-canvas-subtle dark:bg-canvas-dark-default border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand dark:focus:border-brand-dark-DEFAULT transition-colors resize-none max-h-32 overflow-y-auto disabled:opacity-50"
                 onInput={(e) => {
                   const t = e.currentTarget
                   t.style.height = 'auto'
@@ -333,7 +327,7 @@ export default function AiMentorPage() {
               onClick={() => sendMessage()}
               disabled={!input.trim() || streaming}
               className={clsx(
-                'p-2 mb-px transition-colors cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed',
+                'p-2 mb-px rounded-lg transition-colors cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed',
                 input.trim() && !streaming
                   ? 'bg-brand dark:bg-brand-dark-DEFAULT text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover'
                   : 'bg-canvas-inset dark:bg-canvas-dark-overlay text-fg-muted dark:text-fg-dark-muted border border-border-default dark:border-border-dark-default',
@@ -342,8 +336,8 @@ export default function AiMentorPage() {
               <HiOutlinePaperAirplane className="w-4 h-4" />
             </button>
           </div>
-          <p className="font-mono text-[8px] text-fg-muted dark:text-fg-dark-muted mt-2 text-center">
-            ai can make mistakes — verify important information
+          <p className="text-[10px] text-fg-muted dark:text-fg-dark-muted mt-2 text-center">
+            AI can make mistakes — verify important information
           </p>
         </div>
       </div>

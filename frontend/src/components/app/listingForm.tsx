@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { HiOutlineXMark } from 'react-icons/hi2'
+import { HiOutlineCheck } from 'react-icons/hi2'
 
 export const categories = [
   'Programming', 'Design', 'Writing', 'Tutoring',
@@ -24,20 +24,19 @@ export interface ListingFormValues {
 }
 
 const inputCls = [
-  'w-full px-3 py-2 font-mono text-[11px] tracking-wide',
+  'w-full px-3 py-2 rounded-lg text-[12px]',
   'bg-canvas-overlay dark:bg-canvas-dark-inset',
   'border border-border-default dark:border-border-dark-default',
   'text-fg-default dark:text-fg-dark-default',
   'placeholder-fg-subtle dark:placeholder-fg-dark-subtle',
-  'outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT',
+  'outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand dark:focus:border-brand-dark-DEFAULT',
   'transition-colors duration-150',
 ].join(' ')
 
 function SectionHeader({ label }: { label: string }) {
   return (
-    <div className="px-4 py-2 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center gap-1.5">
-      <span className="w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT" />
-      <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">{label}</span>
+    <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset">
+      <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">{label}</span>
     </div>
   )
 }
@@ -47,12 +46,12 @@ function Field({ label, hint, required, children }: {
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase flex items-center gap-1">
+      <label className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted flex items-center gap-1">
         {label}
         {required && <span className="text-danger-fg dark:text-danger-dark-fg">*</span>}
       </label>
       {children}
-      {hint && <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">{hint}</p>}
+      {hint && <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted">{hint}</p>}
     </div>
   )
 }
@@ -77,16 +76,16 @@ export default function ListingForm({
     <form onSubmit={onSubmit} className="space-y-4">
 
       {error && (
-        <div className="px-4 py-3 border border-danger-muted dark:border-danger-dark-muted bg-danger-subtle dark:bg-danger-dark-subtle font-mono text-[10px] text-danger-fg dark:text-danger-dark-fg">
-          <span className="mr-1">!</span>{error}
+        <div className="px-4 py-3 rounded-lg border border-danger-muted dark:border-danger-dark-muted bg-danger-subtle dark:bg-danger-dark-subtle text-[12px] text-danger-fg dark:text-danger-dark-fg">
+          {error}
         </div>
       )}
 
       {/* Basic info */}
-      <div className="border border-border-default dark:border-border-dark-default">
-        <SectionHeader label="basic info" />
+      <div className="border border-border-default dark:border-border-dark-default rounded-xl overflow-hidden">
+        <SectionHeader label="Basic info" />
         <div className="p-4 space-y-4">
-          <Field label="title" required>
+          <Field label="Title" required>
             <input
               type="text"
               required
@@ -98,31 +97,31 @@ export default function ListingForm({
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="category" required>
+            <Field label="Category" required>
               <select
                 required
                 value={values.category}
                 onChange={(e) => onChange('category', e.target.value)}
                 className={clsx(inputCls, 'appearance-none cursor-pointer')}
               >
-                <option value="" disabled>select…</option>
+                <option value="" disabled>Select…</option>
                 {categories.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </Field>
-            <Field label="type">
+            <Field label="Type">
               <select
                 value={values.listing_type}
                 onChange={(e) => onChange('listing_type', e.target.value)}
                 className={clsx(inputCls, 'appearance-none cursor-pointer')}
               >
-                <option value="service">service</option>
-                <option value="tutoring">tutoring</option>
-                <option value="project">project</option>
+                <option value="service">Service</option>
+                <option value="tutoring">Tutoring</option>
+                <option value="project">Project</option>
               </select>
             </Field>
           </div>
 
-          <Field label="description" required hint="describe what you offer, your experience, and what clients can expect">
+          <Field label="Description" required hint="Describe what you offer, your experience, and what clients can expect">
             <textarea
               rows={5}
               required
@@ -136,13 +135,13 @@ export default function ListingForm({
       </div>
 
       {/* Pricing */}
-      <div className="border border-border-default dark:border-border-dark-default">
-        <SectionHeader label="pricing & delivery" />
+      <div className="border border-border-default dark:border-border-dark-default rounded-xl overflow-hidden">
+        <SectionHeader label="Pricing & delivery" />
         <div className="p-4">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="hourly rate (R)" hint="leave blank for negotiable">
+            <Field label="Hourly rate (R)" hint="Leave blank for negotiable">
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted pointer-events-none">R</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] text-fg-muted dark:text-fg-dark-muted pointer-events-none">R</span>
                 <input
                   type="number"
                   min="0"
@@ -153,7 +152,7 @@ export default function ListingForm({
                 />
               </div>
             </Field>
-            <Field label="delivery (days)" hint="estimated turnaround">
+            <Field label="Delivery (days)" hint="Estimated turnaround">
               <input
                 type="number"
                 min="1"
@@ -168,13 +167,13 @@ export default function ListingForm({
       </div>
 
       {/* Skills */}
-      <div className="border border-border-default dark:border-border-dark-default">
-        <SectionHeader label="skills & tags" />
+      <div className="border border-border-default dark:border-border-dark-default rounded-xl overflow-hidden">
+        <SectionHeader label="Skills & tags" />
         <div className="p-4 space-y-3">
-          <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">
-            select tags that best describe your skills
+          <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted">
+            Select tags that best describe your skills
             {selectedTags.length > 0 && (
-              <span className="ml-2 text-brand dark:text-brand-dark-DEFAULT">· {selectedTags.length} selected</span>
+              <span className="ml-2 font-medium text-brand dark:text-brand-dark-DEFAULT">· {selectedTags.length} selected</span>
             )}
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -186,13 +185,13 @@ export default function ListingForm({
                   type="button"
                   onClick={() => onTagToggle(tag)}
                   className={clsx(
-                    'flex items-center gap-1 px-2.5 py-1 font-mono text-[9px] tracking-wide border transition-all duration-150 cursor-pointer',
+                    'flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md border transition-all duration-150 cursor-pointer',
                     active
                       ? 'bg-brand dark:bg-brand-dark-DEFAULT text-white border-brand dark:border-brand-dark-DEFAULT'
                       : 'bg-transparent text-fg-muted dark:text-fg-dark-muted border-border-default dark:border-border-dark-default hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT',
                   )}
                 >
-                  {active && <HiOutlineXMark className="w-2.5 h-2.5" />}
+                  {active && <HiOutlineCheck className="w-3 h-3" />}
                   {tag}
                 </button>
               )
@@ -206,17 +205,17 @@ export default function ListingForm({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 font-mono text-[10px] tracking-wide border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:border-fg-muted dark:hover:border-fg-dark-muted transition-colors cursor-pointer"
+          className="px-4 py-2 text-[12px] font-medium rounded-lg border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:border-fg-muted dark:hover:border-fg-dark-muted transition-colors cursor-pointer"
         >
-          cancel
+          Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-5 py-2 font-mono text-[10px] tracking-wide bg-brand dark:bg-brand-dark-DEFAULT text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
+          className="px-5 py-2 text-[12px] font-medium rounded-lg bg-brand dark:bg-brand-dark-DEFAULT text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
         >
           {loading && (
-            <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+            <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
             </svg>

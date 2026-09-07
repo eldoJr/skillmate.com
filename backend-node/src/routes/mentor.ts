@@ -99,7 +99,8 @@ app.post('/chat', requireAuth, async c => {
     if (!found) return c.json({ detail: 'Conversation not found' }, 404)
     conv = found
   } else {
-    ;[conv] = await db.insert(mentorConversations).values({ userId: user.id }).returning()
+    const now = new Date()
+    ;[conv] = await db.insert(mentorConversations).values({ userId: user.id, title: 'New conversation', createdAt: now, updatedAt: now }).returning()
   }
 
   // Load history

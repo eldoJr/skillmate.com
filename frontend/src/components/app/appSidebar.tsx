@@ -38,21 +38,21 @@ const mainNav: NavItem[] = [
 const aiMentor: NavItem = { icon: HiOutlineSparkles, label: 'AI Mentor', route: '/app/ai/mentor' }
 
 const overflowNav: NavItem[] = [
-  { icon: HiOutlineBeaker,          label: 'Skill Gap',   route: '/app/ai/skill-gap' },
-  { icon: HiOutlineMapPin,          label: 'Roadmap',     route: '/app/ai/roadmap' },
-  { icon: HiOutlineStar,            label: 'Matches',     route: '/app/matching' },
-  { icon: HiOutlineSparkles,        label: 'For You',     route: '/app/recommendations' },
-  { icon: HiOutlineDocumentText,    label: 'Proposals',   route: '/app/proposals' },
-  { icon: HiOutlinePhoto,           label: 'Portfolio',   route: '/app/portfolio' },
-  { icon: HiOutlineBuildingOffice2, label: 'Company',     route: '/app/company' },
-  { icon: HiOutlinePlusCircle,      label: 'New Listing', route: '/app/listings/new' },
+  { icon: HiOutlineBeaker,          label: 'Skill Gap',        route: '/app/ai/skill-gap' },
+  { icon: HiOutlineMapPin,          label: 'Roadmap',          route: '/app/ai/roadmap' },
+  { icon: HiOutlineStar,            label: 'Matches',          route: '/app/matching' },
+  { icon: HiOutlineSparkles,        label: 'For You',          route: '/app/recommendations' },
+  { icon: HiOutlineDocumentText,    label: 'Proposals',        route: '/app/proposals' },
+  { icon: HiOutlinePhoto,           label: 'Portfolio',        route: '/app/portfolio' },
+  { icon: HiOutlineBuildingOffice2, label: 'Company',          route: '/app/company' },
+  { icon: HiOutlinePlusCircle,      label: 'New Listing',      route: '/app/listings/new' },
 ]
 
 const menuItems = [
-  { label: 'profile',      href: '/app/profile' },
-  { label: 'settings',     href: '/app/settings' },
-  { label: 'toggle theme', action: 'theme' },
-  { label: 'sign out',     action: 'signout', danger: true },
+  { label: 'Profile',       href: '/app/profile' },
+  { label: 'Settings',      href: '/app/settings' },
+  { label: 'Toggle theme',  action: 'theme' },
+  { label: 'Sign out',      action: 'signout', danger: true },
 ] as const
 
 function useIsLg() {
@@ -66,25 +66,19 @@ function useIsLg() {
   return isLg
 }
 
-function NavLink({
-  item, showLabel, active, onClick, aiIcon,
-}: {
+function NavLink({ item, showLabel, active, onClick, aiIcon }: {
   item: NavItem; showLabel: boolean; active: boolean; onClick?: () => void; aiIcon?: boolean
 }) {
   const Icon = item.icon
   const [tip, setTip] = useState(false)
 
   return (
-    <div
-      className="relative"
-      onMouseEnter={() => !showLabel && setTip(true)}
-      onMouseLeave={() => setTip(false)}
-    >
+    <div className="relative" onMouseEnter={() => !showLabel && setTip(true)} onMouseLeave={() => setTip(false)}>
       <Link
         to={item.route}
         onClick={onClick}
         className={clsx(
-          'flex items-center gap-3 px-3 py-2.5 transition-all duration-150 font-mono text-[11px] tracking-wide border-l-2',
+          'flex items-center gap-3 px-3 py-2 transition-all duration-150 text-[12px] font-medium border-l-2 mx-1 rounded-r-md',
           active
             ? 'border-l-brand dark:border-l-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT bg-brand-muted dark:bg-brand-dark-muted'
             : 'border-l-transparent text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay',
@@ -95,24 +89,17 @@ function NavLink({
             ? <img src="/icons/ai-icon.png" alt="AI" className="w-4 h-4 object-contain" />
             : <Icon className="w-4 h-4" />}
         </div>
-        {showLabel && (
-          <span className="whitespace-nowrap overflow-hidden">
-            {active && <span className="text-brand dark:text-brand-dark-DEFAULT mr-1 opacity-70">&gt;</span>}
-            {item.label}
-          </span>
-        )}
+        {showLabel && <span className="whitespace-nowrap overflow-hidden">{item.label}</span>}
       </Link>
 
       <AnimatePresence>
         {tip && (
           <motion.div
-            initial={{ opacity: 0, x: -6 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -6 }}
+            initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -6 }}
             transition={{ duration: 0.08 }}
-            className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 px-2.5 py-1.5 bg-fg-default dark:bg-fg-dark-default text-canvas-default dark:text-fg-default text-[10px] font-mono tracking-wide whitespace-nowrap shadow-lg pointer-events-none border border-border-dark-default dark:border-border-default"
+            className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 px-2.5 py-1.5 bg-fg-default dark:bg-fg-dark-default text-canvas-default dark:text-fg-default text-[11px] font-medium whitespace-nowrap shadow-lg pointer-events-none rounded-md"
           >
-            <span className="text-brand mr-1">&gt;</span>{item.label}
+            {item.label}
           </motion.div>
         )}
       </AnimatePresence>
@@ -141,14 +128,14 @@ function usePortalPos(ref: React.RefObject<HTMLElement | null>, open: boolean, d
 
 function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarBodyProps) {
   const [overflowOpen, setOverflowOpen] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const overflowBtnRef = useRef<HTMLButtonElement>(null)
-  const menuBtnRef = useRef<HTMLButtonElement>(null)
+  const [menuOpen, setMenuOpen]         = useState(false)
+  const overflowBtnRef  = useRef<HTMLButtonElement>(null)
+  const menuBtnRef      = useRef<HTMLButtonElement>(null)
   const overflowDropRef = useRef<HTMLDivElement>(null)
-  const menuDropRef = useRef<HTMLDivElement>(null)
+  const menuDropRef     = useRef<HTMLDivElement>(null)
 
-  const overflowPos = usePortalPos(overflowBtnRef, overflowOpen, overflowNav.length * 32 + 8)
-  const menuPos = usePortalPos(menuBtnRef, menuOpen, menuItems.length * 32 + 40)
+  const overflowPos = usePortalPos(overflowBtnRef, overflowOpen, overflowNav.length * 36 + 8)
+  const menuPos     = usePortalPos(menuBtnRef, menuOpen, menuItems.length * 36 + 48)
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -166,19 +153,19 @@ function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarB
       <div className="h-14 flex items-center shrink-0 px-4 border-b border-border-default dark:border-border-dark-default gap-3 overflow-hidden">
         <img src="/ico.svg" alt="Skillmate" width={20} height={20} className="shrink-0" />
         {showLabel && (
-          <span className="font-mono text-[11px] font-semibold tracking-widest text-fg-default dark:text-fg-dark-default uppercase whitespace-nowrap">
-            skillmate
+          <span className="text-[13px] font-semibold text-fg-default dark:text-fg-dark-default tracking-tight whitespace-nowrap">
+            Skillmate
           </span>
         )}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 flex flex-col justify-center py-4 gap-0 overflow-y-auto">
+      <nav className="flex-1 flex flex-col py-3 gap-0.5 overflow-hidden">
         {mainNav.map((item) => (
           <NavLink key={item.route} item={item} showLabel={showLabel} active={isActive(item.route)} onClick={onNavClick} />
         ))}
 
-        <div className="my-2 mx-3 h-px bg-border-default dark:bg-border-dark-default" />
+        <div className="my-2 mx-4 h-px bg-border-default dark:bg-border-dark-default" />
 
         <NavLink item={aiMentor} showLabel={showLabel} active={isActive(aiMentor.route)} onClick={onNavClick} aiIcon />
 
@@ -187,7 +174,7 @@ function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarB
           ref={overflowBtnRef}
           onClick={() => setOverflowOpen((v) => !v)}
           className={clsx(
-            'flex items-center gap-3 px-3 py-2.5 transition-all duration-150 w-full cursor-pointer font-mono text-[11px] tracking-wide border-l-2',
+            'flex items-center gap-3 px-3 py-2 transition-all duration-150 w-full cursor-pointer text-[12px] font-medium border-l-2 mx-1 rounded-r-md',
             overflowOpen || overflowNav.some((i) => isActive(i.route))
               ? 'border-l-brand dark:border-l-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT bg-brand-muted dark:bg-brand-dark-muted'
               : 'border-l-transparent text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay',
@@ -196,19 +183,17 @@ function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarB
           <div className="shrink-0 flex items-center justify-center w-4 h-4">
             <HiOutlineBars3 className="w-4 h-4" />
           </div>
-          {showLabel && <span className="whitespace-nowrap flex-1 text-left">more</span>}
+          {showLabel && <span className="whitespace-nowrap flex-1 text-left">More</span>}
         </button>
 
         {overflowOpen && createPortal(
           <AnimatePresence>
             <motion.div
               ref={overflowDropRef}
-              initial={{ opacity: 0, x: -4 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -4 }}
+              initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.12, ease: 'easeOut' }}
               style={{ position: 'fixed', top: overflowPos.top, left: overflowPos.left, zIndex: 9999 }}
-              className="bg-canvas-subtle dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default py-1 shadow-lg w-[160px]"
+              className="bg-canvas-default dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default py-1 shadow-xl w-[160px] rounded-xl overflow-hidden"
             >
               {overflowNav.map((item) => {
                 const active = isActive(item.route)
@@ -218,13 +203,12 @@ function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarB
                     to={item.route}
                     onClick={() => { setOverflowOpen(false); onNavClick?.() }}
                     className={clsx(
-                      'block px-4 py-1.5 font-mono text-[10px] tracking-wide transition-colors border-l-2',
+                      'block px-3 py-1.5 text-[12px] font-medium transition-colors',
                       active
-                        ? 'border-l-brand dark:border-l-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT bg-brand-muted dark:bg-brand-dark-muted'
-                        : 'border-l-transparent text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay',
+                        ? 'text-brand dark:text-brand-dark-DEFAULT bg-brand-muted dark:bg-brand-dark-muted'
+                        : 'text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay',
                     )}
                   >
-                    {active && <span className="text-brand dark:text-brand-dark-DEFAULT mr-1">&gt;</span>}
                     {item.label}
                   </Link>
                 )
@@ -240,36 +224,33 @@ function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarB
         <button
           ref={menuBtnRef}
           onClick={() => setMenuOpen((v) => !v)}
-          className="flex items-center gap-3 px-3 py-2.5 transition-colors duration-150 w-full cursor-pointer font-mono text-[11px] tracking-wide border-l-2 border-l-transparent text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay"
+          className="flex items-center gap-3 px-3 py-2 transition-colors duration-150 w-full cursor-pointer text-[12px] font-medium border-l-2 border-l-transparent mx-1 rounded-r-md text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay"
         >
           <HiOutlineCog6Tooth className="w-4 h-4 shrink-0" />
-          {showLabel && <span className="whitespace-nowrap">settings</span>}
+          {showLabel && <span className="whitespace-nowrap">Settings</span>}
         </button>
 
         {menuOpen && createPortal(
           <AnimatePresence>
             <motion.div
               ref={menuDropRef}
-              initial={{ opacity: 0, x: -4 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -4 }}
+              initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.12, ease: 'easeOut' }}
               style={{ position: 'fixed', top: menuPos.top, left: menuPos.left, zIndex: 9999 }}
-              className="w-[180px] bg-canvas-subtle dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default py-1 shadow-lg"
+              className="w-[170px] bg-canvas-default dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default py-1 shadow-xl rounded-xl overflow-hidden"
             >
-              <div className="px-3 py-1.5 border-b border-border-default dark:border-border-dark-default flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT" />
-                <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">menu</span>
+              <div className="px-3 py-1.5 border-b border-border-default dark:border-border-dark-default">
+                <p className="text-[11px] font-semibold text-fg-default dark:text-fg-dark-default">Account</p>
               </div>
               {menuItems.map((item) => (
                 <button
                   key={item.label}
                   onClick={() => { setMenuOpen(false); onMenuAction(item) }}
                   className={clsx(
-                    'w-full text-left px-4 py-1.5 font-mono text-[10px] tracking-wide transition-colors cursor-pointer border-l-2 border-l-transparent',
+                    'w-full text-left px-3 py-1.5 text-[12px] font-medium transition-colors cursor-pointer',
                     'danger' in item && item.danger
-                      ? 'text-danger-fg dark:text-danger-dark-fg hover:bg-danger-subtle dark:hover:bg-danger-dark-subtle hover:border-l-danger-fg'
-                      : 'text-fg-muted dark:text-fg-dark-muted hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay hover:text-fg-default dark:hover:text-fg-dark-default hover:border-l-brand dark:hover:border-l-brand-dark-DEFAULT',
+                      ? 'text-danger-fg dark:text-danger-dark-fg hover:bg-danger-subtle dark:hover:bg-danger-dark-subtle'
+                      : 'text-fg-muted dark:text-fg-dark-muted hover:bg-canvas-inset dark:hover:bg-canvas-dark-overlay hover:text-fg-default dark:hover:text-fg-dark-default',
                   )}
                 >
                   {item.label}
@@ -284,7 +265,6 @@ function SidebarBody({ showLabel, isActive, onNavClick, onMenuAction }: SidebarB
   )
 }
 
-// Context so AppHeader can trigger the mobile drawer
 export const SidebarContext = createContext<{ openMobile: () => void }>({ openMobile: () => {} })
 export function useSidebar() { return useContext(SidebarContext) }
 
@@ -325,14 +305,10 @@ export default function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProp
     <>
       {/* Desktop sidebar */}
       <aside className={clsx(
-        'hidden md:flex fixed top-0 left-0 z-40 flex-col h-screen border-r border-border-default dark:border-border-dark-default bg-canvas-subtle dark:bg-canvas-dark-default',
+        'hidden md:flex fixed top-0 left-0 z-40 flex-col h-screen border-r border-border-default dark:border-border-dark-default bg-canvas-subtle dark:bg-canvas-dark-default overflow-hidden',
         isLg ? 'w-[220px]' : 'w-[52px]',
       )}>
-        <SidebarBody
-          showLabel={isLg}
-          isActive={isActive}
-          onMenuAction={handleMenuAction}
-        />
+        <SidebarBody showLabel={isLg} isActive={isActive} onMenuAction={handleMenuAction} />
       </aside>
 
       {/* Mobile drawer */}
@@ -341,27 +317,18 @@ export default function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProp
           <>
             <motion.div
               key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={onMobileClose}
               className="fixed inset-0 z-50 bg-black/40 md:hidden"
             />
             <motion.aside
               key="drawer"
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
+              initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-              className="fixed top-0 left-0 z-50 flex flex-col h-screen w-[260px] bg-canvas-subtle dark:bg-canvas-dark-default border-r border-border-default dark:border-border-dark-default md:hidden"
+              className="fixed top-0 left-0 z-50 flex flex-col h-screen w-[260px] bg-canvas-subtle dark:bg-canvas-dark-default border-r border-border-default dark:border-border-dark-default md:hidden overflow-hidden"
             >
-              <SidebarBody
-                showLabel={true}
-                isActive={isActive}
-                onNavClick={onMobileClose}
-                onMenuAction={handleMenuAction}
-              />
+              <SidebarBody showLabel={true} isActive={isActive} onNavClick={onMobileClose} onMenuAction={handleMenuAction} />
             </motion.aside>
           </>
         )}

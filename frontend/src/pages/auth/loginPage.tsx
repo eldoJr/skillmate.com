@@ -6,16 +6,14 @@ import ProgressBar from '../../components/atoms/progressBar'
 import { useAuth } from '../../contexts/AuthContext'
 import { extractErrorMessage } from '../../services/auth'
 
-const lCls = 'font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted mb-1 block'
-
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState('')
+  const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
-  const navigate = useNavigate()
+  const [error, setError]       = useState('')
+  const [loading, setLoading]   = useState(false)
+  const { login }   = useAuth()
+  const navigate    = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,117 +33,115 @@ export default function LoginPage() {
     <div className="min-h-screen bg-canvas-default dark:bg-canvas-dark-default flex flex-col items-center justify-center px-5 py-12 relative">
       <ProgressBar loading={loading} />
 
-      <div className="absolute top-4 left-5 flex items-center gap-2">
-        <img src="/ico.svg" alt="Skillmate" width={22} height={22} />
-        <span className="font-mono text-[11px] font-bold text-fg-default dark:text-fg-dark-default tracking-tight">skillmate</span>
+      {/* top bar */}
+      <div className="absolute top-5 left-6 flex items-center gap-2">
+        <img src="/ico.svg" alt="Skillmate" width={24} height={24} />
+        <span className="text-[15px] font-semibold text-fg-default dark:text-fg-dark-default tracking-tight">skillmate</span>
       </div>
-
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-5 right-5">
         <ThemeToggle />
       </div>
 
-      {/* terminal window */}
-      <div className="w-full max-w-[400px] border border-border-default dark:border-border-dark-default bg-canvas-default dark:bg-canvas-dark-default">
+      {/* card */}
+      <div className="w-full max-w-[380px] bg-canvas-default dark:bg-canvas-dark-default border border-border-default dark:border-border-dark-default rounded-xl shadow-sm overflow-hidden">
 
-        {/* title bar */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset">
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT" />
-            <span className="font-mono text-[9px] tracking-widest uppercase text-fg-muted dark:text-fg-dark-muted">
-              skillmate — sign in
-            </span>
+        {/* card header */}
+        <div className="px-6 pt-6 pb-5 border-b border-border-default dark:border-border-dark-default">
+          <div className="w-8 h-8 rounded-lg bg-brand dark:bg-brand-dark-DEFAULT flex items-center justify-center mb-3">
+            <img src="/ico.svg" alt="" width={16} height={16} className="brightness-0 invert" />
           </div>
-          <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted">auth/login</span>
+          <h1 className="text-[17px] font-semibold text-fg-default dark:text-fg-dark-default tracking-tight">
+            Welcome back
+          </h1>
+          <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
+            Sign in to your Skillmate account
+          </p>
         </div>
 
-        <div className="p-6 space-y-5">
-
-          {/* header */}
-          <div>
-            <p className="font-mono text-[15px] font-bold text-fg-default dark:text-fg-dark-default">welcome back</p>
-            <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
-              sign in to your skillmate account
-            </p>
-          </div>
+        <div className="px-6 py-5 space-y-4">
 
           {/* error */}
           {error && (
-            <div className="px-3 py-2 border border-danger-fg dark:border-danger-dark-fg bg-canvas-inset dark:bg-canvas-dark-inset font-mono text-[10px] text-danger-fg dark:text-danger-dark-fg">
-              <span className="mr-1.5">!</span>{error}
+            <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-danger-subtle dark:bg-danger-dark-subtle border border-danger-muted dark:border-danger-dark-muted text-[12px] text-danger-fg dark:text-danger-dark-fg">
+              <span className="shrink-0">⚠</span>
+              <span>{error}</span>
             </div>
           )}
 
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div>
-              <label className={lCls}>email</label>
-              <div className="flex items-center border border-border-default dark:border-border-dark-default focus-within:border-brand dark:focus-within:border-brand-dark-DEFAULT transition-colors">
-                <span className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT px-2.5 py-2.5 border-r border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset shrink-0 select-none">$</span>
-                <input
-                  type="email"
-                  placeholder="you@university.edu"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 px-3 py-2.5 bg-canvas-inset dark:bg-canvas-dark-inset font-mono text-[11px] text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none"
-                />
-              </div>
+          <form className="space-y-3" onSubmit={handleSubmit}>
+
+            {/* email */}
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-fg-default dark:text-fg-dark-default">
+                Email address
+              </label>
+              <input
+                type="email"
+                placeholder="you@university.edu"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg text-[13px] bg-canvas-inset dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default placeholder-fg-muted dark:placeholder-fg-dark-muted outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-dark-DEFAULT/20 transition-all"
+              />
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className={lCls}>password</label>
-                <Link to="/forgot-password" className="font-mono text-[9px] text-brand dark:text-brand-dark-DEFAULT hover:underline">
-                  forgot password?
+            {/* password */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <label className="block text-[12px] font-medium text-fg-default dark:text-fg-dark-default">
+                  Password
+                </label>
+                <Link to="/forgot-password" className="text-[11px] text-brand dark:text-brand-dark-DEFAULT hover:underline">
+                  Forgot password?
                 </Link>
               </div>
-              <div className="flex items-center border border-border-default dark:border-border-dark-default focus-within:border-brand dark:focus-within:border-brand-dark-DEFAULT transition-colors">
-                <span className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT px-2.5 py-2.5 border-r border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset shrink-0 select-none">$</span>
+              <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="enter your password"
+                  placeholder="Enter your password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="flex-1 px-3 py-2.5 bg-canvas-inset dark:bg-canvas-dark-inset font-mono text-[11px] text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none"
+                  className="w-full px-3 py-2 pr-9 rounded-lg text-[13px] bg-canvas-inset dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default placeholder-fg-muted dark:placeholder-fg-dark-muted outline-none focus:border-brand dark:focus:border-brand-dark-DEFAULT focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-dark-DEFAULT/20 transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="px-2.5 text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default transition-colors cursor-pointer"
                 >
                   {showPassword ? <HiEyeSlash className="w-3.5 h-3.5" /> : <HiEye className="w-3.5 h-3.5" />}
                 </button>
               </div>
             </div>
 
+            {/* remember me */}
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-3 h-3 border-border-default dark:border-border-dark-default accent-brand" />
-              <span className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">remember me for 30 days</span>
+              <input type="checkbox" className="w-3.5 h-3.5 rounded border-border-default dark:border-border-dark-default accent-brand cursor-pointer" />
+              <span className="text-[12px] text-fg-muted dark:text-fg-dark-muted">Remember me for 30 days</span>
             </label>
 
+            {/* submit */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-brand dark:bg-brand-dark-DEFAULT border border-brand dark:border-brand-dark-DEFAULT font-mono text-[11px] text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2 rounded-lg text-[13px] font-semibold bg-brand dark:bg-brand-dark-DEFAULT text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? '> signing in...' : '> sign in'}
+              {loading ? 'Signing in…' : 'Sign in'}
             </button>
           </form>
 
-          <div className="border-t border-border-default dark:border-border-dark-default pt-4 flex items-center justify-between">
-            <span className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">~ new to skillmate?</span>
-            <Link
-              to="/register"
-              className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT border border-brand dark:border-brand-dark-DEFAULT px-3 py-1.5 hover:bg-brand dark:hover:bg-brand-dark-DEFAULT hover:text-white transition-colors"
-            >
-              create account
+          {/* footer */}
+          <p className="text-center text-[12px] text-fg-muted dark:text-fg-dark-muted">
+            Don't have an account?{' '}
+            <Link to="/register" className="text-brand dark:text-brand-dark-DEFAULT font-medium hover:underline">
+              Create one
             </Link>
-          </div>
+          </p>
         </div>
       </div>
 
-      <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted text-center mt-5">
-        © {new Date().getFullYear()} skillmate.com
+      <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted text-center mt-5">
+        © {new Date().getFullYear()} Skillmate. All rights reserved.
       </p>
     </div>
   )

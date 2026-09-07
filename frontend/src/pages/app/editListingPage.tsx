@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { HiOutlineArrowLeft, HiOutlineArrowPath } from 'react-icons/hi2'
+import { HiOutlineArrowLeft } from 'react-icons/hi2'
 import ListingForm, { type ListingFormValues } from '../../components/app/listingForm'
 import { listingsService, type Listing } from '../../services/listings'
 
@@ -51,52 +51,47 @@ export default function EditListingPage() {
       navigate(`/app/listings/${id}`)
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      setError(msg ?? 'failed to save changes')
+      setError(msg ?? 'Failed to save changes')
     } finally {
       setSaving(false)
     }
   }
 
   if (loading) return (
-    <div className="max-w-2xl mx-auto space-y-4">
-      <div className="border border-[#e2e4e8] dark:border-[#1e2228] animate-pulse">
-        <div className="h-9 bg-[#f6f8fa] dark:bg-[#0d1117] border-b border-[#e2e4e8] dark:border-[#1e2228]" />
-        <div className="p-4 space-y-3">
-          <div className="h-2.5 w-32 bg-[#e2e4e8] dark:bg-[#1e2228]" />
-          <div className="h-2 w-48 bg-[#e2e4e8] dark:bg-[#1e2228]" />
+    <div className="max-w-2xl mx-auto space-y-4 animate-pulse">
+      <div className="border border-border-default dark:border-border-dark-default rounded-xl overflow-hidden">
+        <div className="h-10 bg-canvas-inset dark:bg-canvas-dark-inset border-b border-border-default dark:border-border-dark-default" />
+        <div className="p-4 space-y-2">
+          <div className="h-3 w-32 rounded bg-border-default dark:bg-border-dark-default" />
+          <div className="h-2.5 w-48 rounded bg-border-default dark:bg-border-dark-default" />
         </div>
       </div>
-      <div className="border border-[#e2e4e8] dark:border-[#1e2228] h-64 animate-pulse bg-[#f6f8fa] dark:bg-[#0d1117]" />
-      <div className="flex items-center justify-center py-4">
-        <HiOutlineArrowPath className="w-4 h-4 text-[#636c76] dark:text-[#848d97] animate-spin" />
-      </div>
+      <div className="border border-border-default dark:border-border-dark-default rounded-xl h-64 bg-canvas-inset dark:bg-canvas-dark-inset" />
     </div>
   )
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
 
-      {/* Page header */}
-      <div className="border border-[#e2e4e8] dark:border-[#1e2228]">
-        <div className="px-4 py-2.5 border-b border-[#e2e4e8] dark:border-[#1e2228] bg-[#f6f8fa] dark:bg-[#0d1117] flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#e8490f] dark:bg-[#ff6b35]" />
-          <span className="font-mono text-[9px] tracking-widest text-[#636c76] dark:text-[#848d97] uppercase">edit listing</span>
+      <div className="border border-border-default dark:border-border-dark-default rounded-xl overflow-hidden">
+        <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset">
+          <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">Edit listing</span>
         </div>
         <div className="px-4 py-3 flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <p className="font-mono text-[11px] text-[#1f2328] dark:text-[#e6edf3] font-medium truncate">
-              {listing?.title ?? 'edit listing'}
+            <p className="text-[13px] font-semibold text-fg-default dark:text-fg-dark-default truncate">
+              {listing?.title ?? 'Edit listing'}
             </p>
-            <p className="font-mono text-[9px] text-[#636c76] dark:text-[#848d97] mt-0.5">
-              update your listing details
+            <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted mt-0.5">
+              Update your listing details
             </p>
           </div>
           <Link
             to={`/app/listings/${id}`}
-            className="flex items-center gap-1.5 font-mono text-[9px] tracking-wide text-[#636c76] dark:text-[#848d97] hover:text-[#e8490f] dark:hover:text-[#ff6b35] transition-colors shrink-0"
+            className="flex items-center gap-1.5 text-[12px] font-medium text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors shrink-0"
           >
             <HiOutlineArrowLeft className="w-3.5 h-3.5" />
-            back
+            Back
           </Link>
         </div>
       </div>
@@ -106,7 +101,7 @@ export default function EditListingPage() {
         selectedTags={selectedTags}
         loading={saving}
         error={error}
-        submitLabel="save changes"
+        submitLabel="Save changes"
         onChange={(k, v) => setForm((f) => ({ ...f, [k]: v }))}
         onTagToggle={(tag) => setSelectedTags((prev) =>
           prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]

@@ -1,14 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  HiOutlinePlusCircle,
-  HiOutlineArrowRight,
-  HiOutlineChatBubbleOvalLeft,
-  HiOutlineRectangleStack,
-  HiOutlineEye,
-  HiOutlineBolt,
-  HiOutlineClipboardDocumentList,
-  HiOutlineArrowPath,
+  HiOutlinePlusCircle, HiOutlineArrowRight, HiOutlineChatBubbleOvalLeft,
+  HiOutlineRectangleStack, HiOutlineEye, HiOutlineBolt,
+  HiOutlineClipboardDocumentList, HiOutlineArrowPath,
 } from 'react-icons/hi2'
 import Avatar from '../../components/atoms/avatar'
 import DashboardRightbar from '../../components/app/dashboardRightbar'
@@ -41,24 +36,23 @@ function timeAgo(iso: string) {
 }
 
 function notifIcon(type: string) {
-  if (type.includes('message')) return HiOutlineChatBubbleOvalLeft
-  if (type.includes('listing')) return HiOutlineRectangleStack
+  if (type.includes('message'))  return HiOutlineChatBubbleOvalLeft
+  if (type.includes('listing'))  return HiOutlineRectangleStack
   if (type.includes('proposal')) return HiOutlineClipboardDocumentList
   return HiOutlineBolt
 }
 
 const sectionHeader = 'px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-between'
-const dot = 'w-1.5 h-1.5 rounded-full bg-brand dark:bg-brand-dark-DEFAULT'
 
 export default function DashboardPage() {
   const { user } = useAuth()
   const [recentListings, setRecentListings] = useState<Listing[]>([])
-  const [myListings, setMyListings] = useState<Listing[]>([])
-  const [completion, setCompletion] = useState<ProfileCompletion | null>(null)
-  const [stats, setStats] = useState<ProfileStats | null>(null)
+  const [myListings, setMyListings]         = useState<Listing[]>([])
+  const [completion, setCompletion]         = useState<ProfileCompletion | null>(null)
+  const [stats, setStats]                   = useState<ProfileStats | null>(null)
   const [unreadMessages, setUnreadMessages] = useState(0)
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [loading, setLoading] = useState(true)
+  const [notifications, setNotifications]   = useState<Notification[]>([])
+  const [loading, setLoading]               = useState(true)
 
   useEffect(() => {
     Promise.all([
@@ -71,16 +65,16 @@ export default function DashboardPage() {
     ]).finally(() => setLoading(false))
   }, [])
 
-  const firstName = user?.full_name?.split(' ')[0] ?? 'there'
+  const firstName     = user?.full_name?.split(' ')[0] ?? 'there'
   const activeListings = myListings.filter((l) => l.is_active).length
-  const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'good morning' : hour < 18 ? 'good afternoon' : 'good evening'
+  const hour          = new Date().getHours()
+  const greeting      = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
 
   const statCards = [
-    { label: 'profile views',   value: stats?.profile_views ?? 0,      icon: HiOutlineEye,               suffix: '' },
-    { label: 'active listings', value: activeListings,                  icon: HiOutlineRectangleStack,    suffix: '' },
-    { label: 'unread messages', value: unreadMessages,                  icon: HiOutlineChatBubbleOvalLeft, suffix: '' },
-    { label: 'rep score',       value: stats?.reputation_score ?? 0,   icon: HiOutlineBolt,              suffix: 'pts' },
+    { label: 'Profile views',   value: stats?.profile_views ?? 0,    icon: HiOutlineEye,                suffix: '' },
+    { label: 'Active listings', value: activeListings,                icon: HiOutlineRectangleStack,     suffix: '' },
+    { label: 'Unread messages', value: unreadMessages,                icon: HiOutlineChatBubbleOvalLeft, suffix: '' },
+    { label: 'Rep score',       value: stats?.reputation_score ?? 0, icon: HiOutlineBolt,               suffix: 'pts' },
   ]
 
   return (
@@ -90,48 +84,37 @@ export default function DashboardPage() {
       <div className="flex-1 min-w-0 space-y-5">
 
         {/* Hero */}
-        <div className="border border-border-default dark:border-border-dark-default">
+        <div className="border border-border-default dark:border-border-dark-default rounded-xl overflow-hidden">
           <div className={sectionHeader}>
-            <div className="flex items-center gap-1.5">
-              <span className={dot} />
-              <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">workspace</span>
-            </div>
+            <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">Workspace</span>
           </div>
           <div className="px-4 py-4 flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <p className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase mb-1">
-                {greeting}
-              </p>
-              <h1 className="font-mono text-[18px] font-semibold text-fg-default dark:text-fg-dark-default leading-tight">
-                <span className="text-brand dark:text-brand-dark-DEFAULT">&gt; </span>{firstName}
+              <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted mb-0.5">{greeting}</p>
+              <h1 className="text-[20px] font-semibold text-fg-default dark:text-fg-dark-default leading-tight">
+                {firstName}
               </h1>
-              <p className="font-mono text-[11px] text-fg-muted dark:text-fg-dark-muted mt-1">
+              <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted mt-1">
                 {unreadMessages > 0
                   ? `${unreadMessages} unread message${unreadMessages > 1 ? 's' : ''} waiting`
-                  : 'workspace is up to date'}
+                  : 'Everything is up to date'}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <Link
-                to="/app/listings/new"
-                className="flex items-center gap-1.5 px-3 py-1.5 font-mono text-[10px] tracking-wide bg-brand dark:bg-brand-dark-DEFAULT hover:bg-brand-hover dark:hover:bg-brand-dark-hover text-white transition-colors duration-150"
-              >
-                <HiOutlinePlusCircle className="w-3.5 h-3.5" />
-                new listing
+              <Link to="/app/listings/new"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-brand dark:bg-brand-dark-DEFAULT hover:bg-brand-hover dark:hover:bg-brand-dark-hover text-white transition-colors">
+                <HiOutlinePlusCircle className="w-3.5 h-3.5" /> New listing
               </Link>
-              <Link
-                to="/app/explore"
-                className="flex items-center gap-1.5 px-3 py-1.5 font-mono text-[10px] tracking-wide border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors duration-150"
-              >
-                explore
-                <HiOutlineArrowRight className="w-3 h-3" />
+              <Link to="/app/explore"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors">
+                Explore <HiOutlineArrowRight className="w-3 h-3" />
               </Link>
             </div>
           </div>
         </div>
 
         {/* Stat cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border border-border-default dark:border-border-dark-default divide-x divide-border-default dark:divide-border-dark-default">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border border-border-default dark:border-border-dark-default rounded-xl overflow-hidden divide-x divide-border-default dark:divide-border-dark-default">
           {statCards.map((s, i) => {
             const Icon = s.icon
             return (
@@ -140,24 +123,21 @@ export default function DashboardPage() {
                   <Icon className="w-3.5 h-3.5 text-fg-muted dark:text-fg-dark-muted" />
                   {loading && <HiOutlineArrowPath className="w-3 h-3 text-fg-muted dark:text-fg-dark-muted animate-spin" />}
                 </div>
-                <p className="font-mono text-[20px] font-semibold text-fg-default dark:text-fg-dark-default leading-none">
+                <p className="text-[20px] font-semibold text-fg-default dark:text-fg-dark-default leading-none">
                   {s.value}<span className="text-[11px] text-fg-muted dark:text-fg-dark-muted ml-0.5">{s.suffix}</span>
                 </p>
-                <p className="font-mono text-[9px] tracking-wide text-fg-muted dark:text-fg-dark-muted uppercase">{s.label}</p>
+                <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted">{s.label}</p>
               </div>
             )
           })}
         </div>
 
         {/* Recent listings */}
-        <div className="border border-border-default dark:border-border-dark-default">
+        <div className="border border-border-default dark:border-border-dark-default rounded-xl overflow-hidden">
           <div className={sectionHeader}>
-            <div className="flex items-center gap-1.5">
-              <span className={dot} />
-              <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">recent listings</span>
-            </div>
-            <Link to="/app/explore" className="font-mono text-[9px] tracking-wide text-brand dark:text-brand-dark-DEFAULT hover:underline flex items-center gap-1">
-              <span>&gt;</span> view all
+            <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">Recent listings</span>
+            <Link to="/app/explore" className="text-[12px] font-medium text-brand dark:text-brand-dark-DEFAULT hover:underline flex items-center gap-1">
+              View all <HiOutlineArrowRight className="w-3 h-3" />
             </Link>
           </div>
 
@@ -167,36 +147,27 @@ export default function DashboardPage() {
             </div>
           ) : recentListings.length === 0 ? (
             <div className="px-4 py-6 text-center">
-              <p className="font-mono text-[10px] text-fg-muted dark:text-fg-dark-muted">no listings yet</p>
-              <Link to="/app/explore" className="font-mono text-[10px] text-brand dark:text-brand-dark-DEFAULT hover:underline mt-1 inline-block">&gt; explore skills</Link>
+              <p className="text-[12px] text-fg-muted dark:text-fg-dark-muted">No listings yet</p>
+              <Link to="/app/explore" className="text-[12px] text-brand dark:text-brand-dark-DEFAULT hover:underline mt-1 inline-block">Explore skills</Link>
             </div>
           ) : (
             <div className="divide-y divide-border-default dark:divide-border-dark-default">
               {recentListings.map((listing) => (
-                <Link
-                  key={listing.id}
-                  to={`/app/listings/${listing.id}`}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-canvas-inset dark:hover:bg-canvas-dark-inset transition-colors border-l-2 border-l-transparent hover:border-l-brand dark:hover:border-l-brand-dark-DEFAULT group"
-                >
-                  <Avatar
-                    name={`${listing.owner.first_name} ${listing.owner.last_name}`}
-                    src={mediaUrl(listing.owner.avatar_url)}
-                    size="sm"
-                  />
+                <Link key={listing.id} to={`/app/listings/${listing.id}`}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-canvas-inset dark:hover:bg-canvas-dark-inset transition-colors group">
+                  <Avatar name={`${listing.owner.first_name} ${listing.owner.last_name}`} src={mediaUrl(listing.owner.avatar_url)} size="sm" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-mono text-[11px] font-medium text-fg-default dark:text-fg-dark-default truncate group-hover:text-brand dark:group-hover:text-brand-dark-DEFAULT transition-colors">
+                    <p className="text-[13px] font-medium text-fg-default dark:text-fg-dark-default truncate group-hover:text-brand dark:group-hover:text-brand-dark-DEFAULT transition-colors">
                       {listing.title}
                     </p>
-                    <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5 truncate">
+                    <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted mt-0.5 truncate">
                       {listing.owner.first_name} {listing.owner.last_name}
                       {listing.owner.university ? ` · ${listing.owner.university}` : ''}
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="font-mono text-[11px] font-semibold text-fg-default dark:text-fg-dark-default">
-                      {formatPrice(listing)}
-                    </p>
-                    <span className="font-mono text-[9px] px-1.5 py-0.5 border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted">
+                    <p className="text-[13px] font-semibold text-fg-default dark:text-fg-dark-default">{formatPrice(listing)}</p>
+                    <span className="text-[11px] px-1.5 py-0.5 rounded border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted">
                       {listing.category}
                     </span>
                   </div>
@@ -208,34 +179,25 @@ export default function DashboardPage() {
 
         {/* Activity feed */}
         {notifications.length > 0 && (
-          <div className="border border-border-default dark:border-border-dark-default">
+          <div className="border border-border-default dark:border-border-dark-default rounded-xl overflow-hidden">
             <div className={sectionHeader}>
-              <div className="flex items-center gap-1.5">
-                <span className={dot} />
-                <span className="font-mono text-[9px] tracking-widest text-fg-muted dark:text-fg-dark-muted uppercase">activity</span>
-              </div>
-              <Link to="/app/notifications" className="font-mono text-[9px] tracking-wide text-brand dark:text-brand-dark-DEFAULT hover:underline flex items-center gap-1">
-                <span>&gt;</span> all
+              <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">Activity</span>
+              <Link to="/app/notifications" className="text-[12px] font-medium text-brand dark:text-brand-dark-DEFAULT hover:underline flex items-center gap-1">
+                All <HiOutlineArrowRight className="w-3 h-3" />
               </Link>
             </div>
             <div className="divide-y divide-border-default dark:divide-border-dark-default">
               {notifications.map((n) => {
                 const Icon = notifIcon(n.type)
                 return (
-                  <div
-                    key={n.id}
-                    className={`flex items-start gap-3 px-4 py-3 border-l-2 ${!n.is_read ? 'border-l-brand dark:border-l-brand-dark-DEFAULT bg-brand-muted dark:bg-brand-dark-muted' : 'border-l-transparent'}`}
-                  >
+                  <div key={n.id}
+                    className={`flex items-start gap-3 px-4 py-3 border-l-2 ${!n.is_read ? 'border-l-brand dark:border-l-brand-dark-DEFAULT bg-brand-muted dark:bg-brand-dark-muted' : 'border-l-transparent'}`}>
                     <Icon className="w-3.5 h-3.5 text-fg-muted dark:text-fg-dark-muted shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-mono text-[10px] text-fg-default dark:text-fg-dark-default leading-snug">{n.title}</p>
-                      {n.body && (
-                        <p className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted mt-0.5 truncate">{n.body}</p>
-                      )}
+                      <p className="text-[12px] text-fg-default dark:text-fg-dark-default leading-snug">{n.title}</p>
+                      {n.body && <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted mt-0.5 truncate">{n.body}</p>}
                     </div>
-                    <span className="font-mono text-[9px] text-fg-muted dark:text-fg-dark-muted shrink-0 whitespace-nowrap">
-                      {timeAgo(n.created_at)}
-                    </span>
+                    <span className="text-[11px] text-fg-muted dark:text-fg-dark-muted shrink-0 whitespace-nowrap">{timeAgo(n.created_at)}</span>
                   </div>
                 )
               })}
@@ -246,12 +208,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Right bar ── */}
-      <DashboardRightbar
-        user={user}
-        completion={completion}
-        stats={stats}
-        myListings={myListings}
-      />
+      <DashboardRightbar user={user} completion={completion} stats={stats} myListings={myListings} />
 
     </div>
   )
