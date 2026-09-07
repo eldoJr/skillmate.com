@@ -31,7 +31,7 @@ export async function chatCompletion(
   return withRetry(async () => {
     const client = getClient()
     const res = await client.chat.completions.create({
-      model:       model ?? process.env.NIM_LLM_MODEL ?? 'nvidia/llama-3.1-nemotron-70b-instruct',
+      model:       model ?? process.env.NIM_LLM_MODEL ?? 'deepseek-ai/deepseek-v4-pro-0813',
       messages:    messages as OpenAI.ChatCompletionMessageParam[],
       temperature,
       max_tokens:  maxTokens,
@@ -46,7 +46,7 @@ export async function* streamChatCompletion(
 ): AsyncGenerator<string> {
   const client = getClient()
   const stream = await client.chat.completions.create({
-    model:       process.env.NIM_LLM_MODEL ?? 'nvidia/llama-3.1-nemotron-70b-instruct',
+    model:       process.env.NIM_LLM_MODEL ?? 'deepseek-ai/deepseek-v4-pro-0813',
     messages:    messages as OpenAI.ChatCompletionMessageParam[],
     temperature,
     max_tokens:  maxTokens,
