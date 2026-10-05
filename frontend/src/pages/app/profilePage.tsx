@@ -273,6 +273,22 @@ function SkillsSection({
     return acc
   }, {})
 
+  const CAT_COLORS: Record<string, string> = {
+    Technology:  'bg-blue-50   dark:bg-blue-950/40  text-blue-700   dark:text-blue-300  border-blue-200  dark:border-blue-800',
+    Design:      'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+    Writing:     'bg-amber-50  dark:bg-amber-950/40  text-amber-700  dark:text-amber-300  border-amber-200  dark:border-amber-800',
+    Media:       'bg-pink-50   dark:bg-pink-950/40   text-pink-700   dark:text-pink-300   border-pink-200   dark:border-pink-800',
+    Education:   'bg-green-50  dark:bg-green-950/40  text-green-700  dark:text-green-300  border-green-200  dark:border-green-800',
+    Business:    'bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800',
+    Music:       'bg-rose-50   dark:bg-rose-950/40   text-rose-700   dark:text-rose-300   border-rose-200   dark:border-rose-800',
+  }
+  const chipCls = (cat: string) =>
+    `text-[11px] font-medium px-2.5 py-1 rounded-full border transition-colors ${
+      CAT_COLORS[cat] ?? 'bg-canvas-inset dark:bg-canvas-dark-inset text-fg-default dark:text-fg-dark-default border-border-default dark:border-border-dark-default'
+    }`
+
+  const browseCats = [...new Set(filtered.filter((s) => !userSkillIds.has(s.id)).map((s) => s.category))]
+
   return (
     <Section
       title="Skills"
@@ -294,69 +310,102 @@ function SkillsSection({
           <div className="space-y-4">
             {Object.entries(grouped).map(([cat, skills]) => (
               <div key={cat}>
-                <p className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-2">{cat}</p>
-                <div className="flex flex-wrap gap-2">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted dark:text-fg-dark-muted mb-2">{cat}</p>
+                <div className="flex flex-wrap gap-1.5">
                   {skills.map((s) => (
-                    <span key={s.id}
-                      className="text-[11px] font-medium px-2.5 py-1 rounded-md border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors">
-                      {s.name}
-                    </span>
+                    <span key={s.id} className={chipCls(cat)}>{s.name}</span>
                   ))}
                 </div>
               </div>
             ))}
-            <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted pt-1">
-              {user?.skills?.length} skill{(user?.skills?.length ?? 0) !== 1 ? 's' : ''} total
+            <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted border-t border-border-default dark:border-border-dark-default pt-3">
+              {user?.skills?.length} skill{(user?.skills?.length ?? 0) !== 1 ? 's' : ''}
             </p>
           </div>
         )
       )}
 
       {managing && (
-        <div className="space-y-4">
+        <div className="space-y-5">
+          {/* Current skills */}
           {(user?.skills?.length ?? 0) > 0 && (
             <div>
-              <p className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-2">Your skills</p>
-              <div className="flex flex-wrap gap-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted dark:text-fg-dark-muted mb-2">Your skills</p>
+              <div className="flex flex-wrap gap-1.5">
                 {user?.skills?.map((s) => (
                   <button key={s.id} onClick={() => handleToggle(s)} disabled={toggling === s.id}
-                    className="flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md border border-brand dark:border-brand-dark-DEFAULT text-brand dark:text-brand-dark-DEFAULT hover:bg-brand dark:hover:bg-brand-dark-DEFAULT hover:text-white transition-colors cursor-pointer disabled:opacity-50">
-                    {s.name} <HiOutlineXMark className="w-3 h-3" />
+                    className={`group flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full border transition-colors cursor-pointer disabled:opacity-50 ${
+                      CAT_COLORS[s.category] ?? 'bg-canvas-inset dark:bg-canvas-dark-inset text-fg-default dark:text-fg-dark-default border-border-default dark:border-border-dark-default'
+                    }`}>
+                    {s.name}
+                    <HiOutlineXMark className="w-3 h-3 opacity-50 group-hover:opacity-100" />
                   </button>
                 ))}
               </div>
             </div>
           )}
+
+          {/* Search + browse */}
           <div>
-            <p className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-2">Browse & add</p>
-            <input className={`${iCls} mb-2`} placeholder="Search skills…" value={search} onChange={(e) => setSearch(e.target.value)} />
-            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
-              {filtered.filter((s) => !userSkillIds.has(s.id)).map((s) => (
-                <button key={s.id} onClick={() => handleToggle(s)} disabled={toggling === s.id}
-                  className="text-[11px] font-medium px-2.5 py-1 rounded-md border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer disabled:opacity-50">
-                  + {s.name}
-                </button>
-              ))}
-              {filtered.filter((s) => !userSkillIds.has(s.id)).length === 0 && (
+            <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted dark:text-fg-dark-muted mb-2">Browse & add</p>
+            <input className={`${iCls} mb-3`} placeholder="Search skills…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <div className="max-h-48 overflow-y-auto space-y-3 pr-1">
+              {browseCats.length === 0 && (
                 <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted">No results</p>
               )}
+              {browseCats.map((cat) => (
+                <div key={cat}>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted dark:text-fg-dark-muted mb-1.5">{cat}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {filtered.filter((s) => !userSkillIds.has(s.id) && s.category === cat).map((s) => (
+                      <button key={s.id} onClick={() => handleToggle(s)} disabled={toggling === s.id}
+                        className="text-[11px] font-medium px-2.5 py-1 rounded-full border border-dashed border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer disabled:opacity-50">
+                        + {s.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-          <div>
-            <p className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-2">Create custom skill</p>
-            <div className="flex gap-2">
-              <input className={`${iCls} flex-1`} placeholder="e.g. Rust, Blender…" value={customName}
-                onChange={(e) => setCustomName(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreate() } }} />
-              <select className={`${iCls} w-28 shrink-0`} value={customCat} onChange={(e) => setCustomCat(e.target.value)}>
-                {['Custom','Technology','Design','Writing','Media','Education','Business','Music'].map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-              <button onClick={handleCreate} disabled={creating || !customName.trim()}
-                className="px-3 py-1.5 rounded-lg bg-brand dark:bg-brand-dark-DEFAULT text-[12px] font-medium text-white hover:bg-brand-hover dark:hover:bg-brand-dark-hover transition-colors cursor-pointer disabled:opacity-50 shrink-0">
-                {creating ? '…' : 'Add'}
-              </button>
+
+          {/* Custom skill */}
+          <div className="border-t border-border-default dark:border-border-dark-default pt-4">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted dark:text-fg-dark-muted mb-3">Create custom skill</p>
+            <div className="rounded-xl border border-border-default dark:border-border-dark-default overflow-hidden">
+              <div className="grid grid-cols-2 divide-x divide-border-default dark:divide-border-dark-default">
+                <div className="flex flex-col p-3 gap-1">
+                  <label className={lCls}>Skill name</label>
+                  <input
+                    className="bg-transparent text-[12px] text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none"
+                    placeholder="e.g. Rust, Blender…"
+                    value={customName}
+                    onChange={(e) => setCustomName(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreate() } }}
+                  />
+                </div>
+                <div className="flex flex-col p-3 gap-1">
+                  <label className={lCls}>Category</label>
+                  <select
+                    className="bg-canvas-default dark:bg-canvas-dark-default text-[12px] text-fg-default dark:text-fg-dark-default outline-none cursor-pointer w-full"
+                    value={customCat}
+                    onChange={(e) => setCustomCat(e.target.value)}
+                  >
+                    {['Custom','Technology','Design','Writing','Media','Education','Business','Music'].map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="border-t border-border-default dark:border-border-dark-default">
+                <button
+                  onClick={handleCreate}
+                  disabled={creating || !customName.trim()}
+                  className="w-full py-2.5 text-[12px] font-semibold text-brand dark:text-brand-dark-DEFAULT hover:bg-brand/5 dark:hover:bg-brand-dark-DEFAULT/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                >
+                  {creating ? 'Adding…' : '+ Add skill'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -24,17 +24,26 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
   throw lastErr
 }
 
+const NIM_MODEL       = process.env.NIM_LLM_MODEL      ?? 'nvidia/nemotron-3.5-lightning-30b-a3b'
+const NIM_TEMPERATURE = Number(process.env.NIM_TEMPERATURE  ?? 1)
+const NIM_TOP_P       = Number(process.env.NIM_TOP_P        ?? 0.95)
+const NIM_MAX_TOKENS  = Number(process.env.NIM_MAX_TOKENS   ?? 16384)
+const NIM_THINKING    = process.env.NIM_ENABLE_THINKING === 'true'
+const NIM_REASONING   = Number(process.env.NIM_REASONING_BUDGET ?? 16384)
+
 export async function chatCompletion(
   messages: { role: string; content: string }[],
-  { temperature = 0.7, maxTokens = 1024, model }: { temperature?: number; maxTokens?: number; model?: string } = {}
+  { temperature = NIM_TEMPERATURE, maxTokens = NIM_MAX_TOKENS, model = NIM_MODEL }: { temperature?: number; maxTokens?: number; model?: string } = {}
 ): Promise<string> {
   return withRetry(async () => {
     const client = getClient()
-    const res = await client.chat.completions.create({
-      model:       model ?? process.env.NIM_LLM_MODEL ?? 'deepseek-ai/deepseek-v4-pro-0813',
-      messages:    messages as OpenAI.ChatCompletionMessageParam[],
+    const res = await (client.chat.completions.create as Function)({
+      model,
+      messages:   messages as OpenAI.ChatCompletionMessageParam[],
       temperature,
-      max_tokens:  maxTokens,
+      top_p:      NIM_TOP_P,
+      max_tokens: maxTokens,
+      ...(NIM_THINKING && { extra_body: { chat_template_kwargs: { enable_thinking: true }, reasoning_budget: NIM_REASONING } }),
     })
     return res.choices[0].message.content ?? ''
   })
@@ -42,19 +51,24 @@ export async function chatCompletion(
 
 export async function* streamChatCompletion(
   messages: { role: string; content: string }[],
-  { temperature = 0.7, maxTokens = 1024 }: { temperature?: number; maxTokens?: number } = {}
+  { temperature = NIM_TEMPERATURE, maxTokens = NIM_MAX_TOKENS }: { temperature?: number; maxTokens?: number } = {}
 ): AsyncGenerator<string> {
   const client = getClient()
-  const stream = await client.chat.completions.create({
-    model:       process.env.NIM_LLM_MODEL ?? 'deepseek-ai/deepseek-v4-pro-0813',
-    messages:    messages as OpenAI.ChatCompletionMessageParam[],
+  const stream = await (client.chat.completions.create as Function)({
+    model:      NIM_MODEL,
+    messages:   messages as OpenAI.ChatCompletionMessageParam[],
     temperature,
-    max_tokens:  maxTokens,
-    stream:      true,
+    top_p:      NIM_TOP_P,
+    max_tokens: maxTokens,
+    stream:     true,
+    ...(NIM_THINKING && { extra_body: { chat_template_kwargs: { enable_thinking: true }, reasoning_budget: NIM_REASONING } }),
   })
   for await (const chunk of stream) {
-    const delta = chunk.choices[0]?.delta?.content
-    if (delta) yield delta
+    if (!chunk.choices?.length) continue
+    const delta = chunk.choices[0]?.delta
+    const reasoning = (delta as any)?.reasoning_content
+    if (reasoning) yield reasoning
+    if (delta?.content) yield delta.content
   }
 }
 

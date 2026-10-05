@@ -93,20 +93,23 @@ export default function PortfolioPage() {
   const [techInput, setTechInput] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const imageRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!user?.id) return
     portfolioService.getByUser(user.id).then(setEntries).finally(() => setLoading(false))
   }, [user?.id])
 
-  const openNew = () => { setEditing(null); setForm(emptyForm); setTechInput(''); setError(''); setShowForm(true) }
+  const openNew = () => { setEditing(null); setForm(emptyForm); setTechInput(''); setError(''); setImageFile(null); setImagePreview(null); setShowForm(true) }
   const openEdit = (e: PortfolioEntry) => {
     setEditing(e)
     setForm({ title: e.title, summary: e.summary ?? '', impact_statement: e.impactStatement ?? '', technologies: e.technologies ?? [], project_url: e.projectUrl ?? '' })
-    setTechInput(''); setError(''); setShowForm(true)
+    setTechInput(''); setError(''); setImageFile(null); setImagePreview(e.imageUrl ?? null); setShowForm(true)
   }
-  const closeForm = () => { setShowForm(false); setEditing(null) }
+  const closeForm = () => { setShowForm(false); setEditing(null); setImageFile(null); setImagePreview(null) }
 
   const addTech = () => {
     const t = techInput.trim()
@@ -115,15 +118,28 @@ export default function PortfolioPage() {
   }
   const removeTech = (t: string) => setForm((f) => ({ ...f, technologies: f.technologies?.filter((x) => x !== t) }))
 
+  const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true); setError('')
     try {
+      let entry: PortfolioEntry
       if (editing) {
-        const updated = await portfolioService.update(editing.id, form)
-        setEntries((prev) => prev.map((x) => x.id === updated.id ? updated : x))
+        entry = await portfolioService.update(editing.id, form)
+        setEntries((prev) => prev.map((x) => x.id === entry.id ? entry : x))
       } else {
-        const created = await portfolioService.create(form)
-        setEntries((prev) => [created, ...prev])
+        entry = await portfolioService.create(form)
+        setEntries((prev) => [entry, ...prev])
+      }
+      if (imageFile) {
+        const imageUrl = await portfolioService.uploadImage(entry.id, imageFile)
+        const withImage = { ...entry, imageUrl }
+        setEntries((prev) => prev.map((x) => x.id === entry.id ? withImage : x))
       }
       closeForm()
     } catch { setError('Failed to save — please try again') }
@@ -175,64 +191,134 @@ export default function PortfolioPage() {
       <AnimatePresence>
         {showForm && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm"
             onClick={(e) => e.target === e.currentTarget && closeForm()}
           >
-            <motion.div initial={{ scale: 0.97, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.97, y: 12 }}
-              className="w-full max-w-lg bg-canvas-default dark:bg-canvas-dark-default border border-border-default dark:border-border-dark-default rounded-xl shadow-xl overflow-hidden"
+            <motion.div initial={{ scale: 0.98, y: 16 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.98, y: 16 }}
+              className="w-full sm:max-w-lg bg-canvas-default dark:bg-canvas-dark-default border border-border-default dark:border-border-dark-default sm:rounded-xl shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[85vh]"
             >
-              <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">{editing ? 'Edit project' : 'Add project'}</span>
-                <button onClick={closeForm} className="text-fg-muted dark:text-fg-dark-muted hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer">
+              {/* Modal header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border-default dark:border-border-dark-default shrink-0">
+                <div>
+                  <p className="text-[14px] font-semibold text-fg-default dark:text-fg-dark-default">
+                    {editing ? 'Edit project' : 'Add project'}
+                  </p>
+                  <p className="text-[11px] text-fg-muted dark:text-fg-dark-muted mt-0.5">Fill in the details below</p>
+                </div>
+                <button onClick={closeForm} className="p-1.5 rounded-lg text-fg-muted dark:text-fg-dark-muted hover:bg-canvas-inset dark:hover:bg-canvas-dark-inset hover:text-fg-default dark:hover:text-fg-dark-default transition-colors cursor-pointer">
                   <HiOutlineXMark className="w-4 h-4" />
                 </button>
               </div>
-              <form onSubmit={handleSubmit} className="max-h-[70vh] overflow-y-auto">
-                <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset">
-                  <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">Details</span>
-                </div>
-                <Field label="Title" required>
-                  <input required value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className={inputCls} placeholder="e.g. E-commerce platform" />
-                </Field>
-                <Field label="Summary">
-                  <textarea rows={3} value={form.summary} onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))} className={clsx(inputCls, 'resize-none')} placeholder="Brief description of the project…" />
-                </Field>
-                <Field label="Impact statement">
-                  <input value={form.impact_statement} onChange={(e) => setForm((f) => ({ ...f, impact_statement: e.target.value }))} className={inputCls} placeholder="e.g. Reduced load time by 40%" />
-                </Field>
-                <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset">
-                  <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">Technologies</span>
-                </div>
-                <Field label="Add technology">
-                  <div className="flex gap-2">
-                    <input value={techInput} onChange={(e) => setTechInput(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTech() } }}
-                      className={inputCls} placeholder="Type and press enter…" />
-                    <button type="button" onClick={addTech}
-                      className="px-3 py-2 text-[12px] font-medium rounded-lg border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer shrink-0"
-                    >Add</button>
+
+              {/* Scrollable body — no visible scrollbar */}
+              <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+                <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-5 py-4 space-y-4">
+
+                  {/* Cover image */}
+                  <div>
+                    <label className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-1.5 block">Cover image</label>
+                    <input ref={imageRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleImagePick} />
+                    <button type="button" onClick={() => imageRef.current?.click()}
+                      className="relative w-full h-36 rounded-lg border-2 border-dashed border-border-default dark:border-border-dark-default hover:border-brand dark:hover:border-brand-dark-DEFAULT transition-colors overflow-hidden group cursor-pointer"
+                    >
+                      {imagePreview ? (
+                        <>
+                          <img src={imagePreview} alt="preview" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+                            <HiOutlineArrowUpTray className="w-5 h-5 text-white" />
+                            <span className="text-[11px] font-medium text-white">Change image</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full gap-2 text-fg-muted dark:text-fg-dark-muted group-hover:text-brand dark:group-hover:text-brand-dark-DEFAULT transition-colors">
+                          <HiOutlineArrowUpTray className="w-5 h-5" />
+                          <span className="text-[11px] font-medium">Click to upload a cover image</span>
+                          <span className="text-[10px] opacity-60">JPG, PNG or WebP · max 8MB</span>
+                        </div>
+                      )}
+                    </button>
+                    {imagePreview && (
+                      <button type="button"
+                        onClick={() => { setImageFile(null); setImagePreview(editing?.imageUrl ?? null); if (imageRef.current) imageRef.current.value = '' }}
+                        className="mt-1.5 text-[11px] text-fg-muted dark:text-fg-dark-muted hover:text-danger-fg dark:hover:text-danger-dark-fg transition-colors cursor-pointer flex items-center gap-1"
+                      >
+                        <HiOutlineXMark className="w-3 h-3" /> Remove image
+                      </button>
+                    )}
                   </div>
-                  {form.technologies && form.technologies.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {form.technologies.map((t) => (
-                        <span key={t} className="flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded-md bg-brand dark:bg-brand-dark-DEFAULT text-white">
-                          {t}
-                          <button type="button" onClick={() => removeTech(t)} className="cursor-pointer hover:opacity-70 transition-opacity"><HiOutlineXMark className="w-3 h-3" /></button>
-                        </span>
-                      ))}
+
+                  {/* Title */}
+                  <div>
+                    <label className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-1.5 flex items-center gap-1">
+                      Title <span className="text-danger-fg dark:text-danger-dark-fg">*</span>
+                    </label>
+                    <input required value={form.title}
+                      onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                      className={inputCls} placeholder="e.g. E-commerce platform" />
+                  </div>
+
+                  {/* Summary */}
+                  <div>
+                    <label className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-1.5 block">Summary</label>
+                    <textarea rows={3} value={form.summary}
+                      onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
+                      className={clsx(inputCls, 'resize-none')} placeholder="Brief description of the project…" />
+                  </div>
+
+                  {/* Impact */}
+                  <div>
+                    <label className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-1.5 block">Impact statement</label>
+                    <input value={form.impact_statement}
+                      onChange={(e) => setForm((f) => ({ ...f, impact_statement: e.target.value }))}
+                      className={inputCls} placeholder="e.g. Reduced load time by 40%" />
+                  </div>
+
+                  {/* Technologies */}
+                  <div>
+                    <label className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-1.5 block">Technologies</label>
+                    <div className="flex gap-2">
+                      <input value={techInput} onChange={(e) => setTechInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTech() } }}
+                        className={inputCls} placeholder="e.g. React, TypeScript…" />
+                      <button type="button" onClick={addTech}
+                        className="px-3 py-2 text-[12px] font-medium rounded-lg border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:border-brand dark:hover:border-brand-dark-DEFAULT hover:text-brand dark:hover:text-brand-dark-DEFAULT transition-colors cursor-pointer shrink-0"
+                      >Add</button>
                     </div>
+                    {(form.technologies?.length ?? 0) > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {form.technologies!.map((t) => (
+                          <span key={t} className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-full border border-border-default dark:border-border-dark-default text-fg-default dark:text-fg-dark-default">
+                            {t}
+                            <button type="button" onClick={() => removeTech(t)} className="cursor-pointer text-fg-muted dark:text-fg-dark-muted hover:text-danger-fg dark:hover:text-danger-dark-fg transition-colors">
+                              <HiOutlineXMark className="w-3 h-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* URL */}
+                  <div>
+                    <label className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted mb-1.5 block">Project URL</label>
+                    <div className="flex items-center rounded-lg border border-border-default dark:border-border-dark-default focus-within:ring-2 focus-within:ring-brand/30 focus-within:border-brand dark:focus-within:border-brand-dark-DEFAULT overflow-hidden transition-colors">
+                      <span className="px-3 py-2 text-[11px] text-fg-muted dark:text-fg-dark-muted border-r border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset shrink-0">
+                        <HiOutlineLink className="w-3.5 h-3.5" />
+                      </span>
+                      <input type="url" value={form.project_url}
+                        onChange={(e) => setForm((f) => ({ ...f, project_url: e.target.value }))}
+                        className="flex-1 px-3 py-2 bg-canvas-overlay dark:bg-canvas-dark-inset text-[12px] text-fg-default dark:text-fg-dark-default placeholder-fg-subtle dark:placeholder-fg-dark-subtle outline-none"
+                        placeholder="https://github.com/…" />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="px-3 py-2 rounded-lg border border-danger-muted dark:border-danger-dark-muted bg-danger-subtle dark:bg-danger-dark-subtle text-[12px] text-danger-fg dark:text-danger-dark-fg">{error}</div>
                   )}
-                </Field>
-                <div className="px-4 py-2.5 border-b border-border-default dark:border-border-dark-default bg-canvas-inset dark:bg-canvas-dark-inset">
-                  <span className="text-[11px] font-semibold text-fg-muted dark:text-fg-dark-muted">Link</span>
                 </div>
-                <Field label="Project URL">
-                  <input type="url" value={form.project_url} onChange={(e) => setForm((f) => ({ ...f, project_url: e.target.value }))} className={inputCls} placeholder="https://github.com/…" />
-                </Field>
-                {error && (
-                  <div className="mx-4 my-2 px-3 py-2 rounded-lg border border-danger-muted dark:border-danger-dark-muted bg-danger-subtle dark:bg-danger-dark-subtle text-[12px] text-danger-fg dark:text-danger-dark-fg">{error}</div>
-                )}
-                <div className="flex items-center gap-2 justify-end px-4 py-3 border-t border-border-default dark:border-border-dark-default">
+
+                {/* Footer */}
+                <div className="flex items-center gap-2 justify-end px-5 py-4 border-t border-border-default dark:border-border-dark-default shrink-0">
                   <button type="button" onClick={closeForm}
                     className="px-4 py-2 text-[12px] font-medium rounded-lg border border-border-default dark:border-border-dark-default text-fg-muted dark:text-fg-dark-muted hover:text-fg-default dark:hover:text-fg-dark-default transition-colors cursor-pointer"
                   >Cancel</button>
