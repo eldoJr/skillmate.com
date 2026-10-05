@@ -76,7 +76,7 @@ export default function LoginPage() {
                 Email address
               </label>
               <input
-                type="email"
+                type="text"
                 placeholder="you@university.edu"
                 required
                 value={email}

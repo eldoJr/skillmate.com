@@ -30,15 +30,19 @@ function SectionHeader({ label }: { label: string }) {
 function Toggle({ enabled, onChange }: { enabled: boolean; onChange: () => void }) {
   return (
     <button
+      role="switch"
+      aria-checked={enabled}
       onClick={onChange}
       className={clsx(
-        'relative w-9 h-5 rounded-full transition-colors cursor-pointer shrink-0',
-        enabled ? 'bg-brand dark:bg-brand-dark-DEFAULT' : 'bg-canvas-inset dark:bg-canvas-dark-inset border border-border-default dark:border-border-dark-default',
+        'relative inline-flex w-10 h-[22px] rounded-full transition-colors duration-200 cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50',
+        enabled
+          ? 'bg-brand dark:bg-brand-dark-DEFAULT'
+          : 'bg-fg-muted/25 dark:bg-fg-dark-muted/30',
       )}
     >
       <span className={clsx(
-        'absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform',
-        enabled ? 'translate-x-[18px]' : 'translate-x-0.5',
+        'absolute top-[3px] left-[3px] w-4 h-4 bg-white rounded-full shadow transition-transform duration-200',
+        enabled ? 'translate-x-[18px]' : 'translate-x-0',
       )} />
     </button>
   )
